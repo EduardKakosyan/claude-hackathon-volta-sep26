@@ -54,14 +54,25 @@ export function formatFlagTitle(flag: ReportFlag): string {
   return `${flag.people} ${peopleWord(flag.people)} reported a ${SIGN_LABEL[flag.sign]} sign here today`
 }
 
-/** "2 people reported a Closed sign here today · last at 1:15 p.m." */
+/**
+ * "2 people reported a Closed sign here today · last at 1:15 p.m."
+ *
+ * The `.replace`/`.toLowerCase` is not decoration: ICU renders `en-CA` hour12
+ * as "1:15 p.m.", "1:15 PM" or "1:15 pm" depending on its version, so the
+ * PRD's wording only holds if it is normalised. Phase 2's `formatPosted` in
+ * `lib/dates.ts` normalises identically — keep the two in step, and prefer
+ * reusing that helper once both files live on one branch.
+ */
 export function formatFlagLine(flag: ReportFlag, opts?: { timeZone?: string; locale?: string }): string {
   const time = new Intl.DateTimeFormat(opts?.locale ?? 'en-CA', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
     timeZone: opts?.timeZone ?? HALIFAX_TZ,
-  }).format(new Date(flag.lastAt))
+  })
+    .format(new Date(flag.lastAt))
+    .replace(/\s?([ap])\.?m\.?$/i, ' $1.m.')
+    .toLowerCase()
 
   return `${formatFlagTitle(flag)} · last at ${time}`
 }
