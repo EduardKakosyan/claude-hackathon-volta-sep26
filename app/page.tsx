@@ -1,10 +1,15 @@
 import { BeachApp } from '@/components/beach-app'
-import { BEACHES } from '@/lib/seed/beaches'
+import { getStore } from '@/lib/db/client'
+import { loadPage } from '@/lib/db/queries'
 
-/**
- * Phase 1 hands the seed roster straight to the map with no status at all, so every
- * pin renders as `unknown`. Phase 2 replaces the empty record with `loadPage()`.
- */
-export default function Page() {
-  return <BeachApp beaches={BEACHES} status={{}} />
+// Status is read per request so a user never sees anything older than the last refresh.
+export const dynamic = 'force-dynamic'
+
+type SearchParams = Promise<Record<string, string | string[] | undefined>>
+
+/** Reads `?day` and `?beach`, calls one loader, renders one client component. */
+export default async function Page({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams
+  const data = await loadPage({ params, store: getStore() })
+  return <BeachApp {...data} />
 }
