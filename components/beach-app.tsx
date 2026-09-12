@@ -1,9 +1,11 @@
 'use client'
 
+import { SearchIcon, XIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useMemo, useState } from 'react'
 
 import { BeachDetail } from '@/components/beach-detail'
+import { SearchBox } from '@/components/discovery/search-box'
 import { Legend } from '@/components/legend'
 import { NearbySheet } from '@/components/nearby-sheet'
 import { ReplayBanner } from '@/components/replay-banner'
@@ -33,6 +35,7 @@ export function BeachApp(data: BeachAppProps) {
   const { beaches, status, health, history, days, historyFrom, historyTo, replayDay, storeKind } =
     data
   const [selectedId, setSelectedId] = useState<string | null>(data.initialBeachId ?? null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const pinState = useMemo(() => {
     const out: Record<string, PinState> = {}
@@ -48,6 +51,7 @@ export function BeachApp(data: BeachAppProps) {
   const select = useCallback(
     (id: string | null) => {
       setSelectedId(id)
+      setSearchOpen(false)
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id ?? undefined }))
       }
@@ -127,6 +131,26 @@ export function BeachApp(data: BeachAppProps) {
           beachId={selectedId}
           className="absolute top-3 right-3 z-10"
         />
+
+        <button
+          type="button"
+          onClick={() => setSearchOpen((v) => !v)}
+          aria-pressed={searchOpen}
+          aria-label={searchOpen ? 'Close search' : 'Quick search'}
+          className="absolute top-3 left-3 z-20 grid size-11 place-items-center rounded-xl bg-white/92 text-neutral-700 shadow-lg backdrop-blur-sm hover:bg-white"
+        >
+          {searchOpen ? <XIcon className="size-4" /> : <SearchIcon className="size-4" />}
+        </button>
+
+        {searchOpen ? (
+          <SearchBox
+            beaches={beaches}
+            status={pinState}
+            onSelect={select}
+            autoFocus
+            className="absolute top-16 right-3 left-3 z-20 lg:right-auto lg:w-96"
+          />
+        ) : null}
 
         <Legend className="absolute bottom-[calc(46dvh+0.75rem)] left-3 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-xs lg:bottom-3" />
       </div>

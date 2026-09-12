@@ -55,11 +55,11 @@ export function NearbySheet({
   )
 
   return (
-    <section aria-label={title} className="flex min-h-0 flex-col">
+    <section aria-label={title} className="flex h-full min-h-0 flex-col">
       <h2 className="px-2 pb-1 text-xs font-semibold tracking-wide text-neutral-500 uppercase">
         {title}
       </h2>
-      <ul className="min-h-0 flex-1 overflow-y-auto">
+      <ul className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {rows.map(({ beach, km }) => (
           <li key={beach.id}>
             <BeachRow
