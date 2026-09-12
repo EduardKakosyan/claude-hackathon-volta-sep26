@@ -291,7 +291,7 @@ export function BeachApp(data: BeachAppProps) {
           onClick={() => setSearchOpen((v) => !v)}
           aria-pressed={searchOpen}
           aria-label={searchOpen ? 'Close search' : 'Quick search'}
-          className="absolute top-3 left-3 z-20 grid size-11 place-items-center rounded-xl bg-white/92 text-neutral-700 shadow-lg backdrop-blur-sm hover:bg-white"
+          className="absolute bottom-[calc(46dvh+4rem)] left-3 z-20 grid size-11 place-items-center rounded-xl bg-white/92 text-neutral-700 shadow-lg backdrop-blur-sm hover:bg-white lg:bottom-16 lg:left-3"
         >
           {searchOpen ? <XIcon className="size-4" /> : <SearchIcon className="size-4" />}
         </button>
@@ -302,7 +302,7 @@ export function BeachApp(data: BeachAppProps) {
             status={pinState}
             onSelect={(id) => selectBeach(id, 'map')}
             autoFocus
-            className="absolute top-16 right-3 left-3 z-20 lg:right-auto lg:w-96"
+            className="absolute bottom-[calc(46dvh+7rem)] left-3 z-20 right-3 lg:bottom-[calc(4rem+3.5rem)] lg:right-auto lg:w-96"
           />
         ) : null}
 
