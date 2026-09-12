@@ -2,40 +2,72 @@
 
 import { SearchIcon, XIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useCallback, useMemo, useState } from 'react'
+import { ArrowLeft, ChevronDown, Waves } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { BeachDetail } from '@/components/beach-detail'
+import { BeachList } from '@/components/beach-list'
+import { BeachToolbar } from '@/components/beach-toolbar'
 import { SearchBox } from '@/components/discovery/search-box'
 import { Legend } from '@/components/legend'
-import { NearbySheet } from '@/components/nearby-sheet'
+import { MapKey } from '@/components/map-key'
+import { MapUnavailable } from '@/components/map-unavailable'
 import { ReplayBanner } from '@/components/replay-banner'
 import { ReplayControl } from '@/components/replay-control'
-import type { PinState } from '@/components/status-pin'
-import { formatDay, formatPosted } from '@/lib/dates'
+import {
+  countByState,
+  filterBeaches,
+  type StatusFilter,
+} from '@/lib/beach-filter'
+import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
+import { formatPosted } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
 import { buildHref } from '@/lib/url-state'
+
+import './beach-shell.css'
 
 const BeachMap = dynamic(() => import('@/components/beach-map'), {
   ssr: false,
   loading: () => (
-    <div className="absolute inset-0 grid place-items-center bg-[#0b1220] text-sm text-white/60">
-      Loading the map…
+    <div className="beach-shell-map-loading" role="status">
+      <Waves size={32} aria-hidden="true" />
+      <span>Opening the satellite map...</span>
     </div>
   ),
 })
 
 export type BeachAppProps = PageData
 
-/**
- * The client root. Selection is local state — picking a beach only moves the
- * camera and opens the detail, so the URL follows with `replaceState` and
- * nothing navigates. Picking a replay day is the one real navigation.
- */
+type SelectionOrigin = 'list' | 'map'
+
+const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
+
 export function BeachApp(data: BeachAppProps) {
-  const { beaches, status, health, history, days, historyFrom, historyTo, replayDay, storeKind } =
-    data
+  const {
+    beaches,
+    status,
+    health,
+    history,
+    days,
+    historyFrom,
+    historyTo,
+    replayDay,
+    storeKind,
+  } = data
+
   const [selectedId, setSelectedId] = useState<string | null>(data.initialBeachId ?? null)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<StatusFilter>('all')
+  const [isPanelExpanded, setPanelExpanded] = useState(false)
+  const [mapError, setMapError] = useState<string | null>(null)
+  const [mapAttempt, setMapAttempt] = useState(0)
   const [searchOpen, setSearchOpen] = useState(false)
+
+  const panelRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const originRef = useRef<SelectionOrigin | null>(null)
+  const lastSelectedId = useRef<string | null>(null)
+  const restoreFocus = useRef(false)
 
   const pinState = useMemo(() => {
     const out: Record<string, PinState> = {}
@@ -43,26 +75,80 @@ export function BeachApp(data: BeachAppProps) {
     return out
   }, [beaches, status])
 
+  const visible = useMemo(
+    () => filterBeaches({ beaches, status: pinState, query, filter }),
+    [beaches, pinState, query, filter],
+  )
   const selected = useMemo(
     () => beaches.find((b) => b.id === selectedId) ?? null,
     [beaches, selectedId],
   )
+  const counts = useMemo(() => countByState(beaches, pinState), [beaches, pinState])
+  const isFiltered = query.trim().length > 0 || filter !== 'all'
 
-  const select = useCallback(
-    (id: string | null) => {
+  const selectBeach = useCallback(
+    (id: string, origin: SelectionOrigin) => {
+      originRef.current = origin
+      lastSelectedId.current = id
       setSelectedId(id)
+      panelRef.current?.scrollTo({ top: 0 })
       setSearchOpen(false)
       if (typeof window !== 'undefined') {
-        window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id ?? undefined }))
+        window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id }))
       }
     },
     [replayDay],
   )
 
+  const closeDetail = useCallback(() => {
+    restoreFocus.current = true
+    setSelectedId(null)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', buildHref({ day: replayDay }))
+    }
+  }, [replayDay])
+
+  useEffect(() => {
+    if (selectedId || !restoreFocus.current) return
+    restoreFocus.current = false
+    const id = lastSelectedId.current
+    if (originRef.current === 'list' && id) {
+      const row = panelRef.current?.querySelector<HTMLButtonElement>(`[data-beach-id="${id}"]`)
+      if (row) {
+        row.focus({ preventScroll: true })
+        row.scrollIntoView({ block: 'nearest' })
+        return
+      }
+    }
+    searchRef.current?.focus({ preventScroll: true })
+  }, [selectedId])
+
+  function changeQuery(next: string) {
+    setQuery(next)
+    setSelectedId(null)
+  }
+
+  function changeFilter(next: StatusFilter) {
+    setFilter(next)
+    setSelectedId(null)
+  }
+
+  function resetSearch() {
+    setQuery('')
+    setFilter('all')
+    setSelectedId(null)
+    searchRef.current?.focus()
+  }
+
+  function retryMap() {
+    setMapError(null)
+    setMapAttempt((attempt) => attempt + 1)
+  }
+
   const footer = replayDay
-    ? `Replayed: ${formatDay(replayDay)}`
+    ? `Replayed: ${formatPosted(replayDay)}`
     : storeKind === 'seed'
-      ? 'Not connected to a database — no source has been read yet'
+      ? 'Not connected to a database; no source has been read yet'
       : health.length === 0
         ? 'No source has been read yet'
         : health
@@ -70,67 +156,134 @@ export function BeachApp(data: BeachAppProps) {
               h.lastSuccessAt && h.lastSuccessAt === h.lastAttemptAt
                 ? `${LABEL[h.source]} checked ${formatPosted(h.lastAttemptAt)}`
                 : h.lastSuccessAt
-                  ? `${LABEL[h.source]} last confirmed ${formatPosted(h.lastSuccessAt)} · couldn’t reach it since`
+                  ? `${LABEL[h.source]} last confirmed ${formatPosted(h.lastSuccessAt)}; could not reach it since`
                   : `${LABEL[h.source]} never read`,
             )
-            .join(' · ')
-
-  const panel = selected ? (
-    <BeachDetail
-      beach={selected}
-      status={status[selected.id]}
-      history={history[selected.id] ?? []}
-      historyFrom={historyFrom}
-      historyTo={historyTo}
-      replayDay={replayDay}
-      onBack={() => select(null)}
-    />
-  ) : (
-    <NearbySheet beaches={beaches} pinState={pinState} selectedId={selectedId} onSelect={select} />
-  )
+            .join(' / ')
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-[#0b1220] lg:grid lg:grid-cols-[384px_1fr]">
-      {/* Wide: the left column. Phone: the bottom panel. Same children. */}
-      <aside className="absolute inset-x-0 bottom-0 z-20 flex max-h-[46dvh] flex-col gap-3 rounded-t-2xl bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(0,0,0,0.25)] lg:static lg:max-h-none lg:rounded-none lg:border-r lg:border-neutral-200 lg:p-4">
-        <div className="hidden lg:block">
-          <h1 className="text-base font-semibold text-neutral-900">Is the beach open?</h1>
-          <p className="text-xs text-neutral-500">
-            {beaches.length} monitored beaches in Nova Scotia
-          </p>
-        </div>
-        <div className="min-h-0 flex-1 overflow-hidden">{panel}</div>
-        <p className="border-t border-neutral-200 pt-2 text-[11px] leading-snug text-neutral-500">
-          {footer}
-        </p>
-      </aside>
+    <main
+      className="beach-shell"
+      data-expanded={isPanelExpanded}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && selected) closeDetail()
+      }}
+    >
+      <BeachToolbar
+        beachCount={beaches.length}
+        query={query}
+        onQueryChange={changeQuery}
+        filter={filter}
+        onFilterChange={changeFilter}
+        searchRef={searchRef}
+      />
 
-      <div className="relative h-full min-h-0">
-        <BeachMap
-          beaches={beaches}
-          status={pinState}
-          selectedId={selectedId}
-          onSelect={select}
-        />
+      <div className="beach-shell-workspace">
+        <section className="beach-shell-map" aria-label="Satellite map of Nova Scotia beaches">
+          {mapError ? (
+            <MapUnavailable message={mapError} onRetry={retryMap} />
+          ) : (
+            <>
+              <BeachMap
+                key={mapAttempt}
+                beaches={visible}
+                status={pinState}
+                selectedId={selectedId}
+                onSelect={(id) => selectBeach(id, 'map')}
+                onFatalError={setMapError}
+              />
+              <MapKey />
 
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col items-center gap-2 p-3">
-          <div className="rounded-xl bg-white/92 px-4 py-2.5 text-center shadow-lg backdrop-blur-sm lg:hidden">
-            <h1 className="text-sm font-semibold text-neutral-900">Is the beach open?</h1>
-            <p className="text-xs text-neutral-500">
-              {beaches.length} monitored beaches in Nova Scotia
+              {replayDay ? (
+                <ReplayBanner
+                  replayDay={replayDay}
+                  beachId={selectedId}
+                  className="absolute inset-x-0 top-0 z-10 mx-3 mt-3"
+                />
+              ) : null}
+
+              <ReplayControl
+                days={days}
+                replayDay={replayDay}
+                beachId={selectedId}
+                className="absolute top-3 right-3 z-10"
+              />
+            </>
+          )}
+        </section>
+
+        <aside className="beach-shell-panel" aria-label={selected ? 'Selected beach' : 'Beach directory'}>
+          <button
+            className="beach-shell-sheet-toggle"
+            type="button"
+            aria-expanded={isPanelExpanded}
+            aria-controls="beach-shell-panel-content"
+            onClick={() => setPanelExpanded((expanded) => !expanded)}
+          >
+            <span className="beach-shell-handle" />
+            <span>
+              {isPanelExpanded ? 'Show more map' : 'Show more of the list'}
+              <ChevronDown size={14} aria-hidden="true" />
+            </span>
+          </button>
+
+          <div className="beach-shell-panel-heading">
+            {selected ? (
+              <button type="button" className="beach-shell-back" onClick={closeDetail}>
+                <ArrowLeft size={16} aria-hidden="true" /> Back to beaches
+              </button>
+            ) : (
+              <h2>{isFiltered ? 'Your results' : 'Find your next shore'}</h2>
+            )}
+            <p className="beach-shell-count" role="status">
+              {selected
+                ? `1 of ${beaches.length} beaches`
+                : `${visible.length} of ${beaches.length} beaches`}
             </p>
           </div>
-          {replayDay ? (
-            <ReplayBanner replayDay={replayDay} beachId={selectedId} className="pointer-events-auto" />
-          ) : null}
-        </header>
 
-        <ReplayControl
-          days={days}
-          replayDay={replayDay}
-          beachId={selectedId}
-          className="absolute top-3 right-3 z-10"
-        />
+          <div className="beach-shell-panel-scroll" ref={panelRef} id="beach-shell-panel-content">
+            {selected ? (
+              <BeachDetail
+                key={selected.id}
+                beach={selected}
+                status={status[selected.id]}
+                history={history[selected.id] ?? []}
+                historyFrom={historyFrom}
+                historyTo={historyTo}
+                replayDay={replayDay}
+                onBack={closeDetail}
+              />
+            ) : (
+              <>
+                <p className="beach-shell-list-note">
+                  Alphabetical directory <span>Choose a beach to explore</span>
+                </p>
+                <BeachList
+                  beaches={visible}
+                  status={pinState}
+                  selectedId={selectedId}
+                  onSelect={(id) => selectBeach(id, 'list')}
+                  onReset={resetSearch}
+                />
+              </>
+            )}
+          </div>
+
+          <footer className="beach-shell-footer">
+            {counts.unknown > 0 && (
+              <p>
+                <strong>
+                  {counts.unknown} {counts.unknown === 1 ? 'beach has' : 'beaches have'} no status
+                  available.
+                </strong>{' '}
+                {UNKNOWN_CAVEAT}
+              </p>
+            )}
+            <p>{footer}</p>
+            <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
+          </footer>
+        </aside>
 
         <button
           type="button"
@@ -146,7 +299,7 @@ export function BeachApp(data: BeachAppProps) {
           <SearchBox
             beaches={beaches}
             status={pinState}
-            onSelect={select}
+            onSelect={(id) => selectBeach(id, 'map')}
             autoFocus
             className="absolute top-16 right-3 left-3 z-20 lg:right-auto lg:w-96"
           />
@@ -157,5 +310,3 @@ export function BeachApp(data: BeachAppProps) {
     </main>
   )
 }
-
-const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const

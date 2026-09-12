@@ -33,11 +33,6 @@ const CELL: Record<string, string> = {
   offseason: 'bg-status-offseason',
 }
 
-/**
- * Header, status block (who said it, verbatim, when, plain-English line, link),
- * facts, and the day strip. A replay row says it is replayed and shows no
- * posted time, because it has none.
- */
 export function BeachDetail({
   beach,
   status,
@@ -74,7 +69,7 @@ export function BeachDetail({
           <>
             <p className="text-xs font-semibold text-neutral-500">{SOURCE_SAYS[status.source]}</p>
             {status.verbatim ? (
-              <p className="mt-1 text-sm font-medium text-neutral-900">“{status.verbatim}”</p>
+              <p className="mt-1 text-sm font-medium text-neutral-900">&ldquo;{status.verbatim}&rdquo;</p>
             ) : null}
             <p className="mt-1 text-xs text-neutral-500">
               {status.postedAt

@@ -1,25 +1,18 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import type { BeachState } from '@/lib/seed/beaches'
+import { STATUS_LABEL, type PinState } from '@/lib/beach-status'
 import { cn } from '@/lib/utils'
 
 /**
- * `unknown` is render-only. The resolver never produces it; it is what a pin shows
- * before any source has been read, and what a beach whose alias has broken shows
- * afterwards. Drawing it as a dashed grey ring keeps the map from inventing a colour.
+ * The wording and the `unknown` state live in `lib/beach-status.ts` so pins, rows,
+ * filters, the map key and the detail view can never drift apart. This module owns
+ * one thing: how a state looks. A dashed grey ring keeps the map from inventing a
+ * colour for a beach whose status has never been read.
  */
-export type PinState = BeachState | 'unknown'
-
-export const STATUS_LABEL: Record<PinState, string> = {
-  open: 'Open',
-  advisory: 'Advisory',
-  closed: 'Closed',
-  offseason: 'Off-season',
-  unknown: 'No status read yet',
-}
+export { STATUS_LABEL, type PinState }
 
 const statusPinVariants = cva(
-  'block rounded-full shadow-[0_1px_6px_rgba(0,0,0,0.5)] transition-transform duration-150 ease-out',
+  'block rounded-full shadow-[0_1px_6px_rgba(0,0,0,0.5)] transition-transform duration-150 ease-out motion-reduce:transition-none',
   {
     variants: {
       state: {
