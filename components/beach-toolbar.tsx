@@ -1,6 +1,7 @@
 'use client'
 
-import { Search, Waves, X } from 'lucide-react'
+import Image from 'next/image'
+import { Search, X } from 'lucide-react'
 import { type RefObject } from 'react'
 
 import { FILTER_LABEL, STATUS_FILTERS, type StatusFilter } from '@/lib/beach-filter'
@@ -31,7 +32,7 @@ export function BeachToolbar({
     <header className="beach-shell-header">
       <div className="beach-shell-masthead">
         <div className="beach-shell-brand">
-          <Waves className="beach-shell-brand-mark" size={34} strokeWidth={1.3} aria-hidden="true" />
+          <Image src="/logo.png" alt="" width={38} height={38} className="beach-shell-brand-mark" aria-hidden="true" />
           <div>
             <p className="beach-shell-eyebrow">Nova Scotia / Beach guide</p>
             <h1>Is the beach open?</h1>
