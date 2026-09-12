@@ -2,7 +2,8 @@
 
 import { SearchIcon, XIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, ChevronDown, Waves } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { BeachDetail } from '@/components/beach-detail'
@@ -30,7 +31,7 @@ const BeachMap = dynamic(() => import('@/components/beach-map'), {
   ssr: false,
   loading: () => (
     <div className="beach-shell-map-loading" role="status">
-      <Waves size={32} aria-hidden="true" />
+      <Image src="/logo.png" alt="" width={32} height={32} aria-hidden="true" />
       <span>Opening the satellite map...</span>
     </div>
   ),
