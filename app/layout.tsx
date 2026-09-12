@@ -2,15 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import './globals.css'
+import { baseMetadata } from '@/lib/metadata'
 
 const geistSans = Geist({ variable: '--font-sans', subsets: ['latin'] })
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'Is the Beach Open',
-  description:
-    'Today’s official status for every government-monitored beach in Nova Scotia, on one map.',
-}
+export const metadata: Metadata = baseMetadata()
 
 export const viewport: Viewport = {
   // The bottom sheet sits against the home indicator on a phone.
