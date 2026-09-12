@@ -1,12 +1,28 @@
 import { fileURLToPath } from 'node:url'
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
+const alias = { '@': fileURLToPath(new URL('./', import.meta.url)) }
+
 export default defineConfig({
-  resolve: {
-    alias: { '@': fileURLToPath(new URL('./', import.meta.url)) },
-  },
+  plugins: [react()],
+  resolve: { alias },
   test: {
-    environment: 'node',
-    include: ['lib/**/*.test.ts'],
+    projects: [
+      {
+        test: {
+          environment: 'node',
+          include: ['lib/**/*.test.ts'],
+        },
+      },
+      {
+        test: {
+          environment: 'jsdom',
+          include: ['components/**/*.test.tsx'],
+          globals: true,
+          setupFiles: ['test/setup-dom.ts'],
+        },
+      },
+    ],
   },
 })

@@ -1,0 +1,222 @@
+/*
+ * "Tide Table": a printed coastal guide, not a dashboard. Hairline rules, a heavy
+ * masthead underscore, warm paper, one teal accent, and the status hexes from
+ * `app/globals.css` reserved for status alone — nothing decorative is allowed to
+ * borrow green, amber or red.
+ */
+
+.beach-shell {
+  /* Surfaces */
+  --beach-bg: #efeeea;
+  --beach-panel: #f9f8f4;
+  --beach-ink: #242a29;
+  --beach-muted: #626b68;
+  --beach-rule: #d2d6cf;
+  --beach-accent: #0f5f65;
+  --beach-accent-wash: #e3eeea;
+  --beach-deep: #14242c;
+
+  /* Type */
+  --beach-serif: var(--font-serif), Georgia, 'Times New Roman', serif;
+  --beach-display: clamp(26px, 2.7vw, 39px);
+  --beach-row-title: clamp(17px, 1.2vw, 19px);
+
+  /* Rhythm: the panel breathes wider than the toolbar on purpose. */
+  --beach-gutter: 23px;
+  --beach-row-gap: 15px;
+
+  /* Motion */
+  --beach-duration: 160ms;
+  --beach-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--beach-bg);
+  color: var(--beach-ink);
+}
+
+.beach-shell button { cursor: pointer; }
+.beach-shell button:focus-visible,
+.beach-shell summary:focus-visible,
+.beach-shell a:focus-visible { outline: 2px solid var(--beach-accent); outline-offset: -3px; }
+
+/* --- Masthead and controls ------------------------------------------------ */
+
+.beach-shell-header { flex: none; padding: 22px 28px 16px; border-bottom: 1px solid var(--beach-rule); background: var(--beach-panel); z-index: 2; }
+.beach-shell-masthead { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--beach-ink); }
+.beach-shell-brand { display: flex; align-items: center; gap: 15px; }
+.beach-shell-brand-mark { color: var(--beach-accent); flex: none; }
+.beach-shell-eyebrow { margin: 0 0 5px; color: var(--beach-accent); text-transform: uppercase; letter-spacing: .17em; font-size: 10px; font-weight: 600; }
+.beach-shell-brand h1 { margin: 0; font-family: var(--beach-serif); font-size: var(--beach-display); font-weight: 600; line-height: 1.05; letter-spacing: -.045em; }
+.beach-shell-edition { margin: 0; font-family: var(--beach-serif); font-style: italic; font-size: 14px; color: var(--beach-muted); }
+
+.beach-shell-toolbar { display: flex; align-items: center; gap: 24px; margin-top: 15px; }
+.beach-shell-search { display: flex; align-items: center; gap: 10px; padding: 0 13px; flex: 0 1 365px; min-width: 220px; min-height: 45px; border: 1px solid var(--beach-rule); background: var(--beach-bg); border-radius: 4px; color: var(--beach-muted); }
+.beach-shell-search:focus-within { outline: 2px solid var(--beach-accent); outline-offset: 2px; }
+.beach-shell-search input { width: 100%; min-width: 0; background: transparent; border: 0; outline: none; color: var(--beach-ink); font-size: 13px; }
+.beach-shell-search input::placeholder { color: var(--beach-muted); opacity: 1; }
+.beach-shell-search input::-webkit-search-cancel-button { display: none; }
+.beach-shell-search button { display: grid; place-items: center; min-width: 32px; min-height: 40px; color: inherit; }
+.beach-shell-filters { display: flex; align-items: center; gap: 6px; overflow-x: auto; min-width: 0; scrollbar-width: thin; padding: 3px; }
+.beach-shell-filters button { white-space: nowrap; padding: 0 13px; min-height: 40px; border: 1px solid transparent; border-radius: 4px; font-size: 12px; color: var(--beach-muted); background: transparent; transition: color var(--beach-duration) var(--beach-ease), background-color var(--beach-duration) var(--beach-ease); }
+.beach-shell-filters button:hover { color: var(--beach-ink); background: var(--beach-bg); }
+.beach-shell-filters button[aria-pressed='true'] { color: var(--beach-accent); background: var(--beach-accent-wash); border-color: var(--beach-accent); }
+
+/* --- Workspace ------------------------------------------------------------ */
+
+.beach-shell-workspace { display: grid; grid-template-columns: 370px minmax(0, 1fr); flex: 1; min-height: 0; }
+
+.beach-shell-map { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; background: var(--beach-deep); isolation: isolate; }
+.beach-shell-map-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: radial-gradient(ellipse at center, #27464b, var(--beach-deep)); color: #d5e2e0; font: italic 17px var(--beach-serif); }
+.beach-shell-map-loading svg { animation: beach-shell-drift 2.4s var(--beach-ease) infinite; }
+
+/* A failed map is a failure of this page. It must never read as a beach status. */
+.beach-shell-map-failed { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 28px; text-align: center; background: var(--beach-deep); color: #e4ece9; }
+.beach-shell-map-failed svg { color: #9fb7b5; }
+.beach-shell-map-failed h2 { margin: 4px 0 0; font: 600 24px var(--beach-serif); letter-spacing: -.02em; }
+.beach-shell-map-failed p { margin: 0; max-width: 46ch; font-size: 13px; line-height: 1.65; color: #b9c9c6; }
+.beach-shell-map-failed-detail { font-family: var(--font-mono, monospace); font-size: 11px; color: #8fa5a2; overflow-wrap: anywhere; }
+.beach-shell-map-failed button { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 44px; padding: 0 18px; border: 1px solid #6f8b88; border-radius: 4px; color: #e4ece9; background: transparent; font-size: 13px; }
+.beach-shell-map-failed button:hover { background: #1d3139; }
+
+.beach-shell-key { position: absolute; left: 22px; bottom: 32px; max-width: min(290px, calc(100% - 44px)); background: var(--beach-panel); border: 1px solid var(--beach-rule); border-radius: 4px; box-shadow: 0 4px 20px #0002; }
+.beach-shell-key summary { display: flex; align-items: center; justify-content: space-between; gap: 26px; cursor: pointer; padding: 12px 15px; font-size: 12px; list-style: none; min-height: 44px; }
+.beach-shell-key summary::-webkit-details-marker { display: none; }
+.beach-shell-key[open] summary { border-bottom: 1px solid var(--beach-rule); }
+.beach-shell-key[open] summary svg { transform: rotate(180deg); }
+.beach-shell-key-content { padding: 16px; display: grid; gap: 12px; max-height: 40dvh; overflow-y: auto; }
+.beach-shell-key-content ul { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.beach-shell-key-content li { display: flex; align-items: center; gap: 14px; font-size: 12px; }
+.beach-shell-key-content p { margin: 0; color: var(--beach-muted); font-size: 11px; line-height: 1.6; }
+.beach-shell-key-hollow { display: flex; align-items: flex-start; gap: 14px; padding-top: 12px; border-top: 1px solid var(--beach-rule); }
+.beach-shell-key-hollow > span:first-child { flex: none; margin-top: 2px; }
+
+/* Keyboard-reachable map pins. The pin itself is the only visible chrome. */
+.beach-map-pin { display: block; padding: 0; border: 0; background: none; border-radius: 9999px; cursor: pointer; }
+.beach-map-pin:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+/* --- Directory / detail panel --------------------------------------------- */
+
+.beach-shell-panel { grid-column: 1; grid-row: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--beach-panel); border-right: 1px solid var(--beach-rule); }
+.beach-shell-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: var(--beach-gutter) var(--beach-gutter) 18px; flex: none; }
+.beach-shell-panel-heading h2 { margin: 0; font: 500 23px var(--beach-serif); letter-spacing: -.025em; }
+.beach-shell-count { margin: 0; color: var(--beach-muted); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.beach-shell-back { display: flex; align-items: center; gap: 9px; color: var(--beach-accent); min-height: 32px; font-size: 13px; background: none; border: 0; padding: 0; }
+.beach-shell-panel-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--beach-rule) transparent; }
+
+.beach-shell-list-note { display: flex; justify-content: space-between; gap: 8px; margin: 0 var(--beach-gutter); padding-bottom: 13px; border-bottom: 1px solid var(--beach-rule); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-shell-list-note span { font-family: var(--beach-serif); font-style: italic; text-transform: none; letter-spacing: 0; }
+.beach-shell-list { list-style: none; margin: 0; padding: 0; }
+.beach-shell-row { width: 100%; display: flex; align-items: center; gap: var(--beach-row-gap); padding: 19px var(--beach-gutter); text-align: left; background: none; border: 0; border-bottom: 1px solid var(--beach-rule); transition: background-color var(--beach-duration) var(--beach-ease); }
+.beach-shell-row:hover { background: var(--beach-accent-wash); }
+.beach-shell-row[data-selected='true'] { background: var(--beach-accent-wash); box-shadow: inset 3px 0 0 var(--beach-accent); }
+.beach-shell-row-pin { flex: none; display: grid; place-items: center; width: 26px; }
+.beach-shell-row-copy { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+.beach-shell-row-copy strong { font: 600 var(--beach-row-title)/1.25 var(--beach-serif); letter-spacing: -.025em; }
+.beach-shell-row-copy > span { font-size: 11px; color: var(--beach-muted); line-height: 1.45; }
+.beach-shell-row-status { color: var(--beach-ink); }
+/* Colour repeats the pin, never replaces it: the label is always spelled out. */
+.beach-shell-row-status[data-state='advisory'] { color: #92580a; }
+.beach-shell-row-status[data-state='closed'] { color: #a81f1f; }
+.beach-shell-row-status[data-state='unknown'], .beach-shell-row-status[data-state='offseason'] { color: var(--beach-muted); }
+.beach-shell-row-arrow { color: var(--beach-accent); flex: none; opacity: 0; transform: translateX(-4px); transition: opacity var(--beach-duration) var(--beach-ease), transform var(--beach-duration) var(--beach-ease); }
+.beach-shell-row:hover .beach-shell-row-arrow, .beach-shell-row:focus-visible .beach-shell-row-arrow { opacity: 1; transform: none; }
+
+.beach-shell-empty { padding: 36px 25px; color: var(--beach-muted); }
+.beach-shell-empty svg { color: var(--beach-accent); }
+.beach-shell-empty h3 { font: 500 27px var(--beach-serif); margin: 15px 0 8px; color: var(--beach-ink); }
+.beach-shell-empty p { font-size: 13px; line-height: 1.7; margin: 0; }
+.beach-shell-empty button { margin-top: 18px; min-height: 44px; padding: 0 16px; border: 1px solid var(--beach-accent); border-radius: 4px; color: var(--beach-accent); background: transparent; font-size: 12px; }
+.beach-shell-empty button:hover { background: var(--beach-accent-wash); }
+
+.beach-shell-footer { padding: 14px var(--beach-gutter); border-top: 1px solid var(--beach-rule); background: var(--beach-bg); flex: none; }
+.beach-shell-footer p { margin: 0; font-size: 10px; line-height: 1.6; color: var(--beach-muted); }
+.beach-shell-footer p + p { margin-top: 7px; }
+.beach-shell-footer strong { color: var(--beach-ink); font-weight: 500; }
+
+/* The phone-only control that trades map height for list height. */
+.beach-shell-sheet-toggle { display: none; }
+
+@keyframes beach-shell-drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+
+@media (min-width: 1500px) {
+  .beach-shell-workspace { grid-template-columns: 420px minmax(0, 1fr); }
+  .beach-shell { --beach-gutter: 28px; }
+  .beach-shell-row { padding-top: 22px; padding-bottom: 22px; }
+}
+
+@media (max-width: 1100px) {
+  .beach-shell-edition { display: none; }
+  .beach-shell-toolbar { gap: 12px; }
+  .beach-shell-search { flex-basis: 300px; }
+  .beach-shell-workspace { grid-template-columns: 330px minmax(0, 1fr); }
+  .beach-shell-list-note span { display: none; }
+}
+
+@media (max-width: 760px) {
+  .beach-shell { --beach-gutter: 18px; }
+  .beach-shell-header { padding: max(12px, env(safe-area-inset-top)) 16px 8px; }
+  .beach-shell-masthead { gap: 8px; padding-bottom: 12px; }
+  .beach-shell-brand { gap: 9px; }
+  .beach-shell-brand-mark { width: 24px; }
+  .beach-shell-brand h1 { font-size: clamp(23px, 5.5vw, 32px); }
+  .beach-shell-eyebrow { font-size: 8px; letter-spacing: .12em; }
+  .beach-shell-toolbar { display: block; margin-top: 10px; }
+  .beach-shell-search { min-height: 44px; }
+  /* 16px keeps iOS from zooming the viewport on focus. */
+  .beach-shell-search input { font-size: 16px; }
+  .beach-shell-filters { margin: 6px -3px 0; }
+  .beach-shell-filters button { min-height: 38px; padding: 0 11px; font-size: 11px; }
+
+  /* In flow, not a modal: the map stays interactive above the results. */
+  .beach-shell-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(130px, 1fr) minmax(0, 44%); }
+  .beach-shell[data-expanded='true'] .beach-shell-workspace { grid-template-rows: minmax(90px, 1fr) minmax(0, 66%); }
+  .beach-shell-map { grid-column: 1; grid-row: 1; }
+  .beach-shell-key { left: auto; right: 12px; top: 12px; bottom: auto; z-index: 2; max-width: min(270px, calc(100% - 24px)); }
+  .beach-shell-key-content { max-height: 28dvh; }
+  .beach-shell-map-failed { padding: 18px; gap: 7px; }
+  .beach-shell-map-failed h2 { font-size: 19px; }
+  .beach-shell-map-failed p { font-size: 12px; }
+
+  .beach-shell-panel { grid-column: 1; grid-row: 2; border: 0; border-top: 1px solid var(--beach-rule); z-index: 1; }
+  .beach-shell-sheet-toggle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 42px; flex: none; color: var(--beach-muted); background: none; border: 0; }
+  .beach-shell-handle { width: 34px; height: 3px; background: var(--beach-rule); border-radius: 3px; }
+  .beach-shell-sheet-toggle > span:last-child { display: flex; align-items: center; gap: 5px; font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
+  .beach-shell-sheet-toggle[aria-expanded='false'] svg { transform: rotate(180deg); }
+  .beach-shell-panel-heading { padding: 0 var(--beach-gutter) 10px; }
+  .beach-shell-panel-heading h2 { font-size: 22px; }
+  .beach-shell-list-note { padding-bottom: 10px; }
+  .beach-shell-row { padding: 14px var(--beach-gutter); }
+  .beach-shell-row-arrow { opacity: 1; transform: none; }
+  .beach-shell-footer { padding: 8px var(--beach-gutter) max(8px, env(safe-area-inset-bottom)); }
+  .beach-shell-footer p { font-size: 9px; }
+  .beach-shell-footer p + p { margin-top: 3px; }
+}
+
+/* A landscape phone has no room for the masthead furniture. */
+@media (max-height: 600px) and (max-width: 760px) {
+  .beach-shell-header { padding-top: 8px; }
+  .beach-shell-eyebrow, .beach-shell-list-note { display: none; }
+  .beach-shell-masthead { padding-bottom: 8px; }
+  .beach-shell-workspace { grid-template-rows: minmax(80px, 1fr) minmax(0, 50%); }
+  .beach-shell-footer { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beach-shell *, .beach-shell *::before, .beach-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .beach-shell-row-arrow { opacity: 1; transform: none; }
+}

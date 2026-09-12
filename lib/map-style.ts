@@ -67,6 +67,19 @@ export const GLOBE_VIEW = {
   bearing: 0,
 }
 
+/**
+ * Opening regional view that frames the entire Nova Scotia coastline.
+ * Replaces the globe intro as the initial map state when the cinematic
+ * entry sequence is not needed.
+ */
+export const NOVA_SCOTIA_VIEW = {
+  longitude: -63.2,
+  latitude: 45.1,
+  zoom: 6.2,
+  pitch: 35,
+  bearing: 0,
+}
+
 /** Where the globe intro lands. Same numbers as the mockup's `flyHalifax()`. */
 export const HALIFAX_VIEW = {
   center: [-63.58, 44.66] as [number, number],
