@@ -1,0 +1,220 @@
+import { HALIFAX_TZ } from '../flags'
+import type { ReportsEnv } from '../config'
+import type {
+  HeaderReader,
+  InsertReportInput,
+  InsertReportOutcome,
+  ReportFlagRow,
+  ReportPhotoStorage,
+  ReportStore,
+  TurnstileVerdict,
+  TurnstileVerifier,
+} from '../types'
+import type { PhotoType } from '../validate'
+
+export const STRONG_SALT = 'test-salt-0123456789abcdef0123456789abcdef'
+
+export const ENABLED_TEST_ENV: ReportsEnv = {
+  REPORTS_ENABLED: 'true',
+  TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
+  REPORT_IP_SALT: STRONG_SALT,
+  SUPABASE_URL: 'http://localhost:54321',
+  SUPABASE_SERVICE_ROLE_KEY: 'service-role-test',
+  VERCEL_ENV: 'preview',
+  NODE_ENV: 'test',
+}
+export const PRODUCTION_TEST_KEY_ENV: ReportsEnv = {
+  ...ENABLED_TEST_ENV,
+  VERCEL_ENV: 'production',
+  NODE_ENV: 'production',
+}
+export const PRODUCTION_REAL_ENV: ReportsEnv = {
+  ...PRODUCTION_TEST_KEY_ENV,
+  TURNSTILE_SECRET_KEY: '0xREALSECRETfixturefixturefixturefixture',
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: '0xREALSITEfixturefixture',
+}
+
+export function createHeaderReader(record: Record<string, string>): HeaderReader {
+  const lowercased = new Map(Object.entries(record).map(([key, value]) => [key.toLowerCase(), value]))
+  return {
+    get(name: string) {
+      return lowercased.get(name.toLowerCase()) ?? null
+    },
+  }
+}
+
+export interface FakeVerifier extends TurnstileVerifier {
+  calls: Array<{ token: string; remoteIp: string | null }>
+}
+
+export function createFakeVerifier(
+  verdict: TurnstileVerdict | ((token: string) => TurnstileVerdict),
+): FakeVerifier {
+  const calls: Array<{ token: string; remoteIp: string | null }> = []
+  return {
+    calls,
+    async verify(input) {
+      calls.push({ token: input.token, remoteIp: input.remoteIp })
+      return typeof verdict === 'function' ? verdict(input.token) : verdict
+    },
+  }
+}
+
+// ---- Halifax-day bookkeeping, mirroring the SQL view for in-memory assertions -------------
+
+/**
+ * An instant's Halifax calendar date as YYYY-MM-DD (en-CA formats that way).
+ * "Since Halifax midnight" is just "same calendar day", so comparing day
+ * strings needs no offset arithmetic and no DST special-casing.
+ *
+ * Phase 2 already ships exactly this as `halifaxToday` in `lib/dates.ts`. It is
+ * duplicated here only because Phase 5 must test standalone on a branch where
+ * that file does not exist; the integration owner deletes this and imports it.
+ */
+function halifaxDay(instant: Date): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: HALIFAX_TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant)
+}
+
+export interface StoredReport {
+  id: number
+  beachId: string
+  sign: string
+  ipHash: string
+  photoPath: string | null
+  createdAt: Date
+}
+
+export interface MemoryReportStore extends ReportStore {
+  rows: StoredReport[]
+  failNextInsert: Error | null
+  failNextAttach: Error | null
+  /** Mirrors the SQL view for assertions: distinct ipHash per (beach, sign) since Halifax midnight of `now()`. */
+  flagsToday(): ReportFlagRow[]
+}
+
+export function createMemoryReportStore(opts?: { now?: () => Date }): MemoryReportStore {
+  const now = opts?.now ?? (() => new Date())
+  let nextId = 1
+  const rows: StoredReport[] = []
+
+  const store: MemoryReportStore = {
+    rows,
+    failNextInsert: null,
+    failNextAttach: null,
+
+    async insert(input: InsertReportInput): Promise<InsertReportOutcome> {
+      if (store.failNextInsert) {
+        const error = store.failNextInsert
+        store.failNextInsert = null
+        throw error
+      }
+
+      const current = now()
+      const throttledAfter = current.getTime() - input.throttleWindowSeconds * 1000
+      const alreadyReported = rows.some(
+        (row) => row.ipHash === input.ipHash && row.beachId === input.beachId && row.createdAt.getTime() > throttledAfter,
+      )
+      if (alreadyReported) {
+        return { outcome: 'throttled' }
+      }
+
+      const id = nextId++
+      rows.push({
+        id,
+        beachId: input.beachId,
+        sign: input.sign,
+        ipHash: input.ipHash,
+        photoPath: null,
+        createdAt: current,
+      })
+
+      const today = halifaxDay(current)
+      const people = new Set(
+        rows
+          .filter((row) => row.beachId === input.beachId && row.sign === input.sign && halifaxDay(row.createdAt) === today)
+          .map((row) => row.ipHash),
+      ).size
+
+      return { outcome: 'inserted', id, people }
+    },
+
+    async attachPhoto(id: number, photoPath: string): Promise<void> {
+      if (store.failNextAttach) {
+        const error = store.failNextAttach
+        store.failNextAttach = null
+        throw error
+      }
+      const row = rows.find((r) => r.id === id)
+      if (row) row.photoPath = photoPath
+    },
+
+    flagsToday(): ReportFlagRow[] {
+      const current = now()
+      const today = halifaxDay(current)
+      const groups = new Map<string, { beachId: string; sign: string; ipHashes: Set<string>; lastAt: Date }>()
+
+      for (const row of rows) {
+        if (halifaxDay(row.createdAt) !== today) continue
+        const key = `${row.beachId}|${row.sign}`
+        const group = groups.get(key) ?? { beachId: row.beachId, sign: row.sign, ipHashes: new Set<string>(), lastAt: row.createdAt }
+        group.ipHashes.add(row.ipHash)
+        if (row.createdAt.getTime() > group.lastAt.getTime()) group.lastAt = row.createdAt
+        groups.set(key, group)
+      }
+
+      const result: ReportFlagRow[] = []
+      for (const group of groups.values()) {
+        if (group.ipHashes.size >= 2) {
+          result.push({
+            beach_id: group.beachId,
+            sign: group.sign,
+            people: group.ipHashes.size,
+            last_at: group.lastAt.toISOString(),
+          })
+        }
+      }
+      return result
+    },
+  }
+
+  return store
+}
+
+export interface MemoryPhotoStorage extends ReportPhotoStorage {
+  objects: Map<string, { bytes: Uint8Array; contentType: PhotoType }>
+  failNextUpload: Error | null
+  removed: string[]
+}
+
+export function createMemoryPhotoStorage(): MemoryPhotoStorage {
+  const objects = new Map<string, { bytes: Uint8Array; contentType: PhotoType }>()
+  const removed: string[] = []
+
+  const storage: MemoryPhotoStorage = {
+    objects,
+    removed,
+    failNextUpload: null,
+
+    async upload(input: { path: string; bytes: Uint8Array; contentType: PhotoType }): Promise<void> {
+      if (storage.failNextUpload) {
+        const error = storage.failNextUpload
+        storage.failNextUpload = null
+        throw error
+      }
+      objects.set(input.path, { bytes: input.bytes, contentType: input.contentType })
+    },
+
+    async remove(path: string): Promise<void> {
+      objects.delete(path)
+      removed.push(path)
+    },
+  }
+
+  return storage
+}
