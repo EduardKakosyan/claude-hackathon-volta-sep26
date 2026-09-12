@@ -282,7 +282,7 @@ export function BeachApp(data: BeachAppProps) {
           </footer>
         </aside>
 
-        <Legend className="absolute bottom-[calc(46dvh+0.75rem)] left-3 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-xs lg:bottom-3" />
+        <Legend className="hidden md:block absolute bottom-3 left-3 z-10 max-w-xs" />
       </div>
     </main>
   )
