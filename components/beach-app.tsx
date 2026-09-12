@@ -1,6 +1,5 @@
 'use client'
 
-import { SearchIcon, XIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
@@ -9,7 +8,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BeachDetail } from '@/components/beach-detail'
 import { BeachList } from '@/components/beach-list'
 import { BeachToolbar } from '@/components/beach-toolbar'
-import { SearchBox } from '@/components/discovery/search-box'
 import { Legend } from '@/components/legend'
 import { MapKey } from '@/components/map-key'
 import { MapUnavailable } from '@/components/map-unavailable'
@@ -62,7 +60,6 @@ export function BeachApp(data: BeachAppProps) {
   const [isPanelExpanded, setPanelExpanded] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapAttempt, setMapAttempt] = useState(0)
-  const [searchOpen, setSearchOpen] = useState(false)
 
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -93,7 +90,6 @@ export function BeachApp(data: BeachAppProps) {
       lastSelectedId.current = id
       setSelectedId(id)
       panelRef.current?.scrollTo({ top: 0 })
-      setSearchOpen(false)
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id }))
       }
@@ -285,26 +281,6 @@ export function BeachApp(data: BeachAppProps) {
             <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
           </footer>
         </aside>
-
-        <button
-          type="button"
-          onClick={() => setSearchOpen((v) => !v)}
-          aria-pressed={searchOpen}
-          aria-label={searchOpen ? 'Close search' : 'Quick search'}
-          className="absolute bottom-[calc(46dvh+4rem)] left-3 z-20 grid size-11 place-items-center rounded-xl bg-white/92 text-neutral-700 shadow-lg backdrop-blur-sm hover:bg-white lg:bottom-16 lg:left-3"
-        >
-          {searchOpen ? <XIcon className="size-4" /> : <SearchIcon className="size-4" />}
-        </button>
-
-        {searchOpen ? (
-          <SearchBox
-            beaches={beaches}
-            status={pinState}
-            onSelect={(id) => selectBeach(id, 'map')}
-            autoFocus
-            className="absolute bottom-[calc(46dvh+7rem)] left-3 z-20 right-3 lg:bottom-[calc(4rem+3.5rem)] lg:right-auto lg:w-96"
-          />
-        ) : null}
 
         <Legend className="absolute bottom-[calc(46dvh+0.75rem)] left-3 z-10 max-w-[calc(100%-1.5rem)] sm:max-w-xs lg:bottom-3" />
       </div>
