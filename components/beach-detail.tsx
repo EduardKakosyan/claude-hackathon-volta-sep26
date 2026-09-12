@@ -50,7 +50,7 @@ export function BeachDetail({
   for (let d = historyFrom; d <= historyTo; d = addDays(d, 1)) cells.push(d)
 
   return (
-    <article aria-label={beach.name} className="flex min-h-0 flex-col gap-4 overflow-y-auto">
+    <article aria-label={beach.name} className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto overscroll-contain">
       <header className="flex items-start gap-2">
         <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back to the list">
           <ArrowLeft />
