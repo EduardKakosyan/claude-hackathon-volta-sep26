@@ -1,12 +1,14 @@
 import { getWriter } from '@/lib/db/client'
 import { seedRefresh } from '@/lib/ingest/refresh'
+import { refreshLive } from '@/lib/ingest/refresh-live'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/refresh — the only thing that writes to the database.
  * 401 without the cron secret; 503 when the server has no database to write to.
- * Seeds only for now; the live ingest is called from here once it exists.
+ * Seeds first (idempotent), then reads the three live sources and resolves
+ * every roster beach it can attribute.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET
@@ -20,7 +22,9 @@ export async function GET(req: Request) {
   }
 
   try {
-    return Response.json(await seedRefresh(writer))
+    const seeded = await seedRefresh(writer)
+    const live = await refreshLive({ writer, log: console.warn })
+    return Response.json({ ...seeded, live })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     return Response.json({ error: message }, { status: 500 })
