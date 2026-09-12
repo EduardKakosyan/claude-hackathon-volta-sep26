@@ -1,168 +1,166 @@
 'use client'
 
-import { ArrowUpRight, Navigation, X } from 'lucide-react'
-import { useEffect, useId, useRef } from 'react'
+import { ArrowLeft, ExternalLink } from 'lucide-react'
+import type { ReactNode } from 'react'
 
-import { StatusPin } from '@/components/status-pin'
-import {
-  authorityName,
-  isAdvisoryBasedAuthority,
-  statusPresentation,
-  type PinState,
-} from '@/lib/beach-status'
+import { StatusChip } from '@/components/status-chip'
+import { Button } from '@/components/ui/button'
+import { plainEnglish, SOURCE_SAYS } from '@/lib/copy'
+import { addDays, formatDay, formatDayShort, formatPosted } from '@/lib/dates'
 import type { Beach } from '@/lib/seed/beaches'
-
-import './beach-detail.css'
+import type { StatusDayView, StatusView } from '@/lib/status'
+import { cn } from '@/lib/utils'
 
 export interface BeachDetailProps {
   beach: Beach
-  state: PinState
-  onClose: () => void
+  status: StatusView | undefined
+  /** This beach's rows in the history window, oldest first. */
+  history: StatusDayView[]
+  historyFrom: string
+  historyTo: string
+  replayDay?: string
+  onBack: () => void
+  /** Slot for Directions / Share buttons. */
+  actions?: ReactNode
+  /** Slot for the crowd-report line and button. */
+  reports?: ReactNode
 }
 
-const PROVINCIAL_ADVISORIES_URL = 'https://parks.novascotia.ca/advisories'
+const CELL: Record<string, string> = {
+  open: 'bg-status-open',
+  advisory: 'bg-status-advisory',
+  closed: 'bg-status-closed',
+  offseason: 'bg-status-offseason',
+}
 
-/**
- * Presentation only: it is handed a state and never derives one. Every sentence it
- * shows about what a status means comes from `lib/beach-status.ts`, so the pin, the
- * row, the map key and this view cannot disagree.
- */
-export function BeachDetail({ beach, state, onClose }: BeachDetailProps) {
-  const headingId = useId()
-  const headingRef = useRef<HTMLHeadingElement>(null)
-  const provincial = isAdvisoryBasedAuthority(beach.authority)
-  const { label, explanation, caveat } = statusPresentation(state, beach.authority)
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${beach.lat},${beach.lon}`)}`
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true })
-  }, [beach.id])
+export function BeachDetail({
+  beach,
+  status,
+  history,
+  historyFrom,
+  historyTo,
+  replayDay,
+  onBack,
+  actions,
+  reports,
+}: BeachDetailProps) {
+  const state = status?.state ?? 'unknown'
+  const byDay = new Map(history.map((r) => [r.day, r]))
+  const cells: string[] = []
+  for (let d = historyFrom; d <= historyTo; d = addDays(d, 1)) cells.push(d)
 
   return (
-    <section
-      className="beach-detail"
-      aria-labelledby={headingId}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && !event.defaultPrevented) {
-          event.stopPropagation()
-          onClose()
-        }
-      }}
-    >
-      <header className="beach-detail__header">
-        <p className="beach-detail__eyebrow">Beach field notes / {beach.region}</p>
-        <button
-          className="beach-detail__close"
-          type="button"
-          onClick={onClose}
-          aria-label="Close beach details"
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
+    <article aria-label={beach.name} className="flex min-h-0 flex-col gap-4 overflow-y-auto">
+      <header className="flex items-start gap-2">
+        <Button variant="ghost" size="icon-sm" onClick={onBack} aria-label="Back to the list">
+          <ArrowLeft />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-base font-semibold text-neutral-900">{beach.name}</h2>
+          <p className="truncate text-xs text-neutral-500">
+            {beach.waterBody} · {beach.community}
+          </p>
+        </div>
+        <StatusChip state={state} className="mt-1" />
       </header>
 
-      <div className="beach-detail__title-block">
-        <h2 id={headingId} ref={headingRef} tabIndex={-1}>
-          {beach.name}
-        </h2>
-        <p className="beach-detail__location">{beach.waterBody}</p>
-      </div>
-
-      <div className="beach-detail__status" data-state={state}>
-        <div className="beach-detail__status-heading">
-          <span aria-hidden="true">
-            <StatusPin state={state} hollow={provincial} />
-          </span>
-          <h3>{label}</h3>
-        </div>
-        <p>{explanation}</p>
-        {caveat && <p className="beach-detail__caveat">{caveat}</p>}
-      </div>
-
-      <section className="beach-detail__section" aria-label="Official evidence">
-        <p className="beach-detail__eyebrow">Know the source</p>
-        <h3>{authorityName(beach.authority)}</h3>
-        <p>
-          Exact source wording, posting date and last-confirmed time are not available in this
-          view. The link below opens the official page, not a quoted status report.
-        </p>
-        <a
-          className="beach-detail__source"
-          href={beach.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {provincial ? 'Official park page' : 'Official HRM beach status'}
-          <ArrowUpRight size={16} aria-hidden="true" />
-          <span className="beach-detail__sr-only"> (opens in a new tab)</span>
-        </a>
-        {provincial && (
-          <a
-            className="beach-detail__source"
-            href={PROVINCIAL_ADVISORIES_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Provincial park advisories <ArrowUpRight size={16} aria-hidden="true" />
-            <span className="beach-detail__sr-only"> (opens in a new tab)</span>
-          </a>
+      <section className="rounded-xl border border-neutral-200 bg-white p-3">
+        {status?.kind === 'live' ? (
+          <>
+            <p className="text-xs font-semibold text-neutral-500">{SOURCE_SAYS[status.source]}</p>
+            {status.verbatim ? (
+              <p className="mt-1 text-sm font-medium text-neutral-900">&ldquo;{status.verbatim}&rdquo;</p>
+            ) : null}
+            <p className="mt-1 text-xs text-neutral-500">
+              {status.postedAt
+                ? `Posted ${formatPosted(status.postedAt)}`
+                : `Confirmed ${formatPosted(status.confirmedAt)}`}
+            </p>
+            <p className="mt-2 text-sm text-neutral-800">{plainEnglish(status)}</p>
+            <a
+              href={status.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-700 underline-offset-2 hover:underline"
+            >
+              Open the source page <ExternalLink className="size-3" />
+            </a>
+          </>
+        ) : status?.kind === 'replay' ? (
+          <>
+            <p className="text-xs font-semibold text-neutral-500">
+              Replayed status for {formatDay(status.day)}
+            </p>
+            <p className="mt-2 text-sm text-neutral-800">{plainEnglish(status)}</p>
+            <p className="mt-2 text-xs text-neutral-500">
+              {status.basis === 'verified'
+                ? 'Reconstructed from dated news coverage.'
+                : status.basis === 'inferred'
+                  ? 'Reconstruction: no notice was found for this beach that day.'
+                  : 'Recorded by this app on the day.'}
+              {status.note ? ` ${status.note}` : ''}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs font-semibold text-neutral-500">
+              {replayDay ? `No record for ${formatDay(replayDay)}` : 'No status read yet'}
+            </p>
+            <p className="mt-2 text-sm text-neutral-800">
+              {replayDay
+                ? 'This app has no status for this beach on that day.'
+                : 'No government source has been read for this beach yet, so no colour is shown.'}
+            </p>
+          </>
         )}
       </section>
 
-      <section className="beach-detail__section" aria-label="Beach facts">
-        <p className="beach-detail__eyebrow">Plan your visit</p>
-        <dl className="beach-detail__facts">
-          <div>
-            <dt>Water</dt>
-            <dd>{beach.water === 'fresh' ? 'Freshwater' : 'Saltwater'}</dd>
-          </div>
-          <div>
-            <dt>Region</dt>
-            <dd>{beach.region}</dd>
-          </div>
-          <div>
-            <dt>Published supervision</dt>
-            <dd>{beach.supervision}</dd>
-          </div>
-        </dl>
-        <p className="beach-detail__note">
-          Schedule from the monitored-beach roster, not confirmation that a lifeguard is on duty
-          now.
+      {reports}
+
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+        <dt className="text-neutral-500">Lifeguards</dt>
+        <dd className="text-neutral-800">{beach.supervision}</dd>
+        <dt className="text-neutral-500">Water</dt>
+        <dd className="text-neutral-800">
+          {beach.water === 'fresh' ? 'Fresh water (E. coli)' : 'Salt water (enterococci)'}
+        </dd>
+        <dt className="text-neutral-500">Run by</dt>
+        <dd className="text-neutral-800">
+          {beach.authority === 'hrm' ? 'Halifax Regional Municipality' : 'Nova Scotia Parks'}
+        </dd>
+      </dl>
+
+      <section aria-label="Daily status strip">
+        <p className="mb-1 text-xs font-semibold text-neutral-500">
+          {formatDayShort(historyFrom)} – {formatDayShort(historyTo)}
         </p>
+        <ol className="grid grid-cols-14 gap-0.5">
+          {cells.map((d) => {
+            const row = byDay.get(d)
+            return (
+              <li
+                key={d}
+                title={`${formatDayShort(d)}: ${row?.state ?? 'no record'}`}
+                className={cn(
+                  'h-3 rounded-sm',
+                  row ? CELL[row.state] : 'border border-dashed border-status-unknown bg-white',
+                )}
+              />
+            )
+          })}
+        </ol>
       </section>
 
-      <section className="beach-detail__section beach-detail__unavailable" aria-label="Unavailable data">
-        <h3>No readings to show</h3>
-        <p>
-          Sample measurements and 14-day history are unavailable in this view.
-          {state === 'offseason' ? ' A last in-season status is not available either.' : ''} We
-          leave them out rather than estimate.
-        </p>
-      </section>
+      <a
+        href={beach.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1 text-xs text-neutral-500 underline-offset-2 hover:underline"
+      >
+        Government page for this beach <ExternalLink className="size-3" />
+      </a>
 
-      <footer className="beach-detail__footer">
-        <a
-          className="beach-detail__directions"
-          href={directionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Navigation size={17} aria-hidden="true" /> Get directions
-          <ArrowUpRight size={16} aria-hidden="true" />
-          <span className="beach-detail__sr-only">
-            {' '}
-            to {beach.name} in Google Maps (opens in a new tab)
-          </span>
-        </a>
-        <p className="beach-detail__note">
-          Directions use the roster map point; it may be a park entrance rather than a swimming
-          access point.
-        </p>
-        <p className="beach-detail__safety">
-          Not an official government service. Always follow posted signs and lifeguard
-          instructions.
-        </p>
-      </footer>
-    </section>
+      {actions ? <div className="flex gap-2">{actions}</div> : null}
+    </article>
   )
 }

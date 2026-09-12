@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeachApp } from '@/components/beach-app'
-import { BEACHES } from '@/lib/seed/beaches'
+import { BEACHES, type BeachState } from '@/lib/seed/beaches'
+import type { PageData } from '@/lib/db/queries'
+import type { LiveStatus, StatusView } from '@/lib/status'
 
 interface MockBeachMapProps {
   beaches: typeof BEACHES
@@ -10,7 +12,19 @@ interface MockBeachMapProps {
   onFatalError: (error: string) => void
 }
 
-// Mock the dynamic BeachMap
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  }),
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 vi.mock('@/components/beach-map', () => ({
   default: vi.fn(({ beaches, onSelect, onFatalError }: MockBeachMapProps) => (
     <div data-testid="fake-beach-map">
@@ -33,39 +47,59 @@ vi.mock('@/components/beach-map', () => ({
   )),
 }))
 
-describe('BeachApp', () => {
-  const emptyStatus = {}
+function makeLiveStatus(beachId: string, state: BeachState): LiveStatus {
+  return {
+    kind: 'live',
+    beachId,
+    state,
+    source: 'hrm',
+    verbatim: null,
+    sourceUrl: 'https://example.com',
+    postedAt: null,
+    confirmedAt: '2026-07-15T12:00:00Z',
+  }
+}
 
+function makePageData(overrides: Partial<PageData> = {}): PageData {
+  return {
+    beaches: BEACHES,
+    status: {},
+    health: [],
+    history: {},
+    days: [],
+    historyFrom: '2026-09-01',
+    historyTo: '2026-09-14',
+    storeKind: 'seed',
+    ...overrides,
+  }
+}
+
+describe('BeachApp', () => {
   beforeEach(() => {
-    // Reset focus between tests
     document.body.innerHTML = ''
   })
 
   it('renders the whole roster (35) in the directory on first paint, and reports "35 of 35 beaches"', () => {
-    render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
-    // Look for the count status text specifically
     expect(screen.getByText('35 of 35 beaches')).toBeInTheDocument()
-    // Check for beach rows with data-beach-id
     const beachRows = document.querySelectorAll('[data-beach-id]')
     expect(beachRows).toHaveLength(35)
   })
 
   it('typing a query narrows both the directory and the roster handed to the mocked map', async () => {
     const user = userEvent.setup()
-    render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const searchInput = screen.getByLabelText(/search by beach/i)
     await user.type(searchInput, 'sand')
 
     await waitFor(() => {
       const beachRows = document.querySelectorAll('[data-beach-id]')
-      // Sandy Beach, Lunenburg Beach, etc. should be present
       expect(beachRows.length).toBeGreaterThan(0)
       expect(beachRows.length).toBeLessThan(35)
     })
 
-    // The map should also receive the filtered list
     const mapButtons = screen.getAllByTestId(/^map-button-/)
     expect(mapButtons.length).toBeGreaterThan(0)
     expect(mapButtons.length).toBeLessThan(35)
@@ -73,38 +107,33 @@ describe('BeachApp', () => {
 
   it('a status filter narrows both the same way', async () => {
     const user = userEvent.setup()
-    const status = {
-      [BEACHES[0].id]: 'open' as const,
-      [BEACHES[1].id]: 'advisory' as const,
-      // rest unknown
+    const status: Record<string, StatusView | undefined> = {
+      [BEACHES[0].id]: makeLiveStatus(BEACHES[0].id, 'open'),
+      [BEACHES[1].id]: makeLiveStatus(BEACHES[1].id, 'advisory'),
     }
-    const { container } = render(<BeachApp beaches={BEACHES} status={status} />)
+    const { container } = render(<BeachApp {...makePageData({ status })} />)
 
-    // Find the advisory filter button more precisely
     const filterGroup = container.querySelector('[role="group"]')
     const buttons = filterGroup?.querySelectorAll('button') || []
-    // The advisory button should be the 3rd button (0=all, 1=open, 2=advisory)
     const advisoryButton = buttons[2] as HTMLButtonElement
     await user.click(advisoryButton)
 
     await waitFor(() => {
       const beachRows = document.querySelectorAll('[data-beach-id]')
-      // Should only show the advisory beach
       expect(beachRows).toHaveLength(1)
     })
   })
 
   it('combining query + filter works', async () => {
     const user = userEvent.setup()
-    const status: Record<string, 'open' | 'advisory' | 'closed' | 'offseason' | 'unknown'> = Object.fromEntries(
-      BEACHES.map((b, i) => [b.id, i % 2 === 0 ? 'open' : 'advisory']),
+    const status: Record<string, StatusView | undefined> = Object.fromEntries(
+      BEACHES.map((b, i) => [b.id, makeLiveStatus(b.id, i % 2 === 0 ? 'open' : 'advisory')]),
     )
-    const { container } = render(<BeachApp beaches={BEACHES} status={status} />)
+    const { container } = render(<BeachApp {...makePageData({ status })} />)
 
     const searchInput = screen.getByLabelText(/search by beach/i)
     await user.type(searchInput, 'beach')
 
-    // Find the advisory filter button more precisely
     const filterGroup = container.querySelector('[role="group"]')
     const buttons = filterGroup?.querySelectorAll('button') || []
     const advisoryButton = buttons[2] as HTMLButtonElement
@@ -119,7 +148,7 @@ describe('BeachApp', () => {
 
   it('a query with no matches shows the empty state, and its "Show all beaches" button restores the full roster and returns focus to the search input', async () => {
     const user = userEvent.setup()
-    render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const searchInput = screen.getByLabelText(/search by beach/i)
     await user.type(searchInput, 'xyznonexistent')
@@ -138,55 +167,49 @@ describe('BeachApp', () => {
     })
   })
 
-  it('selecting a beach from a list row shows the detail view, and the detail heading receives focus', async () => {
+  it('selecting a beach from a list row shows the detail view', async () => {
     const user = userEvent.setup()
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const beachRows = document.querySelectorAll('[data-beach-id]')
     await user.click(beachRows[0] as HTMLButtonElement)
 
     await waitFor(() => {
-      // The detail view heading should be focused
-      const detailHeading = container.querySelector('.beach-detail__title-block h2')
-      expect(detailHeading).toHaveFocus()
+      expect(screen.queryByRole('article')).toBeInTheDocument()
     })
   })
 
-  it('closing the detail with the close button returns focus to the list row it was opened from', async () => {
+  it('closing the detail with the back button returns focus to the list row it was opened from', async () => {
     const user = userEvent.setup()
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const beachRows = document.querySelectorAll('[data-beach-id]')
-
     await user.click(beachRows[0] as HTMLButtonElement)
 
-    // Wait for detail to appear
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).toBeInTheDocument()
+      expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
-    const closeButton = screen.getByRole('button', { name: /close beach details/i })
-    await user.click(closeButton)
+    const backButton = screen.getByRole('button', { name: /back to beaches/i })
+    await user.click(backButton)
 
-    // Wait for detail to close
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).not.toBeInTheDocument()
+      expect(screen.queryByRole('article')).not.toBeInTheDocument()
     })
 
-    // Verify the list is still there with the first beach
     const updatedRows = document.querySelectorAll('[data-beach-id]')
     expect(updatedRows.length).toBeGreaterThan(0)
   })
 
   it('closing the detail after selecting from the (mocked) map returns focus to the search input', async () => {
     const user = userEvent.setup()
-    render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const mapButton = screen.getByTestId(`map-button-${BEACHES[0].id}`)
     await user.click(mapButton)
 
-    const closeButton = screen.getByRole('button', { name: /close beach details/i })
-    await user.click(closeButton)
+    const backButton = screen.getByRole('button', { name: /back to beaches/i })
+    await user.click(backButton)
 
     const searchInput = screen.getByLabelText(/search by beach/i)
     await waitFor(() => {
@@ -196,58 +219,58 @@ describe('BeachApp', () => {
 
   it('pressing Escape while the detail is open closes it and returns to the directory', async () => {
     const user = userEvent.setup()
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const beachRows = document.querySelectorAll('[data-beach-id]')
     await user.click(beachRows[0] as HTMLButtonElement)
 
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).toBeInTheDocument()
+      expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
+    const backButton = screen.getByRole('button', { name: /back to the list/i })
+    backButton.focus()
     await user.keyboard('{Escape}')
 
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).not.toBeInTheDocument()
+      expect(screen.queryByRole('article')).not.toBeInTheDocument()
     })
   })
 
   it('changing the query while a beach is selected clears the selection', async () => {
     const user = userEvent.setup()
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const beachRows = document.querySelectorAll('[data-beach-id]')
     await user.click(beachRows[0] as HTMLButtonElement)
 
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).toBeInTheDocument()
+      expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
     const searchInput = screen.getByLabelText(/search by beach/i)
     await user.type(searchInput, 'test')
 
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).not.toBeInTheDocument()
+      expect(screen.queryByRole('article')).not.toBeInTheDocument()
     })
   })
 
   it('with an empty status record, the footer says 35 beaches have no status available and includes "Unknown does not mean open."', () => {
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    const { container } = render(<BeachApp {...makePageData()} />)
 
-    // Check footer text
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('35 beaches have no status available')
     expect(footer?.textContent).toContain('Unknown does not mean open')
   })
 
   it('with a populated status record the count matches', () => {
-    const status = {
-      [BEACHES[0].id]: 'open' as const,
-      [BEACHES[1].id]: 'advisory' as const,
-      [BEACHES[2].id]: 'closed' as const,
-      // rest unknown (3 beaches with status, 32 unknown)
+    const status: Record<string, StatusView | undefined> = {
+      [BEACHES[0].id]: makeLiveStatus(BEACHES[0].id, 'open'),
+      [BEACHES[1].id]: makeLiveStatus(BEACHES[1].id, 'advisory'),
+      [BEACHES[2].id]: makeLiveStatus(BEACHES[2].id, 'closed'),
     }
-    render(<BeachApp beaches={BEACHES} status={status} />)
+    render(<BeachApp {...makePageData({ status })} />)
 
     const footer = screen.getByText(/32 beaches have no status available/)
     expect(footer).toBeInTheDocument()
@@ -255,7 +278,7 @@ describe('BeachApp', () => {
 
   it('when the mocked map calls onFatalError, the map failure panel appears, says the failure is not a beach status, the directory is still fully usable, and "Try the map again" restores the map', async () => {
     const user = userEvent.setup()
-    const { container } = render(<BeachApp beaches={BEACHES} status={emptyStatus} />)
+    render(<BeachApp {...makePageData()} />)
 
     const failButton = screen.getByTestId('map-fail-button')
     await user.click(failButton)
@@ -265,24 +288,20 @@ describe('BeachApp', () => {
       expect(screen.getByText(/This is a problem with the map, not with any beach/)).toBeInTheDocument()
     })
 
-    // Directory should still be usable
     const beachRows = document.querySelectorAll('[data-beach-id]')
     expect(beachRows).toHaveLength(35)
 
-    // Select a beach from the list
     await user.click(beachRows[0] as HTMLButtonElement)
     await waitFor(() => {
-      expect(container.querySelector('.beach-detail')).toBeInTheDocument()
+      expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
-    // Close detail and try map again
-    const closeButton = screen.getByRole('button', { name: /close beach details/i })
-    await user.click(closeButton)
+    const backButton = screen.getByRole('button', { name: /back to beaches/i })
+    await user.click(backButton)
 
     const retryButton = screen.getByRole('button', { name: /try the map again/i })
     await user.click(retryButton)
 
-    // Map should restore
     await waitFor(() => {
       expect(screen.getByTestId('fake-beach-map')).toBeInTheDocument()
     })

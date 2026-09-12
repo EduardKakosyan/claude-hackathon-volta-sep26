@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Source_Serif_4 } from 'next/font/google'
 
 import './globals.css'
+import { baseMetadata } from '@/lib/metadata'
 
 /**
  * Two families, both self-hosted by `next/font` so neither blocks first paint:
@@ -16,11 +17,7 @@ const sourceSerif = Source_Serif_4({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: 'Is the Beach Open',
-  description:
-    'Today’s official status for every government-monitored beach in Nova Scotia, on one map.',
-}
+export const metadata: Metadata = baseMetadata()
 
 export const viewport: Viewport = {
   // The results panel sits against the home indicator on a phone.

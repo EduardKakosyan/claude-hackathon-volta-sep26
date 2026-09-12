@@ -1,0 +1,3687 @@
+<?xml version="1.0"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<id>https://notices.novascotia.ca/feeds/blue-green-algae.atom</id>
+	<title>Blue-green algae reports</title>
+	<author>
+		<name>Province of Nova Scotia</name>
+		<uri>https://novascotia.ca/</uri>
+	</author>
+	<logo>https://novascotia.ca/clf/saltire/img/nsvip-en.svg</logo>
+	<link rel="self" href="https://notices.novascotia.ca/feeds/blue-green-algae.atom"/>
+	<generator>drupal-blue-green-algae-to-atom.xslt</generator>
+	<updated>2026-09-03T14:36:28-03:00</updated>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8656</id>
+		<title>Crooked Lake, Bagnells Lake, Framboise River</title>
+		<published>2026-09-03T14:36:28-03:00</published>
+		<updated>2026-09-03T14:36:28-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-27" label="Richmond"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Crooked Lake, Bagnells Lake, Framboise River</lake>
+				<county>Richmond</county>
+				<date>2026-09-03</date>
+				<location-details>Framboise</location-details>
+				<bloom-details>Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8655</id>
+		<title>Cooks Lake</title>
+		<published>2026-09-02T15:03:49-03:00</published>
+		<updated>2026-09-02T15:03:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cooks Lake</lake>
+				<county>Halifax</county>
+				<date>2026-09-02</date>
+				<location-details>Cooks Brook</location-details>
+				<bloom-details>bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8585</id>
+		<title>Porters Lake</title>
+		<published>2026-08-26T10:32:21-03:00</published>
+		<updated>2026-08-26T10:32:21-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Porters Lake</lake>
+				<county>Halifax</county>
+				<date>2026-08-26</date>
+				<location-details>Middle Porters Lake</location-details>
+				<bloom-details>Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8584</id>
+		<title>Cranberry Lake</title>
+		<published>2026-08-26T10:31:28-03:00</published>
+		<updated>2026-08-26T10:31:28-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cranberry Lake</lake>
+				<county>Halifax</county>
+				<date>2026-08-25</date>
+				<location-details>Hubley</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8582</id>
+		<title>Piggott Lake</title>
+		<published>2026-08-25T14:47:25-03:00</published>
+		<updated>2026-08-25T14:47:25-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Piggott Lake</lake>
+				<county>Hants</county>
+				<date>2026-08-24</date>
+				<location-details>Mount Uniacke</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8417</id>
+		<title>Governor Lake</title>
+		<published>2026-08-18T09:13:20-03:00</published>
+		<updated>2026-08-18T09:13:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Governor Lake</lake>
+				<county>Halifax</county>
+				<date>2026-08-17</date>
+				<location-details>Lakeside</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8416</id>
+		<title>Uniacke Lake</title>
+		<published>2026-08-13T15:49:07-03:00</published>
+		<updated>2026-08-13T15:49:07-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Uniacke Lake</lake>
+				<county>Hants</county>
+				<date>2026-08-13</date>
+				<location-details>Mount Uniacke</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8415</id>
+		<title>Lake Cady</title>
+		<published>2026-08-10T15:54:35-03:00</published>
+		<updated>2026-08-10T15:54:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Cady</lake>
+				<county>Annapolis</county>
+				<date>2026-08-10</date>
+				<location-details>Clementsvale</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8414</id>
+		<title>Hubley Mill Lake</title>
+		<published>2026-08-05T18:24:57-03:00</published>
+		<updated>2026-08-05T18:24:57-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hubley Mill Lake</lake>
+				<county>Halifax</county>
+				<date>2026-08-05</date>
+				<location-details>Upper Tantallon</location-details>
+				<bloom-details>bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8405</id>
+		<title>Third Lake</title>
+		<published>2026-07-31T11:34:36-03:00</published>
+		<updated>2026-07-31T11:34:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Third Lake</lake>
+				<county>Halifax</county>
+				<date>2026-07-31</date>
+				<location-details>Windsor Junction</location-details>
+				<bloom-details>Algae Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8403</id>
+		<title>Shubenacadie Grand Lake</title>
+		<published>2026-07-28T13:04:43-03:00</published>
+		<updated>2026-07-28T13:04:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubenacadie Grand Lake</lake>
+				<county>Halifax</county>
+				<date>2026-07-28</date>
+				<location-details>Oakfield</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8402</id>
+		<title>Lake Ainslie</title>
+		<published>2026-07-27T08:46:00-03:00</published>
+		<updated>2026-07-27T08:46:00-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-22" label="Inverness"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ainslie</lake>
+				<county>Inverness</county>
+				<date>2026-07-24</date>
+				<location-details>East Lake Ainslie</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8401</id>
+		<title>Eight Island Lake</title>
+		<published>2026-07-27T08:16:15-03:00</published>
+		<updated>2026-07-27T08:16:15-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-19" label="Guysborough"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Eight Island Lake</lake>
+				<county>Guysborough</county>
+				<date>2026-07-20</date>
+				<location-details>Eight Island Lake</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8302</id>
+		<title>Medway River</title>
+		<published>2026-07-15T15:59:06-03:00</published>
+		<updated>2026-07-15T15:59:06-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Medway River</lake>
+				<county>Queens</county>
+				<date>2026-07-15</date>
+				<location-details>Charleston</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8298</id>
+		<title>Gaspereau Lake</title>
+		<published>2026-07-08T08:27:58-03:00</published>
+		<updated>2026-07-08T08:27:58-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gaspereau Lake</lake>
+				<county>Kings</county>
+				<date>2026-07-07</date>
+				<location-details>Welton Landing</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8297</id>
+		<title>Wentworth Lake</title>
+		<published>2026-07-07T11:00:14-03:00</published>
+		<updated>2026-07-07T11:00:14-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Wentworth Lake</lake>
+				<county>Digby</county>
+				<date>2026-07-07</date>
+				<location-details>Moodys Corner</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8173</id>
+		<title>Aylesford Lake</title>
+		<published>2026-06-16T17:09:46-03:00</published>
+		<updated>2026-06-16T17:09:46-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Aylesford Lake</lake>
+				<county>Kings</county>
+				<date>2026-06-12</date>
+				<location-details>Aylesford Lake</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/8172</id>
+		<title>Minamkeak Lake</title>
+		<published>2026-06-16T17:05:13-03:00</published>
+		<updated>2026-06-16T17:05:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Minamkeak Lake</lake>
+				<county>Lunenburg</county>
+				<date>2026-06-14</date>
+				<location-details>Camperdown</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/7402</id>
+		<title>Lac en Bas</title>
+		<published>2025-12-08T13:46:12-04:00</published>
+		<updated>2025-12-08T13:46:12-04:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lac en Bas</lake>
+				<county>Digby</county>
+				<date>2025-11-21</date>
+				<location-details>Concession</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/7357</id>
+		<title>Harrison Lake</title>
+		<published>2025-10-29T16:31:54-03:00</published>
+		<updated>2025-10-29T16:31:54-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-17" label="Cumberland"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Harrison Lake</lake>
+				<county>Cumberland</county>
+				<date>2025-10-27</date>
+				<location-details>Maccan</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6886</id>
+		<title>Flat Lake (near Stillwater Lake)</title>
+		<published>2025-09-18T14:42:26-03:00</published>
+		<updated>2025-09-18T14:42:26-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Flat Lake (near Stillwater Lake)</lake>
+				<county>Halifax</county>
+				<date>2025-09-16</date>
+				<location-details>Upper Tantallon</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6665</id>
+		<title>Sandy Lake</title>
+		<published>2025-09-03T09:01:05-03:00</published>
+		<updated>2025-09-03T09:01:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sandy Lake</lake>
+				<county>Halifax</county>
+				<date>2025-09-02</date>
+				<location-details>Bedford</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6657</id>
+		<title>Third Lake</title>
+		<published>2025-08-29T11:53:05-03:00</published>
+		<updated>2025-08-29T11:53:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Third Lake</lake>
+				<county>Halifax</county>
+				<date>2025-08-25</date>
+				<location-details>Fall River</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6507</id>
+		<title>Lumsden Pond</title>
+		<published>2025-08-28T11:48:44-03:00</published>
+		<updated>2025-08-28T11:48:44-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lumsden Pond</lake>
+				<county>Kings</county>
+				<date>2025-08-28</date>
+				<location-details>Black River</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6502</id>
+		<title>Gaspereau Lake</title>
+		<published>2025-08-27T14:11:34-03:00</published>
+		<updated>2025-08-27T14:11:34-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gaspereau Lake</lake>
+				<county>Kings</county>
+				<date>2025-08-27</date>
+				<location-details>South Alton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6090</id>
+		<title>Gairloch Lake</title>
+		<published>2025-08-22T11:10:55-03:00</published>
+		<updated>2025-08-22T11:10:55-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-25" label="Pictou"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gairloch Lake</lake>
+				<county>Pictou</county>
+				<date>2025-08-22</date>
+				<location-details>New Gairloch</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6070</id>
+		<title>Lake George</title>
+		<published>2025-08-12T14:38:07-03:00</published>
+		<updated>2025-08-12T14:38:07-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake George</lake>
+				<county>Kings</county>
+				<date>2025-08-12</date>
+				<location-details>Lake George</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6069</id>
+		<title>Lake Torment</title>
+		<published>2025-08-12T10:53:59-03:00</published>
+		<updated>2025-08-12T10:53:59-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Torment</lake>
+				<county>Kings</county>
+				<date>2025-08-11</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6068</id>
+		<title>Five Island Lake</title>
+		<published>2025-08-11T16:19:23-03:00</published>
+		<updated>2025-08-11T16:19:23-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Five Island Lake</lake>
+				<county>Halifax</county>
+				<date>2025-08-08</date>
+				<location-details>Hubley</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6067</id>
+		<title>Hubley Mills Lake</title>
+		<published>2025-08-07T10:38:22-03:00</published>
+		<updated>2025-08-13T10:56:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hubley Mills Lake</lake>
+				<county>Halifax</county>
+				<date>2025-08-02</date>
+				<location-details>Upper Tantallon</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6066</id>
+		<title>First Lake</title>
+		<published>2025-08-07T08:59:03-03:00</published>
+		<updated>2025-08-07T08:59:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">First Lake</lake>
+				<county>Halifax</county>
+				<date>2025-08-06</date>
+				<location-details>Lower Sackville</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6065</id>
+		<title>Aylesford Lake</title>
+		<published>2025-08-01T17:08:27-03:00</published>
+		<updated>2025-08-01T17:08:27-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Aylesford Lake</lake>
+				<county>Kings</county>
+				<date>2025-07-31</date>
+				<location-details>Aylesford Lake</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6064</id>
+		<title>Mattatall Lake</title>
+		<published>2025-07-31T15:22:36-03:00</published>
+		<updated>2025-07-31T15:22:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-17" label="Cumberland"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mattatall Lake</lake>
+				<county>Cumberland</county>
+				<date>2025-07-31</date>
+				<location-details>Mattatall Lake</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6041</id>
+		<title>Crooked Lake</title>
+		<published>2025-07-25T16:04:10-03:00</published>
+		<updated>2025-07-25T16:04:10-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Crooked Lake</lake>
+				<county>Lunenburg</county>
+				<date>2025-07-21</date>
+				<location-details>Camperdown</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6040</id>
+		<title>Elbow lake</title>
+		<published>2025-07-21T11:37:49-03:00</published>
+		<updated>2025-07-21T11:37:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Elbow lake</lake>
+				<county>Halifax</county>
+				<date>2025-07-18</date>
+				<location-details>Stillwater</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6039</id>
+		<title>Fish Lake</title>
+		<published>2025-07-17T08:31:26-03:00</published>
+		<updated>2025-07-17T08:31:26-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fish Lake</lake>
+				<county>Halifax</county>
+				<date>2025-07-16</date>
+				<location-details>Oakfield</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6038</id>
+		<title>Gavels Lake</title>
+		<published>2025-07-15T10:15:00-03:00</published>
+		<updated>2025-07-15T10:15:00-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gavels Lake</lake>
+				<county>Yarmouth</county>
+				<date>2025-07-03</date>
+				<location-details>Raynardton</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6037</id>
+		<title>Lake Vaughan</title>
+		<published>2025-07-15T10:14:13-03:00</published>
+		<updated>2025-07-15T10:14:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Vaughan</lake>
+				<county>Yarmouth</county>
+				<date>2025-07-03</date>
+				<location-details>Gavelton</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6036</id>
+		<title>Lake Charlotte</title>
+		<published>2025-07-15T09:10:24-03:00</published>
+		<updated>2025-07-15T09:10:24-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Charlotte</lake>
+				<county>Halifax</county>
+				<date>2025-07-15</date>
+				<location-details>Eastern Shore</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6034</id>
+		<title>Parr Lake</title>
+		<published>2025-07-14T11:24:46-03:00</published>
+		<updated>2025-07-14T11:24:46-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Parr Lake</lake>
+				<county>Yarmouth</county>
+				<date>2025-07-11</date>
+				<location-details>Forest Glen</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6033</id>
+		<title>Big Hubley Lake</title>
+		<published>2025-07-11T16:15:30-03:00</published>
+		<updated>2025-07-11T16:15:30-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Big Hubley Lake</lake>
+				<county>Halifax</county>
+				<date>2025-07-11</date>
+				<location-details>Hubley Lake Drive, Hubley</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6032</id>
+		<title>Halfway Lake</title>
+		<published>2025-07-11T16:13:46-03:00</published>
+		<updated>2025-07-11T16:13:46-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Halfway Lake</lake>
+				<county>Halifax</county>
+				<date>2025-07-10</date>
+				<location-details>Halfway Lake Drive, Hammonds Plains</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6028</id>
+		<title>French River</title>
+		<published>2025-07-05T16:10:11-03:00</published>
+		<updated>2025-07-05T16:10:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-16" label="Colchester"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">French River</lake>
+				<county>Colchester</county>
+				<date>2025-07-03</date>
+				<location-details>Tatamagouche</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6026</id>
+		<title>Lake Ainslie</title>
+		<published>2025-07-05T16:07:49-03:00</published>
+		<updated>2025-07-05T16:07:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-22" label="Inverness"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ainslie</lake>
+				<county>Inverness</county>
+				<date>2025-07-04</date>
+				<location-details>Lake Ainslie</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6025</id>
+		<title>Crosskill Lake</title>
+		<published>2025-07-03T15:29:25-03:00</published>
+		<updated>2025-07-03T15:29:25-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Crosskill Lake</lake>
+				<county>Annapolis</county>
+				<date>2025-07-03</date>
+				<location-details>Hampton</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6023</id>
+		<title>Lochaber Lake</title>
+		<published>2025-06-30T16:50:47-03:00</published>
+		<updated>2025-06-30T16:50:47-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-14" label="Antigonish"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lochaber Lake</lake>
+				<county>Antigonish</county>
+				<date>2025-06-30</date>
+				<location-details>Lochaber</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6021</id>
+		<title>Indian Harbour Lake</title>
+		<published>2025-06-26T11:42:52-03:00</published>
+		<updated>2025-06-26T11:42:52-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-19" label="Guysborough"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Indian Harbour Lake</lake>
+				<county>Guysborough</county>
+				<date>2025-06-25</date>
+				<location-details>Indian Harbour</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6020</id>
+		<title>Molega Lake (Mill Cove/Doyle Cove portion)</title>
+		<published>2025-06-26T11:37:33-03:00</published>
+		<updated>2025-06-26T11:43:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Molega Lake (Mill Cove/Doyle Cove portion)</lake>
+				<county>Lunenburg</county>
+				<date>2025-06-25</date>
+				<location-details>Chelsea</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6019</id>
+		<title>Bell Lake</title>
+		<published>2025-06-25T16:32:11-03:00</published>
+		<updated>2025-06-25T16:32:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Bell Lake</lake>
+				<county>Halifax</county>
+				<date>2025-06-25</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6018</id>
+		<title>Grant Lake</title>
+		<published>2025-06-25T14:45:50-03:00</published>
+		<updated>2025-06-25T14:45:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-19" label="Guysborough"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Grant Lake</lake>
+				<county>Guysborough</county>
+				<date>2025-06-24</date>
+				<location-details>Mulgrave</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6012</id>
+		<title>Ponhook Lake (Canoe Cove)</title>
+		<published>2025-06-18T08:29:44-03:00</published>
+		<updated>2025-06-18T08:29:44-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Ponhook Lake (Canoe Cove)</lake>
+				<county>Queens</county>
+				<date>2025-06-16</date>
+				<location-details>Greenfield</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6010</id>
+		<title>Shubenacadie Grand Lake at Fish Lake</title>
+		<published>2025-06-12T16:42:16-03:00</published>
+		<updated>2025-06-12T16:42:16-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubenacadie Grand Lake at Fish Lake</lake>
+				<county>Halifax</county>
+				<date>2025-06-11</date>
+				<location-details>Oakfield</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/6009</id>
+		<title>Molega Lake (Beavertail Basin portion)</title>
+		<published>2025-06-12T16:38:37-03:00</published>
+		<updated>2025-06-12T16:43:01-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Molega Lake (Beavertail Basin portion)</lake>
+				<county>Queens</county>
+				<date>2025-06-11</date>
+				<location-details>Beavertail Basin</location-details>
+				<bloom-details>Bloom</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5426</id>
+		<title>Sandy Lake</title>
+		<published>2024-11-22T11:03:34-04:00</published>
+		<updated>2024-11-22T11:03:34-04:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sandy Lake</lake>
+				<county>Halifax</county>
+				<date>2024-11-22</date>
+				<location-details>Bedford</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5317</id>
+		<title>Sandy Lake</title>
+		<published>2024-09-23T08:32:12-03:00</published>
+		<updated>2024-09-25T14:26:10-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sandy Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-23</date>
+				<location-details>Hammonds Plains</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5316</id>
+		<title>Soldier Lake</title>
+		<published>2024-09-19T13:51:38-03:00</published>
+		<updated>2024-09-19T13:51:38-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Soldier Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-19</date>
+				<location-details>Fall River</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5315</id>
+		<title>Bissett Lake</title>
+		<published>2024-09-18T09:29:43-03:00</published>
+		<updated>2024-09-18T09:29:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Bissett Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-18</date>
+				<location-details>Cole Harbour</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5314</id>
+		<title>McGrath Lake</title>
+		<published>2024-09-18T09:28:59-03:00</published>
+		<updated>2024-09-18T09:28:59-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">McGrath Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-18</date>
+				<location-details>Brookside</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5313</id>
+		<title>Long Lake</title>
+		<published>2024-09-18T09:28:36-03:00</published>
+		<updated>2024-09-18T09:28:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Long Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-18</date>
+				<location-details>Kingswood</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5312</id>
+		<title>St Andrews Lake (A Lake)</title>
+		<published>2024-09-18T09:27:51-03:00</published>
+		<updated>2024-09-18T09:27:51-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">St Andrews Lake (A Lake)</lake>
+				<county>Halifax</county>
+				<date>2024-09-18</date>
+				<location-details>Fall River</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5308</id>
+		<title>Beaverdam Lake</title>
+		<published>2024-09-16T08:20:05-03:00</published>
+		<updated>2024-09-16T08:20:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Beaverdam Lake</lake>
+				<county>Queens</county>
+				<date>2024-09-16</date>
+				<location-details>Labelle</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5304</id>
+		<title>Lake Torment</title>
+		<published>2024-09-05T08:25:14-03:00</published>
+		<updated>2024-09-05T08:25:14-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Torment</lake>
+				<county>Kings</county>
+				<date>2024-09-05</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5303</id>
+		<title>Governor Lake</title>
+		<published>2024-09-03T21:42:31-03:00</published>
+		<updated>2024-09-03T21:42:31-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Governor Lake</lake>
+				<county>Halifax</county>
+				<date>2024-09-03</date>
+				<location-details>Timberlea</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5302</id>
+		<title>Smelt Brook</title>
+		<published>2024-09-03T21:40:22-03:00</published>
+		<updated>2024-09-03T21:40:22-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Smelt Brook</lake>
+				<county>Halifax</county>
+				<date>2024-09-03</date>
+				<location-details>Porters Lake</location-details>
+				<bloom-details>Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5090</id>
+		<title>Tucker Lake</title>
+		<published>2024-08-29T08:19:23-03:00</published>
+		<updated>2024-08-29T08:19:23-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Tucker Lake</lake>
+				<county>Halifax</county>
+				<date>2024-08-29</date>
+				<location-details>Beaverbank</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5086</id>
+		<title>Hubley Mill Lake</title>
+		<published>2024-08-22T11:44:01-03:00</published>
+		<updated>2024-08-22T11:44:01-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hubley Mill Lake</lake>
+				<county>Halifax</county>
+				<date>2024-08-22</date>
+				<location-details>Tantallon</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5085</id>
+		<title>Russell Lake</title>
+		<published>2024-08-21T13:23:14-03:00</published>
+		<updated>2024-08-21T13:23:14-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Russell Lake</lake>
+				<county>Halifax</county>
+				<date>2024-08-21</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details>Benthic Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5084</id>
+		<title>Shubenacadie Canal</title>
+		<published>2024-08-21T10:28:54-03:00</published>
+		<updated>2024-08-21T10:28:54-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubenacadie Canal</lake>
+				<county>Halifax</county>
+				<date>2024-08-21</date>
+				<location-details>Shubie Park (Dartmouth)</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5082</id>
+		<title>Black Duck Lake</title>
+		<published>2024-08-20T15:19:36-03:00</published>
+		<updated>2024-08-20T15:19:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Black Duck Lake</lake>
+				<county>Kings</county>
+				<date>2024-08-20</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5081</id>
+		<title>Mack Lake</title>
+		<published>2024-08-20T15:14:52-03:00</published>
+		<updated>2024-08-20T15:14:52-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mack Lake</lake>
+				<county>Kings</county>
+				<date>2024-08-20</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5079</id>
+		<title>Little Salmon River</title>
+		<published>2024-08-14T15:41:18-03:00</published>
+		<updated>2024-08-14T15:41:18-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Little Salmon River</lake>
+				<county>Halifax</county>
+				<date>2024-08-14</date>
+				<location-details>Westphal</location-details>
+				<bloom-details>Cyanobacterial mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5078</id>
+		<title>Shortt's Lake</title>
+		<published>2024-08-13T09:30:36-03:00</published>
+		<updated>2024-08-14T11:53:52-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-16" label="Colchester"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shortt's Lake</lake>
+				<county>Colchester</county>
+				<date>2024-08-13</date>
+				<location-details>Alton</location-details>
+				<bloom-details>Benthic Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5076</id>
+		<title>Frederick Lake</title>
+		<published>2024-08-07T08:23:36-03:00</published>
+		<updated>2024-08-07T08:23:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Frederick Lake</lake>
+				<county>Halifax</county>
+				<date>2024-08-07</date>
+				<location-details>Hubley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5073</id>
+		<title>Lizard Lake</title>
+		<published>2024-07-31T13:58:38-03:00</published>
+		<updated>2024-07-31T13:58:38-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lizard Lake</lake>
+				<county>Halifax</county>
+				<date>2024-07-31</date>
+				<location-details>Hubley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5072</id>
+		<title>Outlet Stream</title>
+		<published>2024-07-31T13:58:03-03:00</published>
+		<updated>2024-07-31T13:58:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Outlet Stream</lake>
+				<county>Halifax</county>
+				<date>2024-07-31</date>
+				<location-details>Northern tip of Kearney Lake, Larry Uteck Boulevard</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5071</id>
+		<title>Lake Paul</title>
+		<published>2024-07-31T13:56:52-03:00</published>
+		<updated>2024-07-31T13:56:52-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Paul</lake>
+				<county>Kings</county>
+				<date>2024-07-31</date>
+				<location-details>Lake Paul</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5070</id>
+		<title>Salmon River</title>
+		<published>2024-07-31T13:52:44-03:00</published>
+		<updated>2024-08-14T11:55:34-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-16" label="Colchester"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Salmon River</lake>
+				<county>Colchester</county>
+				<date>2024-07-31</date>
+				<location-details>Truro</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5065</id>
+		<title>Eel Pond</title>
+		<published>2024-07-26T11:57:35-03:00</published>
+		<updated>2024-07-26T11:57:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Eel Pond</lake>
+				<county>Halifax</county>
+				<date>2024-07-26</date>
+				<location-details>Musquodoboit Harbour (Smith Settlement)</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5064</id>
+		<title>Lizard Lake</title>
+		<published>2024-07-26T11:57:05-03:00</published>
+		<updated>2024-07-26T11:57:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lizard Lake</lake>
+				<county>Halifax</county>
+				<date>2024-07-26</date>
+				<location-details>Hubley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/5063</id>
+		<title>Lake Ainslie</title>
+		<published>2024-07-26T11:56:32-03:00</published>
+		<updated>2024-08-14T11:56:55-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-22" label="Inverness"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ainslie</lake>
+				<county>Inverness</county>
+				<date>2024-07-26</date>
+				<location-details>Inverness</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4931</id>
+		<title>Crooked Lake</title>
+		<published>2024-07-25T11:03:08-03:00</published>
+		<updated>2024-07-25T11:03:08-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-27" label="Richmond"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Crooked Lake</lake>
+				<county>Richmond</county>
+				<date>2024-07-25</date>
+				<location-details>Framboise</location-details>
+				<bloom-details>Benthic Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4930</id>
+		<title>Phinneys Pond</title>
+		<published>2024-07-25T11:01:20-03:00</published>
+		<updated>2024-07-25T11:01:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Phinneys Pond</lake>
+				<county>Annapolis</county>
+				<date>2024-07-25</date>
+				<location-details>Victoria Vale</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4929</id>
+		<title>Morris Lake</title>
+		<published>2024-07-25T10:59:03-03:00</published>
+		<updated>2024-07-25T10:59:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Morris Lake</lake>
+				<county>Halifax</county>
+				<date>2024-07-25</date>
+				<location-details>Portland Hills (Dartmouth)</location-details>
+				<bloom-details>Benthic Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4928</id>
+		<title>All ponds in Colliery Park</title>
+		<published>2024-07-25T10:55:15-03:00</published>
+		<updated>2024-07-25T10:55:15-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-15" label="Cape Breton"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">All ponds in Colliery Park</lake>
+				<county>Cape Breton</county>
+				<date>2024-07-25</date>
+				<location-details>New Waterford</location-details>
+				<bloom-details>Benthic Mat</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4819</id>
+		<title>Five Island Lake</title>
+		<published>2024-07-15T13:33:35-03:00</published>
+		<updated>2024-07-15T13:33:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Five Island Lake</lake>
+				<county>Halifax</county>
+				<date>2024-07-15</date>
+				<location-details>Hubley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4817</id>
+		<title>Lochaber Lake</title>
+		<published>2024-07-09T11:39:43-03:00</published>
+		<updated>2024-07-09T11:39:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-14" label="Antigonish"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lochaber Lake</lake>
+				<county>Antigonish</county>
+				<date>2024-07-09</date>
+				<location-details>Lochaber</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4816</id>
+		<title>Loch Lomond Lake</title>
+		<published>2024-07-08T14:14:02-03:00</published>
+		<updated>2024-07-08T14:14:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-27" label="Richmond"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Loch Lomond Lake</lake>
+				<county>Richmond</county>
+				<date>2024-07-08</date>
+				<location-details>Loch Lomond</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4815</id>
+		<title>Haines Lake</title>
+		<published>2024-07-08T09:24:27-03:00</published>
+		<updated>2024-07-08T09:24:27-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Haines Lake</lake>
+				<county>Digby</county>
+				<date>2024-07-08</date>
+				<location-details>North Range</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4814</id>
+		<title>Fenerty Lake</title>
+		<published>2024-07-03T11:48:11-03:00</published>
+		<updated>2024-07-03T11:48:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fenerty Lake</lake>
+				<county>Halifax</county>
+				<date>2024-06-30</date>
+				<location-details>Beaver Bank</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4813</id>
+		<title>Mortons Lake</title>
+		<published>2024-07-01T14:47:38-03:00</published>
+		<updated>2024-07-01T14:47:38-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mortons Lake</lake>
+				<county>Hants</county>
+				<date>2024-06-28</date>
+				<location-details>Hammonds Plains</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4812</id>
+		<title>Lake Echo</title>
+		<published>2024-06-28T09:11:59-03:00</published>
+		<updated>2024-06-28T09:11:59-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Echo</lake>
+				<county>Halifax</county>
+				<date>2024-06-28</date>
+				<location-details>Mineville</location-details>
+				<bloom-details>Pelagic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4811</id>
+		<title>Lake Ogden</title>
+		<published>2024-06-28T09:07:11-03:00</published>
+		<updated>2024-06-28T09:07:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ogden</lake>
+				<county>Yarmouth</county>
+				<date>2024-06-28</date>
+				<location-details>Carleton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4810</id>
+		<title>Lake Parr</title>
+		<published>2024-06-28T09:06:47-03:00</published>
+		<updated>2024-06-28T09:06:47-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Parr</lake>
+				<county>Yarmouth</county>
+				<date>2024-06-28</date>
+				<location-details>Carleton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4809</id>
+		<title>Chocolate Lake</title>
+		<published>2024-06-25T13:16:57-03:00</published>
+		<updated>2024-06-25T13:16:57-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Chocolate Lake</lake>
+				<county>Halifax</county>
+				<date>2024-06-25</date>
+				<location-details>Halifax</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4804</id>
+		<title>Penhorn Lake</title>
+		<published>2024-06-20T08:22:13-03:00</published>
+		<updated>2024-06-20T08:22:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Penhorn Lake</lake>
+				<county>Halifax</county>
+				<date>2024-06-20</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4801</id>
+		<title>French River</title>
+		<published>2024-06-19T15:48:20-03:00</published>
+		<updated>2024-06-19T15:48:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-16" label="Colchester"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">French River</lake>
+				<county>Colchester</county>
+				<date>2024-06-19</date>
+				<location-details>Tatamagouche</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4798</id>
+		<title>Sherbrooke Lake</title>
+		<published>2024-06-17T15:23:31-03:00</published>
+		<updated>2024-06-17T15:23:31-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sherbrooke Lake</lake>
+				<county>Lunenburg</county>
+				<date>2024-06-17</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4797</id>
+		<title>Gaspereau Lake</title>
+		<published>2024-06-13T15:05:12-03:00</published>
+		<updated>2024-06-13T15:05:12-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gaspereau Lake</lake>
+				<county>Kings</county>
+				<date>2024-06-13</date>
+				<location-details>Forest Home</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4796</id>
+		<title>Oathill Lake</title>
+		<published>2024-06-13T14:17:20-03:00</published>
+		<updated>2024-07-10T09:57:45-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Oathill Lake</lake>
+				<county>Halifax</county>
+				<date>2024-06-13</date>
+				<location-details>Manor Park, Dartmouth</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4795</id>
+		<title>First Lake</title>
+		<published>2024-06-13T12:11:59-03:00</published>
+		<updated>2024-06-17T15:42:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">First Lake</lake>
+				<county>Halifax</county>
+				<date>2024-06-13</date>
+				<location-details>Lower Sackville</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4794</id>
+		<title>Unnamed pond</title>
+		<published>2024-06-13T12:09:50-03:00</published>
+		<updated>2024-06-13T12:09:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-25" label="Pictou"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Unnamed pond</lake>
+				<county>Pictou</county>
+				<date>2024-06-13</date>
+				<location-details>Black Point</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4771</id>
+		<title>Pigott Lake</title>
+		<published>2024-05-30T13:11:37-03:00</published>
+		<updated>2024-05-30T13:11:37-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Pigott Lake</lake>
+				<county>Hants</county>
+				<date>2024-05-24</date>
+				<location-details>Lakelands</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4769</id>
+		<title>Springfield Lake Beach</title>
+		<published>2024-05-27T11:43:11-03:00</published>
+		<updated>2024-05-27T11:43:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Springfield Lake Beach</lake>
+				<county>Halifax</county>
+				<date>2024-05-27</date>
+				<location-details>Middle Sackville</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4704</id>
+		<title>Cranberry Lake</title>
+		<published>2024-05-01T09:14:25-03:00</published>
+		<updated>2024-05-02T09:31:57-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cranberry Lake</lake>
+				<county>Halifax</county>
+				<date>2024-05-01</date>
+				<location-details>Gregory Drive Park, Dartmouth</location-details>
+				<bloom-details>Benthic</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4272</id>
+		<title>Pigott Lake</title>
+		<published>2023-10-04T09:25:49-03:00</published>
+		<updated>2023-10-04T09:25:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Pigott Lake</lake>
+				<county>Hants</county>
+				<date>2023-10-04</date>
+				<location-details>Lakelands</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4259</id>
+		<title>Hatchet Lake</title>
+		<published>2023-09-20T12:04:40-03:00</published>
+		<updated>2023-09-20T12:04:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hatchet Lake</lake>
+				<county>Halifax</county>
+				<date>2023-09-20</date>
+				<location-details>Halifax</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4257</id>
+		<title>Penhorn Lake</title>
+		<published>2023-09-19T08:32:47-03:00</published>
+		<updated>2023-09-19T08:32:47-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Penhorn Lake</lake>
+				<county>Halifax</county>
+				<date>2023-09-19</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4255</id>
+		<title>Journeays Lake</title>
+		<published>2023-09-13T08:44:53-03:00</published>
+		<updated>2023-09-13T08:44:53-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Journeays Lake</lake>
+				<county>Digby</county>
+				<date>2023-09-13</date>
+				<location-details>Ohio</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4254</id>
+		<title>Cox Lake</title>
+		<published>2023-09-12T13:29:22-03:00</published>
+		<updated>2023-09-12T13:29:22-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cox Lake</lake>
+				<county>Halifax</county>
+				<date>2023-09-12</date>
+				<location-details>Hammonds Plains</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4116</id>
+		<title>Lake Charles</title>
+		<published>2023-09-11T09:13:55-03:00</published>
+		<updated>2023-09-11T09:13:55-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Charles</lake>
+				<county>Halifax</county>
+				<date>2023-09-11</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4071</id>
+		<title>Lake Banook</title>
+		<published>2023-08-28T13:53:30-03:00</published>
+		<updated>2023-08-28T13:53:30-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Banook</lake>
+				<county>Halifax</county>
+				<date>2023-08-28</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4070</id>
+		<title>Russell Lake</title>
+		<published>2023-08-28T13:28:06-03:00</published>
+		<updated>2023-08-28T13:28:06-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Russell Lake</lake>
+				<county>Halifax</county>
+				<date>2023-08-28</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4048</id>
+		<title>Methals Lake</title>
+		<published>2023-08-23T15:37:43-03:00</published>
+		<updated>2023-08-23T15:37:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Methals Lake</lake>
+				<county>Kings</county>
+				<date>2023-08-23</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4046</id>
+		<title>Soldier Lake</title>
+		<published>2023-08-23T15:36:51-03:00</published>
+		<updated>2023-08-23T15:41:00-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Soldier Lake</lake>
+				<county>Halifax</county>
+				<date>2023-08-23</date>
+				<location-details>Miller Lake West</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4031</id>
+		<title>Raynards Lake</title>
+		<published>2023-08-17T13:35:40-03:00</published>
+		<updated>2023-08-17T13:35:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Raynards Lake</lake>
+				<county>Yarmouth</county>
+				<date>2023-08-17</date>
+				<location-details>Pleasant Valley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4018</id>
+		<title>Sixth Lake</title>
+		<published>2023-08-09T08:00:50-03:00</published>
+		<updated>2023-08-22T13:45:55-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-19" label="Guysborough"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sixth Lake</lake>
+				<county>Guysborough</county>
+				<date>2023-08-09</date>
+				<location-details>Stillwater</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4016</id>
+		<title>Sandy Bottom Lake</title>
+		<published>2023-08-08T07:48:46-03:00</published>
+		<updated>2023-08-16T17:55:44-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sandy Bottom Lake</lake>
+				<county>Annapolis</county>
+				<date>2023-08-08</date>
+				<location-details>West Springhill</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4014</id>
+		<title>Elbow Lake</title>
+		<published>2023-08-03T08:02:06-03:00</published>
+		<updated>2023-08-16T15:11:48-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Elbow Lake</lake>
+				<county>Halifax</county>
+				<date>2023-08-03</date>
+				<location-details>Hammonds Plains</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4010</id>
+		<title>Little Albro Lake</title>
+		<published>2023-07-31T12:21:42-03:00</published>
+		<updated>2023-08-16T15:12:51-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Little Albro Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-31</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4003</id>
+		<title>Mingo Beck Lake</title>
+		<published>2023-07-27T17:27:01-03:00</published>
+		<updated>2023-08-16T15:13:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mingo Beck Lake</lake>
+				<county>Yarmouth</county>
+				<date>2023-07-27</date>
+				<location-details>Bell Neck</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/4002</id>
+		<title>Frog Pond</title>
+		<published>2023-07-27T08:14:17-03:00</published>
+		<updated>2023-08-16T15:17:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Frog Pond</lake>
+				<county>Halifax</county>
+				<date>2023-07-27</date>
+				<location-details>Halifax</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3979</id>
+		<title>Porcupine Lake</title>
+		<published>2023-07-26T13:23:16-03:00</published>
+		<updated>2023-08-16T15:17:27-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Porcupine Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-26</date>
+				<location-details>New Tusket</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3954</id>
+		<title>Murphy Lake</title>
+		<published>2023-07-25T14:14:06-03:00</published>
+		<updated>2023-08-16T15:17:45-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Murphy Lake</lake>
+				<county>Kings</county>
+				<date>2023-07-25</date>
+				<location-details>Kentville</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3945</id>
+		<title>Brazil Lake</title>
+		<published>2023-07-24T15:33:46-03:00</published>
+		<updated>2023-08-22T13:50:18-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Brazil Lake</lake>
+				<county>Yarmouth</county>
+				<date>2023-07-24</date>
+				<location-details>Carleton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3944</id>
+		<title>Porter’s Lake</title>
+		<published>2023-07-24T13:14:53-03:00</published>
+		<updated>2023-08-16T15:18:25-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Porter’s Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-24</date>
+				<location-details>South Range</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3806</id>
+		<title>Lumsden Pond</title>
+		<published>2023-07-21T09:31:00-03:00</published>
+		<updated>2023-08-16T15:18:42-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lumsden Pond</lake>
+				<county>Kings</county>
+				<date>2023-07-21</date>
+				<location-details>Greenwich</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3804</id>
+		<title>Sullivans Lake</title>
+		<published>2023-07-21T08:51:15-03:00</published>
+		<updated>2023-08-16T15:19:39-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sullivans Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-21</date>
+				<location-details>Easton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3803</id>
+		<title>Lily Lake</title>
+		<published>2023-07-20T15:42:28-03:00</published>
+		<updated>2023-08-22T13:46:45-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lily Lake</lake>
+				<county>Hants</county>
+				<date>2023-07-20</date>
+				<location-details>Lakelands</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3801</id>
+		<title>Gairloch Lake</title>
+		<published>2023-07-19T14:52:55-03:00</published>
+		<updated>2023-08-22T13:47:15-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-25" label="Pictou"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gairloch Lake</lake>
+				<county>Pictou</county>
+				<date>2023-07-19</date>
+				<location-details>New Gairloch</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3800</id>
+		<title>Powder Mill Lake</title>
+		<published>2023-07-17T14:33:08-03:00</published>
+		<updated>2023-08-16T15:20:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Powder Mill Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-17</date>
+				<location-details>Waverley</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3799</id>
+		<title>Falls Lake</title>
+		<published>2023-07-17T13:04:19-03:00</published>
+		<updated>2023-08-22T13:47:44-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Falls Lake</lake>
+				<county>Hants</county>
+				<date>2023-07-17</date>
+				<location-details>Lower Vaughan</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3798</id>
+		<title>Governor Lake</title>
+		<published>2023-07-14T15:33:45-03:00</published>
+		<updated>2023-08-16T15:21:27-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Governor Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-14</date>
+				<location-details>Timberlea/Lakeside</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3797</id>
+		<title>Rocky Lake</title>
+		<published>2023-07-14T10:18:12-03:00</published>
+		<updated>2023-08-16T15:21:45-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Rocky Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-14</date>
+				<location-details>Lakeview</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3796</id>
+		<title>Deveau’s Pond</title>
+		<published>2023-07-14T08:59:35-03:00</published>
+		<updated>2023-08-22T13:48:10-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Deveau’s Pond</lake>
+				<county>Digby</county>
+				<date>2023-07-14</date>
+				<location-details>Port Maitland</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3795</id>
+		<title>Partridge Island Lake</title>
+		<published>2023-07-14T08:56:35-03:00</published>
+		<updated>2023-08-22T13:48:32-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Partridge Island Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-14</date>
+				<location-details>Weaver Settlement</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3793</id>
+		<title>Lake Ainslie</title>
+		<published>2023-07-11T09:01:06-03:00</published>
+		<updated>2023-08-09T10:04:37-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-22" label="Inverness"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ainslie</lake>
+				<county>Inverness</county>
+				<date>2023-07-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3792</id>
+		<title>Morris Lake</title>
+		<published>2023-07-11T08:30:59-03:00</published>
+		<updated>2023-08-22T13:48:47-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Morris Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-11</date>
+				<location-details>Dartmouth</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3791</id>
+		<title>Lochaber Lake</title>
+		<published>2023-07-10T15:29:29-03:00</published>
+		<updated>2023-08-16T15:25:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-14" label="Antigonish"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lochaber Lake</lake>
+				<county>Antigonish</county>
+				<date>2023-07-10</date>
+				<location-details>Lochaber</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3789</id>
+		<title>Scotts Lake</title>
+		<published>2023-07-07T15:48:44-03:00</published>
+		<updated>2023-08-16T15:25:31-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Scotts Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-07</date>
+				<location-details>Near Hassett</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3788</id>
+		<title>Ameros Lake</title>
+		<published>2023-07-07T15:47:37-03:00</published>
+		<updated>2023-08-16T15:26:08-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Ameros Lake</lake>
+				<county>Digby</county>
+				<date>2023-07-07</date>
+				<location-details>Near Danvers</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3787</id>
+		<title>Mattatall Lake</title>
+		<published>2023-07-07T09:27:43-03:00</published>
+		<updated>2023-07-07T09:27:43-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-17" label="Cumberland"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mattatall Lake</lake>
+				<county>Cumberland</county>
+				<date>2023-07-07</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3786</id>
+		<title>Fox Point Lake</title>
+		<published>2023-07-07T09:27:15-03:00</published>
+		<updated>2023-07-07T09:27:15-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fox Point Lake</lake>
+				<county>Lunenburg</county>
+				<date>2023-07-07</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3785</id>
+		<title>Indian Harbor Lake</title>
+		<published>2023-07-06T08:31:16-03:00</published>
+		<updated>2023-07-06T08:31:16-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-19" label="Guysborough"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Indian Harbor Lake</lake>
+				<county>Guysborough</county>
+				<date>2023-07-06</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3784</id>
+		<title>Long Lake</title>
+		<published>2023-07-04T13:28:49-03:00</published>
+		<updated>2023-08-22T13:49:22-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Long Lake</lake>
+				<county>Halifax</county>
+				<date>2023-07-04</date>
+				<location-details>Hammonds Plains</location-details>
+				<bloom-details>Benthic (toxins confirmed)</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3782</id>
+		<title>Loon Lake</title>
+		<published>2023-06-27T13:29:29-03:00</published>
+		<updated>2023-06-27T13:29:29-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Loon Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-27</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3781</id>
+		<title>Lake Ogden</title>
+		<published>2023-06-27T09:06:57-03:00</published>
+		<updated>2023-08-22T13:50:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ogden</lake>
+				<county>Yarmouth</county>
+				<date>2023-06-27</date>
+				<location-details>Carleton</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3780</id>
+		<title>Lake Fanning</title>
+		<published>2023-06-27T09:05:38-03:00</published>
+		<updated>2023-06-27T09:05:38-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Fanning</lake>
+				<county>Yarmouth</county>
+				<date>2023-06-27</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3779</id>
+		<title>Lake Martha</title>
+		<published>2023-06-26T08:45:38-03:00</published>
+		<updated>2023-06-26T08:45:38-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Martha</lake>
+				<county>Hants</county>
+				<date>2023-06-26</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3777</id>
+		<title>Three Mile Lake</title>
+		<published>2023-06-24T18:35:25-03:00</published>
+		<updated>2023-06-24T18:35:25-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Three Mile Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-24</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3622</id>
+		<title>Kinsac Lake</title>
+		<published>2023-06-23T13:16:52-03:00</published>
+		<updated>2023-06-23T13:16:52-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Kinsac Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-23</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3621</id>
+		<title>Second Lake</title>
+		<published>2023-06-23T13:13:49-03:00</published>
+		<updated>2023-08-16T15:27:19-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Second Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-23</date>
+				<location-details>Lower Sackville</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3620</id>
+		<title>First Lake</title>
+		<published>2023-06-21T15:56:03-03:00</published>
+		<updated>2023-06-21T15:56:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">First Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-21</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3619</id>
+		<title>Molega Lake</title>
+		<published>2023-06-20T15:43:58-03:00</published>
+		<updated>2023-06-20T15:43:58-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Molega Lake</lake>
+				<county>Queens</county>
+				<date>2023-06-20</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3614</id>
+		<title>Aylesford Lake</title>
+		<published>2023-06-19T09:18:48-03:00</published>
+		<updated>2023-06-19T09:22:26-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Aylesford Lake</lake>
+				<county>Kings</county>
+				<date>2023-06-19</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3613</id>
+		<title>Shubenacadie Grand Lake</title>
+		<published>2023-06-19T09:18:32-03:00</published>
+		<updated>2023-06-19T09:18:32-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubenacadie Grand Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-19</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3612</id>
+		<title>Wrights Lake</title>
+		<published>2023-06-19T09:18:13-03:00</published>
+		<updated>2023-06-19T09:18:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Wrights Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-19</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3610</id>
+		<title>Covey Lake</title>
+		<published>2023-06-16T13:46:11-03:00</published>
+		<updated>2023-06-16T13:46:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Covey Lake</lake>
+				<county>Lunenburg</county>
+				<date>2023-06-16</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3609</id>
+		<title>Lake Torment</title>
+		<published>2023-06-16T13:45:44-03:00</published>
+		<updated>2023-08-22T13:50:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Torment</lake>
+				<county>Kings</county>
+				<date>2023-06-16</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3608</id>
+		<title>Armstrong Lake</title>
+		<published>2023-06-16T13:45:18-03:00</published>
+		<updated>2023-08-22T13:51:16-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Armstrong Lake</lake>
+				<county>Kings</county>
+				<date>2023-06-16</date>
+				<location-details>East Dalhousie</location-details>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/3605</id>
+		<title>Oat Hill Lake</title>
+		<published>2023-06-16T07:39:38-03:00</published>
+		<updated>2023-08-22T13:51:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Oat Hill Lake</lake>
+				<county>Halifax</county>
+				<date>2023-06-16</date>
+				<location-details/>
+				<bloom-details>Benthic (toxins confirmed)</bloom-details>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2846</id>
+		<title>Lambs Lake</title>
+		<published>2022-10-12T15:11:13-03:00</published>
+		<updated>2022-10-12T15:11:13-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lambs Lake</lake>
+				<county>Annapolis</county>
+				<date>2022-10-12</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2775</id>
+		<title>Mingo Beck</title>
+		<published>2022-09-20T16:46:49-03:00</published>
+		<updated>2022-09-20T16:46:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Mingo Beck</lake>
+				<county>Yarmouth</county>
+				<date>2022-09-20</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2774</id>
+		<title>Armstrong Lake</title>
+		<published>2022-09-16T13:11:29-03:00</published>
+		<updated>2022-09-16T13:11:29-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Armstrong Lake</lake>
+				<county>Kings</county>
+				<date>2022-09-16</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2772</id>
+		<title>Lake Banook</title>
+		<published>2022-09-14T11:34:09-03:00</published>
+		<updated>2022-09-14T11:34:09-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Banook</lake>
+				<county>Halifax</county>
+				<date>2022-09-14</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2771</id>
+		<title>Lake Charles</title>
+		<published>2022-09-14T11:33:39-03:00</published>
+		<updated>2022-09-14T11:33:39-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Charles</lake>
+				<county>Halifax</county>
+				<date>2022-09-14</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2769</id>
+		<title>Fenerty Lake</title>
+		<published>2022-09-13T13:23:27-03:00</published>
+		<updated>2022-09-13T13:23:27-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fenerty Lake</lake>
+				<county>Halifax</county>
+				<date>2022-09-13</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2768</id>
+		<title>Long Lake</title>
+		<published>2022-09-13T07:54:24-03:00</published>
+		<updated>2022-09-13T07:54:24-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Long Lake</lake>
+				<county>Halifax</county>
+				<date>2022-09-13</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2767</id>
+		<title>Ponhook Lake</title>
+		<published>2022-09-12T07:43:08-03:00</published>
+		<updated>2022-09-12T07:43:08-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-26" label="Queens"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Ponhook Lake</lake>
+				<county>Queens</county>
+				<date>2022-09-12</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2764</id>
+		<title>Gairloch Lake</title>
+		<published>2022-09-09T17:37:40-03:00</published>
+		<updated>2022-09-09T17:37:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-25" label="Pictou"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gairloch Lake</lake>
+				<county>Pictou</county>
+				<date>2022-09-09</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2762</id>
+		<title>Sheldrake Lake</title>
+		<published>2022-09-09T10:35:32-03:00</published>
+		<updated>2022-09-09T10:35:32-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sheldrake Lake</lake>
+				<county>Halifax</county>
+				<date>2022-09-09</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2626</id>
+		<title>Lake Ainslie</title>
+		<published>2022-08-31T16:02:50-03:00</published>
+		<updated>2022-08-31T16:02:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-22" label="Inverness"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Ainslie</lake>
+				<county>Inverness</county>
+				<date>2022-08-31</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2625</id>
+		<title>Cooks Lake</title>
+		<published>2022-08-31T16:02:29-03:00</published>
+		<updated>2022-08-31T16:02:29-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cooks Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-31</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2624</id>
+		<title>Snides Lake</title>
+		<published>2022-08-29T17:17:14-03:00</published>
+		<updated>2022-08-29T17:17:14-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Snides Lake</lake>
+				<county>Hants</county>
+				<date>2022-08-29</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2623</id>
+		<title>Blair's Lake</title>
+		<published>2022-08-26T17:09:59-03:00</published>
+		<updated>2022-08-26T17:09:59-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-17" label="Cumberland"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Blair's Lake</lake>
+				<county>Cumberland</county>
+				<date>2022-08-26</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2622</id>
+		<title>Barry's Run</title>
+		<published>2022-08-26T13:58:16-03:00</published>
+		<updated>2022-08-26T13:58:16-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Barry's Run</lake>
+				<county>Halifax</county>
+				<date>2022-08-26</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2620</id>
+		<title>Fancy Lake</title>
+		<published>2022-08-23T16:11:21-03:00</published>
+		<updated>2022-08-23T16:11:21-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fancy Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-08-23</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2619</id>
+		<title>Hubley Big Lake</title>
+		<published>2022-08-23T15:26:42-03:00</published>
+		<updated>2022-08-23T15:26:42-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hubley Big Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-23</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2618</id>
+		<title>Shubenacadie Canal, Shubie Park</title>
+		<published>2022-08-23T11:28:28-03:00</published>
+		<updated>2022-08-23T11:28:28-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubenacadie Canal, Shubie Park</lake>
+				<county>Halifax</county>
+				<date>2022-08-23</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2617</id>
+		<title>Blysteiner Lake</title>
+		<published>2022-08-19T16:03:46-03:00</published>
+		<updated>2022-08-19T16:03:46-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Blysteiner Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-08-19</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2616</id>
+		<title>Shaw Big Lake</title>
+		<published>2022-08-18T10:24:20-03:00</published>
+		<updated>2022-08-18T10:24:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shaw Big Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-18</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2615</id>
+		<title>Lake Banook, Grahams Grove Park</title>
+		<published>2022-08-17T09:02:50-03:00</published>
+		<updated>2022-08-17T09:02:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Banook, Grahams Grove Park</lake>
+				<county>Halifax</county>
+				<date>2022-08-17</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2612</id>
+		<title>McGrath Lake</title>
+		<published>2022-08-12T12:42:18-03:00</published>
+		<updated>2022-08-12T12:42:18-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">McGrath Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-12</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2610</id>
+		<title>Cunard Lake Beach</title>
+		<published>2022-08-11T14:12:17-03:00</published>
+		<updated>2022-08-11T14:12:17-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Cunard Lake Beach</lake>
+				<county>Halifax</county>
+				<date>2022-08-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2609</id>
+		<title>Russell Lake</title>
+		<published>2022-08-11T14:12:02-03:00</published>
+		<updated>2022-08-11T14:12:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Russell Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2608</id>
+		<title>First Lake</title>
+		<published>2022-08-11T13:25:53-03:00</published>
+		<updated>2022-08-11T13:25:53-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">First Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2607</id>
+		<title>Schmidt Lake</title>
+		<published>2022-08-11T13:19:02-03:00</published>
+		<updated>2022-08-11T13:24:12-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Schmidt Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-30</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2606</id>
+		<title>Debert River at Elm River Campground</title>
+		<published>2022-08-11T13:18:00-03:00</published>
+		<updated>2022-08-11T15:07:39-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-16" label="Colchester"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Debert River at Elm River Campground</lake>
+				<lake xml:lang="fr">Debert River au terrain de camping Elm River</lake>
+				<county>Colchester</county>
+				<date>2022-08-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2605</id>
+		<title>Beaverdam Lake</title>
+		<published>2022-08-11T13:17:11-03:00</published>
+		<updated>2022-08-11T13:17:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-28" label="Shelburne"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Beaverdam Lake</lake>
+				<county>Shelburne</county>
+				<date>2022-08-11</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2604</id>
+		<title>Bissett Lake</title>
+		<published>2022-08-10T15:34:46-03:00</published>
+		<updated>2022-08-10T15:34:46-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Bissett Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-10</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2603</id>
+		<title>Second Lake</title>
+		<published>2022-08-10T13:38:02-03:00</published>
+		<updated>2022-08-10T13:38:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Second Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-10</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2602</id>
+		<title>Hubley Mill Lake and in the watercourse connecting Round Lake and Hubley Mill Lake</title>
+		<published>2022-08-08T15:16:11-03:00</published>
+		<updated>2022-08-09T07:54:07-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hubley Mill Lake and in the watercourse connecting Round Lake and Hubley Mill Lake</lake>
+				<lake xml:lang="fr">Hubley Mill Lake et cours d’eau qui relie Round Lake et Hubley Mill Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-08</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2601</id>
+		<title>Fitch Lake</title>
+		<published>2022-08-08T08:20:35-03:00</published>
+		<updated>2022-08-08T08:20:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fitch Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-08-08</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2599</id>
+		<title>Harris Lake</title>
+		<published>2022-08-05T08:03:20-03:00</published>
+		<updated>2022-08-05T08:03:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Harris Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-08-05</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2598</id>
+		<title>Lake Torment</title>
+		<published>2022-08-03T15:13:36-03:00</published>
+		<updated>2022-08-03T15:13:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Torment</lake>
+				<county>Kings</county>
+				<date>2022-08-03</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2596</id>
+		<title>Penhorn Lake</title>
+		<published>2022-08-03T12:08:36-03:00</published>
+		<updated>2022-08-03T12:08:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Penhorn Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-03</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2590</id>
+		<title>Brine Lake</title>
+		<published>2022-08-01T08:51:34-03:00</published>
+		<updated>2022-08-01T08:51:34-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Brine Lake</lake>
+				<county>Halifax</county>
+				<date>2022-08-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2589</id>
+		<title>Barnes Lake</title>
+		<published>2022-07-29T12:38:16-03:00</published>
+		<updated>2022-07-29T12:38:16-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Barnes Lake</lake>
+				<county>Digby</county>
+				<date>2022-07-29</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2588</id>
+		<title>Black Point Lake</title>
+		<published>2022-07-29T09:55:21-03:00</published>
+		<updated>2022-08-08T08:21:12-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Black Point Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-29</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2587</id>
+		<title>Springfield Lake</title>
+		<published>2022-07-27T14:09:05-03:00</published>
+		<updated>2022-07-27T14:09:05-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-13" label="Annapolis"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Springfield Lake</lake>
+				<county>Annapolis</county>
+				<date>2022-07-27</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2586</id>
+		<title>Sunken Lake</title>
+		<published>2022-07-27T11:54:09-03:00</published>
+		<updated>2022-07-27T11:54:09-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sunken Lake</lake>
+				<county>Kings</county>
+				<date>2022-07-27</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2585</id>
+		<title>Long Lake</title>
+		<published>2022-07-25T14:48:18-03:00</published>
+		<updated>2022-07-25T14:58:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Long Lake</lake>
+				<county>Hants</county>
+				<date>2022-07-25</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2584</id>
+		<title>Maple Lake</title>
+		<published>2022-07-22T15:30:03-03:00</published>
+		<updated>2022-07-22T15:30:03-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Maple Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-21</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2583</id>
+		<title>Lake Loon</title>
+		<published>2022-07-20T15:32:48-03:00</published>
+		<updated>2022-07-20T15:32:48-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Loon</lake>
+				<county>Halifax</county>
+				<date>2022-07-20</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2582</id>
+		<title>Bell Lake</title>
+		<published>2022-07-15T17:10:50-03:00</published>
+		<updated>2022-07-15T17:10:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Bell Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-15</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2581</id>
+		<title>Frasers Lake, Timberlea (near Goldeneye Drive)</title>
+		<published>2022-07-15T17:09:50-03:00</published>
+		<updated>2022-07-22T15:26:41-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Frasers Lake, Timberlea (near Goldeneye Drive)</lake>
+				<lake xml:lang="fr">Frasers Lake, Timberlea (près de Goldeneye Drive)</lake>
+				<county>Halifax</county>
+				<date>2022-07-15</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2580</id>
+		<title>Shubie Off-Leash Dog Park, Lake MicMac</title>
+		<published>2022-07-15T17:09:08-03:00</published>
+		<updated>2022-07-22T15:28:41-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Shubie Off-Leash Dog Park, Lake MicMac</lake>
+				<lake xml:lang="fr">Lake MicMac, parc à chiens Shubie (chiens en liberté)</lake>
+				<county>Halifax</county>
+				<date>2022-07-15</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2579</id>
+		<title>Unnamed stream near where Smith Road and North Shore Road intersect</title>
+		<published>2022-07-15T17:08:06-03:00</published>
+		<updated>2022-07-22T15:27:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-17" label="Cumberland"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Unnamed stream near where Smith Road and North Shore Road intersect</lake>
+				<lake xml:lang="fr">Ruisseau inconnu près de l’intersection des chemins Smith et North Shore</lake>
+				<county>Cumberland</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2578</id>
+		<title>Fox Point Lake</title>
+		<published>2022-07-15T17:07:02-03:00</published>
+		<updated>2022-07-15T17:07:02-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Fox Point Lake</lake>
+				<lake xml:lang="fr">Foxpoint Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2577</id>
+		<title>Big Indian Lake</title>
+		<published>2022-07-15T17:05:40-03:00</published>
+		<updated>2022-07-15T17:05:40-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Big Indian Lake</lake>
+				<county>Halifax</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2576</id>
+		<title>Big Mushamush Lake</title>
+		<published>2022-07-15T17:05:06-03:00</published>
+		<updated>2022-07-15T17:05:06-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Big Mushamush Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2575</id>
+		<title>Lumsden Pond</title>
+		<published>2022-07-15T17:04:23-03:00</published>
+		<updated>2022-07-15T17:04:23-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lumsden Pond</lake>
+				<county>Kings</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2574</id>
+		<title>Lake Thomas</title>
+		<published>2022-07-15T17:03:49-03:00</published>
+		<updated>2022-07-15T17:03:49-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Thomas</lake>
+				<county>Halifax</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2573</id>
+		<title>Hunts Lake</title>
+		<published>2022-07-15T17:02:50-03:00</published>
+		<updated>2022-07-15T17:02:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Hunts Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-07-15</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2572</id>
+		<title>Ogden Lake</title>
+		<published>2022-07-15T17:01:57-03:00</published>
+		<updated>2022-07-15T17:01:57-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Ogden Lake</lake>
+				<county>Yarmouth</county>
+				<date>2022-07-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2571</id>
+		<title>Brazil Lake</title>
+		<published>2022-07-15T17:01:20-03:00</published>
+		<updated>2022-07-15T17:01:20-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Brazil Lake</lake>
+				<county>Yarmouth</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2570</id>
+		<title>Panuke Lake</title>
+		<published>2022-07-15T17:00:41-03:00</published>
+		<updated>2022-07-15T17:00:41-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-21" label="Hants"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Panuke Lake</lake>
+				<county>Hants</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2569</id>
+		<title>Black River Lake</title>
+		<published>2022-07-15T16:59:59-03:00</published>
+		<updated>2022-07-15T16:59:59-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Black River Lake</lake>
+				<county>Kings</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2568</id>
+		<title>Lake MicMac</title>
+		<published>2022-07-15T16:56:36-03:00</published>
+		<updated>2022-07-15T16:56:36-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake MicMac</lake>
+				<county>Halifax</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2567</id>
+		<title>Gaspereau Lake</title>
+		<published>2022-07-15T16:53:56-03:00</published>
+		<updated>2022-07-15T16:53:56-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-23" label="Kings"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Gaspereau Lake</lake>
+				<county>Kings</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2566</id>
+		<title>Lake Fanning</title>
+		<published>2022-07-15T16:52:50-03:00</published>
+		<updated>2022-07-15T16:52:50-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Fanning</lake>
+				<county>Yarmouth</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2565</id>
+		<title>Raynard’s Lake</title>
+		<published>2022-07-15T16:50:34-03:00</published>
+		<updated>2022-07-15T16:50:34-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-30" label="Yarmouth"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Raynard’s Lake</lake>
+				<county>Yarmouth</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2564</id>
+		<title>Lake Midway</title>
+		<published>2022-07-15T16:49:51-03:00</published>
+		<updated>2022-07-15T16:49:51-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Lake Midway</lake>
+				<county>Digby</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2563</id>
+		<title>Sandy Lake, Bedford</title>
+		<published>2022-07-15T16:48:39-03:00</published>
+		<updated>2022-07-15T16:48:39-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Sandy Lake, Bedford</lake>
+				<county>Halifax</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2562</id>
+		<title>Stillwater Lake, Tantallon (near Stillwater Lane)</title>
+		<published>2022-07-15T16:47:34-03:00</published>
+		<updated>2022-07-15T16:47:34-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Stillwater Lake, Tantallon (near Stillwater Lane)</lake>
+				<lake xml:lang="fr">Stillwater Lake, Tantallon (près de Stillwater Lane)</lake>
+				<county>Halifax</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2561</id>
+		<title>Margot Lake (Meteghan River system near Belliveaus Cove)</title>
+		<published>2022-07-15T16:45:56-03:00</published>
+		<updated>2022-07-15T16:45:56-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-18" label="Digby"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Margot Lake (Meteghan River system near Belliveaus Cove)</lake>
+				<lake xml:lang="fr">Margot Lake (système de la rivière Meteghan près de Belliveaus Cove)</lake>
+				<county>Digby</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2560</id>
+		<title>Coon Pond, Upper Tantallon</title>
+		<published>2022-07-15T16:44:42-03:00</published>
+		<updated>2022-07-15T16:44:42-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Coon Pond, Upper Tantallon</lake>
+				<county>Halifax</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2559</id>
+		<title>Stream inlet into Bissett Lake (at Colby Drive)</title>
+		<published>2022-07-15T16:43:32-03:00</published>
+		<updated>2022-07-15T16:43:32-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Stream inlet into Bissett Lake (at Colby Drive)</lake>
+				<lake xml:lang="fr">Stream inlet into Bissett Lake (à Colby Drive)</lake>
+				<county>Halifax</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2558</id>
+		<title>Covey Lake</title>
+		<published>2022-07-15T16:42:35-03:00</published>
+		<updated>2022-07-15T16:42:35-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-24" label="Lunenburg"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Covey Lake</lake>
+				<county>Lunenburg</county>
+				<date>2022-06-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+	<entry>
+		<id>https://notices.novascotia.ca/node/2557</id>
+		<title>Between Shubenacadie-Grand Lake and Fish Lake</title>
+		<published>2022-07-15T16:41:11-03:00</published>
+		<updated>2022-07-15T16:41:11-03:00</updated>
+		<category scheme="https://notices.novascotia.ca/feeds/blue-green-algae.atom#county" term="county-20" label="Halifax"/>
+		<content type="application/xml">
+			<notice xmlns="https://notices.novascotia.ca/xmlns/blue-green-algae-report">
+				<lake xml:lang="en">Between Shubenacadie-Grand Lake and Fish Lake</lake>
+				<lake xml:lang="fr">Entre Shubenacadie-Grand Lake et Fish Lake</lake>
+				<county>Halifax</county>
+				<date>2022-05-01</date>
+				<location-details/>
+				<bloom-details/>
+			</notice>
+		</content>
+	</entry>
+</feed>

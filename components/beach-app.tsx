@@ -9,14 +9,17 @@ import { BeachList } from '@/components/beach-list'
 import { BeachToolbar } from '@/components/beach-toolbar'
 import { MapKey } from '@/components/map-key'
 import { MapUnavailable } from '@/components/map-unavailable'
+import { ReplayBanner } from '@/components/replay-banner'
+import { ReplayControl } from '@/components/replay-control'
 import {
   countByState,
   filterBeaches,
-  resolveState,
   type StatusFilter,
 } from '@/lib/beach-filter'
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
-import type { Beach } from '@/lib/seed/beaches'
+import { formatPosted } from '@/lib/dates'
+import type { PageData } from '@/lib/db/queries'
+import { buildHref } from '@/lib/url-state'
 
 import './beach-shell.css'
 
@@ -30,22 +33,30 @@ const BeachMap = dynamic(() => import('@/components/beach-map'), {
   ),
 })
 
-export interface BeachAppProps {
-  beaches: Beach[]
-  /** Keyed by beach id. A missing entry renders as `unknown`, never as a colour. */
-  status: Record<string, PinState | undefined>
-}
+export type BeachAppProps = PageData
 
-/** Where focus goes when the detail view closes. */
 type SelectionOrigin = 'list' | 'map'
 
-export function BeachApp({ beaches, status }: BeachAppProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
+
+export function BeachApp(data: BeachAppProps) {
+  const {
+    beaches,
+    status,
+    health,
+    history,
+    days,
+    historyFrom,
+    historyTo,
+    replayDay,
+    storeKind,
+  } = data
+
+  const [selectedId, setSelectedId] = useState<string | null>(data.initialBeachId ?? null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('all')
   const [isPanelExpanded, setPanelExpanded] = useState(false)
   const [mapError, setMapError] = useState<string | null>(null)
-  /** Bumped on retry so a failed map remounts instead of re-rendering its corpse. */
   const [mapAttempt, setMapAttempt] = useState(0)
 
   const panelRef = useRef<HTMLDivElement>(null)
@@ -54,35 +65,44 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
   const lastSelectedId = useRef<string | null>(null)
   const restoreFocus = useRef(false)
 
-  // One derivation feeds both the map and the directory, so their counts always agree.
+  const pinState = useMemo(() => {
+    const out: Record<string, PinState> = {}
+    for (const b of beaches) out[b.id] = status[b.id]?.state ?? 'unknown'
+    return out
+  }, [beaches, status])
+
   const visible = useMemo(
-    () => filterBeaches({ beaches, status, query, filter }),
-    [beaches, status, query, filter],
+    () => filterBeaches({ beaches, status: pinState, query, filter }),
+    [beaches, pinState, query, filter],
   )
   const selected = useMemo(
     () => beaches.find((b) => b.id === selectedId) ?? null,
     [beaches, selectedId],
   )
-  const counts = useMemo(() => countByState(beaches, status), [beaches, status])
+  const counts = useMemo(() => countByState(beaches, pinState), [beaches, pinState])
   const isFiltered = query.trim().length > 0 || filter !== 'all'
 
-  const selectBeach = useCallback((id: string, origin: SelectionOrigin) => {
-    originRef.current = origin
-    lastSelectedId.current = id
-    setSelectedId(id)
-    panelRef.current?.scrollTo({ top: 0 })
-  }, [])
+  const selectBeach = useCallback(
+    (id: string, origin: SelectionOrigin) => {
+      originRef.current = origin
+      lastSelectedId.current = id
+      setSelectedId(id)
+      panelRef.current?.scrollTo({ top: 0 })
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id }))
+      }
+    },
+    [replayDay],
+  )
 
   const closeDetail = useCallback(() => {
     restoreFocus.current = true
     setSelectedId(null)
-  }, [])
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', buildHref({ day: replayDay }))
+    }
+  }, [replayDay])
 
-  /**
-   * The panel is not modal, so nothing is trapped: closing just returns focus to the
-   * control that opened the detail. A marker has no equivalent after the roster
-   * re-renders, so map selections fall back to search.
-   */
   useEffect(() => {
     if (selectedId || !restoreFocus.current) return
     restoreFocus.current = false
@@ -98,7 +118,6 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
     searchRef.current?.focus({ preventScroll: true })
   }, [selectedId])
 
-  // Narrowing the roster must not leave a beach selected that is no longer on screen.
   function changeQuery(next: string) {
     setQuery(next)
     setSelectedId(null)
@@ -120,6 +139,22 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
     setMapError(null)
     setMapAttempt((attempt) => attempt + 1)
   }
+
+  const footer = replayDay
+    ? `Replayed: ${formatPosted(replayDay)}`
+    : storeKind === 'seed'
+      ? 'Not connected to a database; no source has been read yet'
+      : health.length === 0
+        ? 'No source has been read yet'
+        : health
+            .map((h) =>
+              h.lastSuccessAt && h.lastSuccessAt === h.lastAttemptAt
+                ? `${LABEL[h.source]} checked ${formatPosted(h.lastAttemptAt)}`
+                : h.lastSuccessAt
+                  ? `${LABEL[h.source]} last confirmed ${formatPosted(h.lastSuccessAt)}; could not reach it since`
+                  : `${LABEL[h.source]} never read`,
+            )
+            .join(' / ')
 
   return (
     <main
@@ -147,12 +182,27 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
               <BeachMap
                 key={mapAttempt}
                 beaches={visible}
-                status={status}
+                status={pinState}
                 selectedId={selectedId}
                 onSelect={(id) => selectBeach(id, 'map')}
                 onFatalError={setMapError}
               />
               <MapKey />
+
+              {replayDay ? (
+                <ReplayBanner
+                  replayDay={replayDay}
+                  beachId={selectedId}
+                  className="absolute inset-x-0 top-0 z-10 mx-3 mt-3"
+                />
+              ) : null}
+
+              <ReplayControl
+                days={days}
+                replayDay={replayDay}
+                beachId={selectedId}
+                className="absolute top-3 right-3 z-10"
+              />
             </>
           )}
         </section>
@@ -192,8 +242,12 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
               <BeachDetail
                 key={selected.id}
                 beach={selected}
-                state={resolveState(status, selected.id)}
-                onClose={closeDetail}
+                status={status[selected.id]}
+                history={history[selected.id] ?? []}
+                historyFrom={historyFrom}
+                historyTo={historyTo}
+                replayDay={replayDay}
+                onBack={closeDetail}
               />
             ) : (
               <>
@@ -202,7 +256,7 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
                 </p>
                 <BeachList
                   beaches={visible}
-                  status={status}
+                  status={pinState}
                   selectedId={selectedId}
                   onSelect={(id) => selectBeach(id, 'list')}
                   onReset={resetSearch}
@@ -221,6 +275,7 @@ export function BeachApp({ beaches, status }: BeachAppProps) {
                 {UNKNOWN_CAVEAT}
               </p>
             )}
+            <p>{footer}</p>
             <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
           </footer>
         </aside>
