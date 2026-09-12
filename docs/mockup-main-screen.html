@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Main screen options</title>
+<style>
+  :root { --fg:oklch(0.145 0 0); --muted:oklch(0.556 0 0); --border:oklch(0.922 0 0); --radius:10px; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--fg); background:oklch(0.97 0 0); }
+  h1 { font-size:18px; margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; max-width:900px; }
+  .opt h2 { font-size:15px; margin:0 0 4px; }
+  .opt p.sub { color:var(--muted); font-size:13px; margin:0 0 14px; min-height:36px; }
+  .phone { width:320px; height:640px; border:8px solid #111; border-radius:36px; overflow:hidden; position:relative; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.15); margin:0 auto; }
+  .map { position:absolute; inset:0; background:
+    radial-gradient(circle at 30% 40%, #dbeafe 0, #dbeafe 6%, transparent 7%),
+    radial-gradient(circle at 70% 30%, #dbeafe 0, #dbeafe 8%, transparent 9%),
+    radial-gradient(circle at 55% 65%, #dbeafe 0, #dbeafe 5%, transparent 6%),
+    linear-gradient(180deg,#eef3e8 0%, #e6eee0 100%); }
+  .map::after { content:""; position:absolute; inset:0; background: repeating-linear-gradient(45deg, transparent 0 28px, rgba(0,0,0,.025) 28px 29px); }
+  .search { position:absolute; top:16px; left:12px; right:12px; background:#fff; border:1px solid var(--border); border-radius:var(--radius); height:44px; display:flex; align-items:center; padding:0 12px; gap:8px; font-size:14px; color:var(--muted); box-shadow:0 2px 8px rgba(0,0,0,.08); z-index:2; }
+  .search .ico { width:16px; height:16px; border:2px solid var(--muted); border-radius:50%; position:relative; }
+  .search .ico::after { content:""; position:absolute; width:2px; height:7px; background:var(--muted); right:-4px; bottom:-5px; transform:rotate(-45deg); }
+  .locate { position:absolute; right:12px; top:72px; width:40px; height:40px; background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 2px 8px rgba(0,0,0,.08); z-index:2; display:flex; align-items:center; justify-content:center; }
+  .locate::before { content:""; width:14px; height:14px; border:2px solid var(--fg); border-radius:50%; }
+  .pin { position:absolute; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); z-index:1; }
+  .g { background:#16a34a; } .a { background:#f59e0b; } .r { background:#dc2626; } .n { background:#9ca3af; }
+  .hollow { background:#fff; border:4px solid #16a34a; }
+  .pin.you { width:16px; height:16px; background:#2563eb; border:3px solid #fff; box-shadow:0 0 0 6px rgba(37,99,235,.2); }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:#fff; border-radius:18px 18px 0 0; box-shadow:0 -4px 20px rgba(0,0,0,.12); padding:8px 16px 16px; z-index:3; }
+  .grab { width:40px; height:4px; background:#d4d4d4; border-radius:2px; margin:0 auto 10px; }
+  .sheet h3 { font-size:13px; color:var(--muted); font-weight:500; margin:0 0 6px; text-transform:uppercase; letter-spacing:.04em; }
+  .row { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--border); font-size:14px; }
+  .row:first-of-type { border-top:none; }
+  .row .dot { width:12px; height:12px; border-radius:50%; flex:none; }
+  .row .dot.hollow { border-width:3px; }
+  .row .name { flex:1; font-weight:500; }
+  .row .dist { color:var(--muted); font-size:12px; }
+  .chip { font-size:11px; padding:2px 8px; border-radius:999px; font-weight:600; }
+  .chip.g { background:#dcfce7; color:#166534; } .chip.a { background:#fef3c7; color:#92400e; } .chip.r { background:#fee2e2; color:#991b1b; } .chip.n { background:#f3f4f6; color:#4b5563; }
+  .updated { font-size:11px; color:var(--muted); margin-top:8px; text-align:center; }
+  /* list-first */
+  .list { position:absolute; inset:0; background:#fff; padding:16px 16px 0; overflow:hidden; }
+  .list .search { position:static; margin-bottom:10px; box-shadow:none; }
+  .tabs { display:flex; background:oklch(0.97 0 0); border-radius:8px; padding:3px; margin-bottom:12px; font-size:13px; }
+  .tabs span { flex:1; text-align:center; padding:5px; border-radius:6px; color:var(--muted); }
+  .tabs span.on { background:#fff; color:var(--fg); box-shadow:0 1px 2px rgba(0,0,0,.08); font-weight:500; }
+  .list .row { padding:12px 0; }
+  .list .name small { display:block; font-weight:400; color:var(--muted); font-size:12px; }
+  .list h3 { font-size:13px; color:var(--muted); font-weight:500; margin:8px 0 2px; text-transform:uppercase; letter-spacing:.04em; }
+</style>
+</head>
+<body>
+<h1>Main screen</h1>
+<div class="grid">
+
+  <div class="opt">
+    <h2>Option A: map-first with a nearby list</h2>
+    <p class="sub">Full-bleed map, search on top, a bottom sheet listing the closest beaches. The user's first glance is pins near them.</p>
+    <div class="phone">
+      <div class="map">
+        <div class="pin g" style="left:38%;top:36%"></div>
+        <div class="pin a" style="left:52%;top:44%"></div>
+        <div class="pin g" style="left:26%;top:50%"></div>
+        <div class="pin r" style="left:66%;top:30%"></div>
+        <div class="pin hollow" style="left:78%;top:52%"></div>
+        <div class="pin n" style="left:14%;top:28%"></div>
+        <div class="pin you" style="left:45%;top:56%"></div>
+      </div>
+      <div class="search"><span class="ico"></span>Search 35 monitored beaches</div>
+      <div class="locate"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3>Closest to you</h3>
+        <div class="row"><span class="dot g"></span><span class="name">Chocolate Lake Beach</span><span class="dist">1.2 km</span><span class="chip g">Open</span></div>
+        <div class="row"><span class="dot a"></span><span class="name">Long Pond Beach</span><span class="dist">4.8 km</span><span class="chip a">Advisory</span></div>
+        <div class="row"><span class="dot r"></span><span class="name">Birch Cove Beach</span><span class="dist">6.1 km</span><span class="chip r">Closed</span></div>
+        <div class="row"><span class="dot hollow" style="border:3px solid #16a34a;background:#fff"></span><span class="name">Rainbow Haven Beach</span><span class="dist">17 km</span><span class="chip g">Open</span></div>
+        <div class="updated">HRM updated today 8:02 a.m. · Province checked 9:40 a.m.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt">
+    <h2>Option B: list-first, map as a tab</h2>
+    <p class="sub">Status list sorted by distance is the home screen. Map is one tap away. Fastest to read, less of a "map app".</p>
+    <div class="phone">
+      <div class="list">
+        <div class="search"><span class="ico"></span>Search 35 monitored beaches</div>
+        <div class="tabs"><span class="on">Nearby</span><span>Map</span><span>All beaches</span></div>
+        <h3>Halifax region</h3>
+        <div class="row"><span class="dot g"></span><span class="name">Chocolate Lake Beach<small>1.2 km · HRM · tested today</small></span><span class="chip g">Open</span></div>
+        <div class="row"><span class="dot a"></span><span class="name">Long Pond Beach<small>4.8 km · HRM · Risk Advisory in Effect</small></span><span class="chip a">Advisory</span></div>
+        <div class="row"><span class="dot r"></span><span class="name">Birch Cove Beach<small>6.1 km · HRM · suspected algae</small></span><span class="chip r">Closed</span></div>
+        <div class="row"><span class="dot g"></span><span class="name">Kearney Lake Beach<small>9.3 km · HRM · tested today</small></span><span class="chip g">Open</span></div>
+        <h3>Provincial parks</h3>
+        <div class="row"><span class="dot hollow" style="border:3px solid #16a34a;background:#fff"></span><span class="name">Rainbow Haven Beach<small>17 km · Province · no advisory posted</small></span><span class="chip g">Open</span></div>
+        <div class="row"><span class="dot hollow" style="border:3px solid #16a34a;background:#fff"></span><span class="name">Lawrencetown Beach<small>24 km · Province · no advisory posted</small></span><span class="chip g">Open</span></div>
+        <div class="row"><span class="dot r"></span><span class="name">Dollar Lake<small>41 km · Province · algae reported on this lake</small></span><span class="chip r">Closed</span></div>
+        <div class="updated">HRM updated today 8:02 a.m. · Province checked 9:40 a.m.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

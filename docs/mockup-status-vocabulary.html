@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Status vocabulary options</title>
+<style>
+  :root { --bg:#fff; --fg:oklch(0.145 0 0); --muted:oklch(0.556 0 0); --border:oklch(0.922 0 0); --card:#fff; --radius:10px; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--fg); background:oklch(0.97 0 0); }
+  h1 { font-size:18px; margin:0 0 16px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .card h2 { font-size:15px; margin:0 0 4px; }
+  .card p.sub { color:var(--muted); font-size:13px; margin:0 0 16px; }
+  .row { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid var(--border); }
+  .row:first-of-type { border-top:none; }
+  .dot { width:14px; height:14px; border-radius:50%; flex:none; margin-top:3px; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.15); }
+  .label { font-weight:600; font-size:14px; }
+  .meaning { color:var(--muted); font-size:12.5px; margin-top:2px; }
+  .tier { display:inline-block; font-size:11px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); color:var(--muted); margin-left:6px; vertical-align:middle; }
+  .g { background:#16a34a; } .a { background:#f59e0b; } .r { background:#dc2626; } .n { background:#9ca3af; } .b { background:#2563eb; }
+  .pins { display:flex; gap:14px; margin-top:16px; padding-top:14px; border-top:1px dashed var(--border); flex-wrap:wrap; }
+  .pin { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; color:var(--muted); width:92px; text-align:center; }
+  .pin .dot { width:22px; height:22px; }
+  .pin .dot.hollow { background:#fff; border:3px solid #16a34a; }
+  .pin .dot.hollow.a { border-color:#f59e0b; }
+</style>
+</head>
+<body>
+<h1>What a pin can say</h1>
+<div class="grid">
+
+  <div class="card">
+    <h2>Option A: mirror the sources verbatim</h2>
+    <p class="sub">Each tier keeps its own words. Six distinct labels on one map.</p>
+    <div class="row"><span class="dot g"></span><div><div class="label">Open <span class="tier">HRM</span></div><div class="meaning">Latest samples under the limit</div></div></div>
+    <div class="row"><span class="dot a"></span><div><div class="label">Risk Advisory in Effect <span class="tier">HRM</span></div><div class="meaning">Bacteria over limit or 25 mm rain trigger</div></div></div>
+    <div class="row"><span class="dot r"></span><div><div class="label">Closed <span class="tier">HRM</span></div><div class="meaning">Suspected blue-green algae</div></div></div>
+    <div class="row"><span class="dot n"></span><div><div class="label">Supervision ended for the season <span class="tier">HRM</span></div><div class="meaning">Sept to June</div></div></div>
+    <div class="row"><span class="dot g"></span><div><div class="label">No advisory posted <span class="tier">Province</span></div><div class="meaning">Nothing on parks.novascotia.ca for this beach</div></div></div>
+    <div class="row"><span class="dot a"></span><div><div class="label">Advisory posted <span class="tier">Province</span></div><div class="meaning">Card exists; could be algae, closure, or boil-water</div></div></div>
+    <div class="pins">
+      <div class="pin"><span class="dot g"></span>Open</div>
+      <div class="pin"><span class="dot a"></span>Risk Advisory in Effect</div>
+      <div class="pin"><span class="dot r"></span>Closed</div>
+      <div class="pin"><span class="dot n"></span>Supervision ended</div>
+      <div class="pin"><span class="dot g"></span>No advisory posted</div>
+      <div class="pin"><span class="dot a"></span>Advisory posted</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Option B: four normalized states, source wording on tap</h2>
+    <p class="sub">One legend for the whole map. Provincial pins use a hollow ring to show they are "no advisory", not "tested clean".</p>
+    <div class="row"><span class="dot g"></span><div><div class="label">Open</div><div class="meaning">HRM: tested, under the limit. Province: shown as hollow ring, meaning no advisory posted</div></div></div>
+    <div class="row"><span class="dot a"></span><div><div class="label">Advisory</div><div class="meaning">HRM "Risk Advisory in Effect", or a provincial advisory card that is not a closure</div></div></div>
+    <div class="row"><span class="dot r"></span><div><div class="label">Closed</div><div class="meaning">HRM "Closed", or a provincial card whose title says closed, or an algae notice matching this beach's lake</div></div></div>
+    <div class="row"><span class="dot n"></span><div><div class="label">Off-season</div><div class="meaning">Supervision ended; no one is testing. Last known status shown on tap</div></div></div>
+    <div class="row" style="border-top:1px solid var(--border)"><span class="dot b"></span><div><div class="label">Tap any pin</div><div class="meaning">Shows the exact source wording, e.g. "Risk Advisory in Effect", the date it was posted, and a link to the government page</div></div></div>
+    <div class="pins">
+      <div class="pin"><span class="dot g"></span>Open (HRM)</div>
+      <div class="pin"><span class="dot hollow"></span>Open (Province, no advisory)</div>
+      <div class="pin"><span class="dot a"></span>Advisory</div>
+      <div class="pin"><span class="dot r"></span>Closed</div>
+      <div class="pin"><span class="dot n"></span>Off-season</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

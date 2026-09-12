@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Desktop layout options</title>
+<style>
+  :root { --fg:oklch(0.145 0 0); --muted:oklch(0.556 0 0); --border:oklch(0.922 0 0); --radius:10px; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--fg); background:oklch(0.97 0 0); }
+  h1 { font-size:18px; margin:0 0 16px; }
+  .opt { margin-bottom:28px; }
+  .opt h2 { font-size:15px; margin:0 0 4px; }
+  .opt p.sub { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  .screen { width:100%; max-width:960px; aspect-ratio:16/9; border:6px solid #111; border-radius:12px; overflow:hidden; position:relative; background:#fff; box-shadow:0 8px 24px rgba(0,0,0,.15); }
+  .map { position:absolute; inset:0; background: linear-gradient(160deg,#5b7f9c 0%, #8fae8a 45%, #c9b48a 100%); }
+  .map::after { content:""; position:absolute; inset:0; background: repeating-linear-gradient(45deg, transparent 0 34px, rgba(255,255,255,.06) 34px 35px); }
+  .pin { position:absolute; width:18px; height:18px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.35); }
+  .g { background:#16a34a; } .a { background:#f59e0b; } .r { background:#dc2626; } .n { background:#9ca3af; }
+  .hollow { background:#fff; border:3px solid #16a34a; }
+  .search { position:absolute; background:#fff; border:1px solid var(--border); border-radius:var(--radius); height:36px; display:flex; align-items:center; padding:0 12px; font-size:12.5px; color:var(--muted); box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  .brand { position:absolute; top:12px; left:16px; font-weight:700; font-size:14px; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.5); }
+  .legend { position:absolute; bottom:12px; right:12px; background:rgba(255,255,255,.92); border-radius:8px; padding:8px 10px; font-size:11px; display:flex; gap:10px; }
+  .legend span { display:inline-flex; align-items:center; gap:4px; }
+  .legend i { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .replay { position:absolute; top:12px; right:12px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:11.5px; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  /* Option A: bottom sheet stretched */
+  .sheetA { position:absolute; left:0; right:0; bottom:0; background:#fff; border-radius:14px 14px 0 0; padding:8px 24px 12px; box-shadow:0 -4px 20px rgba(0,0,0,.12); }
+  .rowA { display:flex; gap:10px; align-items:center; font-size:12.5px; padding:6px 0; border-top:1px solid var(--border); }
+  .rowA:first-of-type { border-top:none; }
+  .dot { width:10px; height:10px; border-radius:50%; flex:none; }
+  .name { flex:1; font-weight:500; }
+  .dist { color:var(--muted); font-size:11px; }
+  .chip { font-size:10px; padding:2px 7px; border-radius:999px; font-weight:700; }
+  .chip.g { background:#dcfce7; color:#166534; } .chip.a { background:#fef3c7; color:#92400e; } .chip.r { background:#fee2e2; color:#991b1b; } .chip.n { background:#f3f4f6; color:#4b5563; }
+  /* Option B: side panel */
+  .panel { position:absolute; top:0; left:0; bottom:0; width:340px; background:#fff; border-right:1px solid var(--border); padding:14px 16px; display:flex; flex-direction:column; gap:10px; box-shadow:4px 0 20px rgba(0,0,0,.08); }
+  .panel .brandB { font-weight:700; font-size:15px; }
+  .panel .brandB small { display:block; font-weight:400; color:var(--muted); font-size:11px; }
+  .panel .search { position:static; }
+  .panel h3 { font-size:11px; color:var(--muted); font-weight:500; margin:6px 0 0; text-transform:uppercase; letter-spacing:.04em; }
+  .panel .rowA { padding:8px 0; }
+  .panel .rowA.sel { background:oklch(0.97 0 0); margin:0 -8px; padding:8px; border-radius:8px; }
+  .detail { margin-top:auto; border:1px solid #fde68a; background:#fffbeb; border-radius:var(--radius); padding:10px; font-size:12px; }
+  .detail b { font-size:13px; display:block; }
+  .detail .q { font-weight:600; margin-top:4px; }
+  .detail .why { color:#78350f; margin-top:4px; }
+  .foot { font-size:10.5px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<h1>On a laptop or projector</h1>
+
+<div class="opt">
+  <h2>Option A: the phone layout, stretched</h2>
+  <p class="sub">Same bottom sheet across the full width. Works, but the sheet eats the map and the list sprawls.</p>
+  <div class="screen">
+    <div class="map">
+      <div class="pin g" style="left:30%;top:30%"></div><div class="pin a" style="left:44%;top:38%"></div><div class="pin r" style="left:58%;top:24%"></div>
+      <div class="pin hollow" style="left:70%;top:44%"></div><div class="pin g" style="left:22%;top:46%"></div><div class="pin n" style="left:12%;top:22%"></div>
+    </div>
+    <div class="brand">Is the Beach Open?</div>
+    <div class="search" style="top:12px;left:50%;transform:translateX(-50%);width:360px">Search 35 monitored beaches</div>
+    <div class="replay">Replay a day ▾</div>
+    <div class="sheetA">
+      <div class="rowA"><span class="dot g"></span><span class="name">Chocolate Lake Beach</span><span class="dist">1.2 km</span><span class="chip g">Open</span></div>
+      <div class="rowA"><span class="dot a"></span><span class="name">Long Pond Beach</span><span class="dist">4.8 km</span><span class="chip a">Advisory</span></div>
+      <div class="rowA"><span class="dot r"></span><span class="name">Birch Cove Beach</span><span class="dist">6.1 km</span><span class="chip r">Closed</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="opt">
+  <h2>Option B: side panel, map takes the rest</h2>
+  <p class="sub">Search, the list, and the selected beach's detail live in a left panel. The 3D map fills the remaining width and is never covered.</p>
+  <div class="screen">
+    <div class="map">
+      <div class="pin g" style="left:48%;top:30%"></div><div class="pin a" style="left:58%;top:40%"></div><div class="pin r" style="left:70%;top:24%"></div>
+      <div class="pin hollow" style="left:82%;top:48%"></div><div class="pin g" style="left:44%;top:52%"></div><div class="pin n" style="left:40%;top:18%"></div>
+      <div class="pin hollow" style="left:90%;top:30%"></div>
+    </div>
+    <div class="replay">Replay a day ▾</div>
+    <div class="legend"><span><i class="g"></i>Open</span><span><i class="hollow" style="border-width:2px"></i>No advisory</span><span><i class="a"></i>Advisory</span><span><i class="r"></i>Closed</span><span><i class="n"></i>Off-season</span></div>
+    <div class="panel">
+      <div class="brandB">Is the Beach Open?<small>35 monitored beaches across Nova Scotia</small></div>
+      <div class="search">Search beaches, lakes, communities</div>
+      <h3>Closest to you</h3>
+      <div class="rowA"><span class="dot g"></span><span class="name">Chocolate Lake Beach</span><span class="dist">1.2 km</span><span class="chip g">Open</span></div>
+      <div class="rowA sel"><span class="dot a"></span><span class="name">Long Pond Beach</span><span class="dist">4.8 km</span><span class="chip a">Advisory</span></div>
+      <div class="rowA"><span class="dot r"></span><span class="name">Birch Cove Beach</span><span class="dist">6.1 km</span><span class="chip r">Closed</span></div>
+      <div class="rowA"><span class="dot hollow" style="width:8px;height:8px"></span><span class="name">Rainbow Haven Beach</span><span class="dist">17 km</span><span class="chip g">Open</span></div>
+      <div class="detail">
+        <b>Long Pond Beach</b>
+        <div class="q">halifax.ca says "Risk Advisory in Effect" · today 8:02 a.m.</div>
+        <div class="why">Bacteria above the safe limit. Swimming not recommended; keep dogs out of the water.</div>
+      </div>
+      <div class="foot">HRM checked 9:40 a.m. · Province checked 9:40 a.m.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
