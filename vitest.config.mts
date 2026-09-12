@@ -12,5 +12,6 @@ export default defineConfig({
       'hooks/**/*.test.{ts,tsx}',
       'components/**/*.test.{ts,tsx}',
     ],
+    setupFiles: ['./vitest.setup.ts'],
   },
 })
