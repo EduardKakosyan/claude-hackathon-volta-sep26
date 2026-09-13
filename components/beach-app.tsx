@@ -20,6 +20,7 @@ import {
   type StatusFilter,
 } from '@/lib/beach-filter'
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
+import { formatFreshness, offseasonLabel } from '@/lib/copy'
 import { formatPosted } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
 import { OPEN_METEO_CREDIT_URL } from '@/lib/ingest/sources/open-meteo'
@@ -28,6 +29,7 @@ import { resolveOrigin, sortByDistance } from '@/lib/geo'
 import type { GeolocationProvider } from '@/lib/geolocation'
 import { LATE_ARRIVAL_MS, useGeolocation } from '@/hooks/use-geolocation'
 import { HALIFAX_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
+import { offseasonAuthorities } from '@/lib/season'
 import { buildHref } from '@/lib/url-state'
 
 import './beach-shell.css'
@@ -51,8 +53,6 @@ export type BeachAppProps = PageData & {
 }
 
 type SelectionOrigin = 'list' | 'map'
-
-const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed', wind: 'Wind', buoy: 'Buoy' } as const
 
 /**
  * Where "Suggest one" in the footer goes: a new issue on the public repository,
@@ -172,6 +172,8 @@ export function BeachApp(data: BeachAppProps) {
     [beaches, selectedId],
   )
   const counts = useMemo(() => countByState(beaches, pinState), [beaches, pinState])
+  /** The authorities the refresh has closed for the season: read from the rows, so the footer agrees with them. */
+  const offseason = useMemo(() => offseasonAuthorities(beaches, status), [beaches, status])
   const isFiltered = query.trim().length > 0 || filter !== 'all'
 
   const selectBeach = useCallback(
@@ -250,21 +252,14 @@ export function BeachApp(data: BeachAppProps) {
     geo.request()
   }
 
+  // The fixture day says what it is rather than when it was "checked"; out of
+  // season it still says which authorities the calendar has closed, so the
+  // off-season screens read the same in fixture mode as against the database.
   const footer = replayDay
     ? `Replayed: ${formatPosted(replayDay)}`
     : storeKind === 'fixture'
-      ? 'Showing a fixture day, not live status'
-      : health.length === 0
-        ? 'No source has been read yet'
-        : health
-            .map((h) =>
-              h.lastSuccessAt && h.lastSuccessAt === h.lastAttemptAt
-                ? `${LABEL[h.source]} checked ${formatPosted(h.lastAttemptAt)}`
-                : h.lastSuccessAt
-                  ? `${LABEL[h.source]} last confirmed ${formatPosted(h.lastSuccessAt)}; could not reach it since`
-                  : `${LABEL[h.source]} never read`,
-            )
-            .join(' / ')
+      ? ['Showing a fixture day, not live status', ...offseason.map(offseasonLabel)].join(' · ')
+      : formatFreshness(health, offseason)
 
   return (
     <main className="beach-shell">
@@ -388,6 +383,7 @@ export function BeachApp(data: BeachAppProps) {
                 beaches={sorted}
                 status={pinState}
                 distances={distances}
+                conditions={conditions}
                 selectedId={selectedId}
                 onSelect={(id) => selectBeach(id, 'list')}
                 onReset={resetSearch}

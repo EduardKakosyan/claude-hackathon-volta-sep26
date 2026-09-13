@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ConditionsView } from './conditions'
-import { formatConditions, PLAIN_ENGLISH, plainEnglish } from './copy'
+import { formatConditions, formatFreshness, offseasonLabel, offseasonLine, PLAIN_ENGLISH, plainEnglish } from './copy'
 import { formatClock } from './dates'
+import type { SourceHealthView } from './status'
 
 /** 2 p.m. ADT (UTC−3) on the fixture-ish day. */
 const TWO_PM = '2026-08-15T17:00:00Z'
@@ -48,10 +49,32 @@ describe('formatConditions', () => {
     )
   })
 
+  it('short: the row column out of season — water then wind, no "Wind", no time', () => {
+    expect(formatConditions(view({ waterTempC: 16.4 }), { short: true })).toBe('16 °C · 25 km/h SW')
+    expect(formatConditions(view(), { short: true })).toBe('25 km/h SW')
+    expect(formatConditions(view({ waterTempC: 8.6, windKmh: 30.2, windDir: 'NW' }), { short: true })).toBe('9 °C · 30 km/h NW')
+  })
+
+  it('daylight: appends sunrise and sunset in Halifax time after the reading\'s time', () => {
+    // 09:23 UTC = 6:23 a.m. ADT; 23:14 UTC = 8:14 p.m. ADT.
+    expect(formatConditions(view(), { daylight: true })).toBe('Wind 25 km/h SW · 2 p.m. · Sunrise 6:23 a.m. · Sunset 8:14 p.m.')
+    expect(formatConditions(view({ waterTempC: 16.4 }), { daylight: true })).toBe(
+      '16 °C water · Wind 25 km/h SW · 2 p.m. · Sunrise 6:23 a.m. · Sunset 8:14 p.m.',
+    )
+  })
+
+  it('daylight is omitted, not dashed, when the sun does not rise or set that day', () => {
+    expect(formatConditions(view({ sunrise: undefined }), { daylight: true })).toBe('Wind 25 km/h SW · 2 p.m.')
+    expect(formatConditions(view({ sunset: undefined }), { daylight: true })).not.toMatch(/Sunrise|Sunset/)
+  })
+
   it('never asserts the water is safe: neither the conditions line nor any plain-English line', () => {
     // HRM's own words ("under the safe limit") are quoted; the app never adds a claim of its own.
     for (const line of Object.values(PLAIN_ENGLISH)) expect(line).not.toMatch(/water is safe|safe to swim/i)
     expect(formatConditions(view({ waterTempC: 30 }))).not.toMatch(/\bsafe\b/i)
+    expect(formatConditions(view({ waterTempC: 30 }), { short: true, daylight: true })).not.toMatch(/\bsafe\b/i)
+    expect(offseasonLine('hrm')).not.toMatch(/\bsafe\b/i)
+    expect(offseasonLine('province')).not.toMatch(/\bsafe\b/i)
     expect(
       plainEnglish({
         kind: 'live',
@@ -64,5 +87,67 @@ describe('formatConditions', () => {
         confirmedAt: TWO_PM,
       }),
     ).not.toMatch(/water is safe|safe to swim/i)
+  })
+})
+
+describe('offseasonLine', () => {
+  it('names the authority\'s return, and nothing else', () => {
+    expect(offseasonLine('hrm')).toBe('Off-season. Lifeguards return late June.')
+    expect(offseasonLine('province')).toBe('Off-season. Lifeguards return July 1.')
+  })
+})
+
+describe('formatFreshness', () => {
+  /** 8:02 a.m. ADT, and a `now` later the same day so the time reads "today". */
+  const AT = '2026-09-12T11:02:00.000Z'
+  const NOW = new Date('2026-09-12T15:00:00.000Z')
+  const AUGUST = '2026-08-31T20:02:00.000Z'
+  const clean = (source: SourceHealthView['source'], at = AT): SourceHealthView => ({
+    source,
+    lastAttemptAt: at,
+    lastSuccessAt: at,
+    lastError: null,
+  })
+
+  it('in season, one part per source in a fixed order, the conditions feeds collapsed', () => {
+    const health = [clean('buoy'), clean('algae'), clean('wind'), clean('hrm'), clean('parks')]
+    expect(formatFreshness(health, [], NOW)).toBe(
+      'HRM checked today, 8:02 a.m. · Province checked today, 8:02 a.m. · Algae feed checked today, 8:02 a.m. · conditions checked today, 8:02 a.m.',
+    )
+  })
+
+  it('out of season, the authority\'s line replaces its sources\' lines whatever they last said', () => {
+    const health = [clean('hrm', AUGUST), clean('parks', AUGUST), clean('algae', AUGUST), clean('wind'), clean('buoy')]
+    expect(formatFreshness(health, ['hrm', 'province'], NOW)).toBe(
+      'HRM off-season · Province off-season · conditions checked today, 8:02 a.m.',
+    )
+    expect(formatFreshness([clean('wind'), clean('buoy')], ['hrm', 'province'], NOW)).toBe(
+      'HRM off-season · Province off-season · conditions checked today, 8:02 a.m.',
+    )
+  })
+
+  it('one authority off-season keeps the other\'s source lines', () => {
+    const health = [clean('hrm'), clean('algae'), clean('parks', AUGUST), clean('wind'), clean('buoy')]
+    expect(formatFreshness(health, ['province'], NOW)).toBe(
+      'Province off-season · HRM checked today, 8:02 a.m. · conditions checked today, 8:02 a.m.',
+    )
+  })
+
+  it('a conditions feed that failed is named on its own, with its last good read', () => {
+    const buoy: SourceHealthView = { source: 'buoy', lastAttemptAt: AT, lastSuccessAt: AUGUST, lastError: 'HTTP 503' }
+    expect(formatFreshness([clean('wind'), buoy], ['hrm', 'province'], NOW)).toBe(
+      'HRM off-season · Province off-season · Wind checked today, 8:02 a.m. · Buoy last confirmed Aug 31, 5:02 p.m.; could not reach it since',
+    )
+    const never: SourceHealthView = { source: 'wind', lastAttemptAt: AT, lastSuccessAt: null, lastError: 'boom' }
+    expect(formatFreshness([never], [], NOW)).toBe('Wind never read')
+  })
+
+  it('says so when nothing has been read in season', () => {
+    expect(formatFreshness([], [], NOW)).toBe('No source has been read yet')
+  })
+
+  it('the labels the footer uses out of season', () => {
+    expect(offseasonLabel('hrm')).toBe('HRM off-season')
+    expect(offseasonLabel('province')).toBe('Province off-season')
   })
 })

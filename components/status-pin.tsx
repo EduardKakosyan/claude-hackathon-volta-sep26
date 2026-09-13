@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils'
  * The wording and the `unknown` state live in `lib/beach-status.ts` so pins, rows,
  * filters, the map key and the detail view can never drift apart. This module owns
  * one thing: how a state looks. A dashed grey ring keeps the map from inventing a
- * colour for a beach whose status has never been read.
+ * colour for a beach whose status has never been read; a calm solid ring in the
+ * shell's ink is a beach that is out of season, an expected state that must never
+ * look like that error. The two neutrals are the only pins with no fill.
  */
 export { STATUS_LABEL, type PinState }
 
@@ -42,6 +44,12 @@ const statusPinVariants = cva(
         state: 'unknown',
         hollow: true,
         class: 'border-dashed border-status-unknown bg-white',
+      },
+      // Off-season: a ring in the ink, filled white, whichever authority. Nothing is
+      // tested or supervised either way, so the hollow distinction has nothing to say.
+      {
+        state: 'offseason',
+        class: 'border-solid border-(--beach-ink) bg-white',
       },
     ],
     defaultVariants: { state: 'unknown', hollow: false, selected: false },

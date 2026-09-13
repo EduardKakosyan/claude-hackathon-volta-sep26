@@ -4,7 +4,17 @@ import { ChevronDown } from 'lucide-react'
 
 import { StatusPin } from '@/components/status-pin'
 import { FILTER_LABEL } from '@/lib/beach-filter'
-import { PIN_STATES, UNKNOWN_CAVEAT } from '@/lib/beach-status'
+import { PIN_STATES, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
+
+/**
+ * What each pin means. The filter wording serves for the four states a visitor
+ * can act on; off-season needs a clause, because its ring is deliberately the
+ * calm one and its rows lead with conditions instead of a status word.
+ */
+const KEY_LABEL: Record<PinState, string> = {
+  ...FILTER_LABEL,
+  offseason: 'Off-season: not tested or supervised; rows show conditions instead',
+}
 
 /**
  * One key for the whole map: all five states, plus what the hollow ring means.
@@ -22,7 +32,7 @@ export function MapKey() {
           {PIN_STATES.map((state) => (
             <li key={state}>
               <StatusPin state={state} />
-              <span>{FILTER_LABEL[state]}</span>
+              <span>{KEY_LABEL[state]}</span>
             </li>
           ))}
         </ul>

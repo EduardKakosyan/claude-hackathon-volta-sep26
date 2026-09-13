@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeachList } from '@/components/beach-list'
+import type { ConditionsView } from '@/lib/conditions'
 import { HALIFAX, sortByDistance } from '@/lib/geo'
 import { BEACHES } from '@/lib/seed/beaches'
 
@@ -239,6 +240,75 @@ describe('BeachList', () => {
 
     expect(document.querySelectorAll('.beach-shell-row-distance')).toHaveLength(1)
     expect(document.querySelector(`[data-beach-id="${beaches[1].id}"] .beach-shell-row-distance`)).toBeNull()
+  })
+
+  describe('out of season', () => {
+    const conditions: ConditionsView = {
+      windKmh: 19.4,
+      windDir: 'SW',
+      airTempC: 12,
+      observedAt: '2026-09-12T19:30:00Z',
+      sunrise: '2026-09-12T09:41:00Z',
+      sunset: '2026-09-12T22:32:00Z',
+    }
+    const statusOf = (id: string) => document.querySelector(`[data-beach-id="${id}"] .beach-shell-row-status`)!
+
+    it('an off-season row shows its conditions where the status word was: water first on an ocean beach, wind alone on a lake', () => {
+      const lake = BEACHES.find((b) => b.id === 'hrm-chocolate-lake')!
+      const ocean = BEACHES.find((b) => b.id === 'ns-rainbow-haven')!
+      render(
+        <BeachList
+          beaches={[lake, ocean]}
+          status={{ [lake.id]: 'offseason', [ocean.id]: 'offseason' }}
+          distances={{}}
+          conditions={{ [lake.id]: conditions, [ocean.id]: { ...conditions, waterTempC: 16.4 } }}
+          selectedId={null}
+          onSelect={mockOnSelect}
+          onReset={mockOnReset}
+        />,
+      )
+
+      expect(statusOf(lake.id)).toHaveTextContent(/^19 km\/h SW$/)
+      expect(statusOf(ocean.id)).toHaveTextContent(/^16 °C · 19 km\/h SW$/)
+      for (const id of [lake.id, ocean.id]) {
+        expect(statusOf(id)).toHaveAttribute('data-state', 'offseason')
+        expect(statusOf(id)).toHaveAttribute('data-conditions', 'true')
+        expect(statusOf(id).textContent).not.toMatch(/Off-season|p\.m\.|Sunrise/)
+      }
+    })
+
+    it('an off-season row with no conditions keeps the word rather than going blank', () => {
+      const beach = BEACHES[0]
+      render(
+        <BeachList
+          beaches={[beach]}
+          status={{ [beach.id]: 'offseason' }}
+          distances={{}}
+          conditions={{}}
+          selectedId={null}
+          onSelect={mockOnSelect}
+          onReset={mockOnReset}
+        />,
+      )
+      expect(statusOf(beach.id)).toHaveTextContent('Off-season')
+      expect(statusOf(beach.id)).toHaveAttribute('data-conditions', 'false')
+    })
+
+    it('in season the status word stays even when conditions are known: they belong to the detail', () => {
+      const beach = BEACHES.find((b) => b.id === 'hrm-chocolate-lake')!
+      render(
+        <BeachList
+          beaches={[beach]}
+          status={{ [beach.id]: 'open' }}
+          distances={{}}
+          conditions={{ [beach.id]: conditions }}
+          selectedId={null}
+          onSelect={mockOnSelect}
+          onReset={mockOnReset}
+        />,
+      )
+      expect(statusOf(beach.id)).toHaveTextContent(/^Open$/)
+    })
   })
 
   it('renders rows in the order given, not alphabetically', () => {

@@ -65,6 +65,56 @@ describe('loadPage', () => {
     expect(data.conditions).toEqual({})
   })
 
+  describe('?fixture=offseason', () => {
+    it('in fixture mode serves every beach as offseason, with conditions and health', async () => {
+      const data = await loadPage({ params: { fixture: 'offseason' }, store: new FixtureStore(() => NOW), now: NOW })
+      expect(data.storeKind).toBe('fixture')
+      expect(data.replayDay).toBeUndefined()
+      expect(Object.keys(data.status)).toHaveLength(BEACHES.length)
+      for (const beach of BEACHES) {
+        expect(data.status[beach.id]).toMatchObject({ kind: 'live', state: 'offseason', source: 'season' })
+      }
+      expect(Object.keys(data.conditions)).toHaveLength(BEACHES.length)
+      expect(data.conditions['ns-rainbow-haven']?.waterTempC).toBe(16.4)
+      expect(data.health.map((h) => h.source).sort()).toEqual(['algae', 'buoy', 'hrm', 'parks', 'wind'])
+    })
+
+    it('is ignored with a database: a supabase store has no fixture days', async () => {
+      const store = new MemoryStore()
+      await seedRefresh(store)
+      await store.upsertLiveStatus([
+        {
+          kind: 'live',
+          beachId: 'hrm-chocolate-lake',
+          state: 'open',
+          source: 'hrm',
+          verbatim: 'Open',
+          sourceUrl: 'https://www.halifax.ca/',
+          postedAt: null,
+          confirmedAt: '2026-09-12T14:00:00Z',
+        },
+      ])
+      const data = await loadPage({ params: { fixture: 'offseason' }, store, now: NOW })
+      expect(data.storeKind).toBe('supabase')
+      expect(Object.keys(data.status)).toEqual(['hrm-chocolate-lake'])
+      expect(data.status['hrm-chocolate-lake']).toMatchObject({ state: 'open', source: 'hrm' })
+    })
+
+    it('an unknown variant, or a repeated one, is the plain fixture day', async () => {
+      const plain = await loadPage({ params: { fixture: 'winter' }, store: new FixtureStore(() => NOW), now: NOW })
+      expect(plain.status['hrm-chocolate-lake']).toMatchObject({ state: 'open', source: 'hrm' })
+      const first = await loadPage({ params: { fixture: ['offseason', 'x'] }, store: new FixtureStore(() => NOW), now: NOW })
+      expect(first.status['hrm-chocolate-lake']).toMatchObject({ state: 'offseason', source: 'season' })
+    })
+
+    it('composes with a replay day, which still wins the status source', async () => {
+      const data = await loadPage({ params: { fixture: 'offseason', day: '2026-08-14' }, store: new FixtureStore(() => NOW), now: NOW })
+      expect(data.replayDay).toBe('2026-08-14')
+      expect(data.status['ns-rainbow-haven']).toMatchObject({ kind: 'replay', state: 'advisory' })
+      expect(data.conditions).toEqual({})
+    })
+  })
+
   it('drops a malformed day and an unknown beach', async () => {
     const data = await loadPage({
       params: { day: 'august', beach: 'nope' },

@@ -171,6 +171,8 @@
 .beach-shell-row-status[data-state='advisory'] { color: #92580a; }
 .beach-shell-row-status[data-state='closed'] { color: #a81f1f; }
 .beach-shell-row-status[data-state='unknown'], .beach-shell-row-status[data-state='offseason'] { color: var(--beach-muted); }
+/* Out of season the column is the conditions: figures, in the ink, since they are the row's answer now. */
+.beach-shell-row-status[data-conditions='true'] { color: var(--beach-ink); font-variant-numeric: tabular-nums; }
 .beach-shell-row-arrow { color: var(--beach-accent); flex: none; opacity: 0; transform: translateX(-4px); transition: opacity var(--beach-duration) var(--beach-ease), transform var(--beach-duration) var(--beach-ease); }
 .beach-shell-row:hover .beach-shell-row-arrow, .beach-shell-row:focus-visible .beach-shell-row-arrow { opacity: 1; transform: none; }
 
@@ -218,10 +220,14 @@
 .beach-detail-status[data-state='unknown'] .beach-detail-status-label, .beach-detail-status[data-state='offseason'] .beach-detail-status-label { color: var(--beach-muted); }
 .beach-detail-status-quote { display: block; margin: 5px 0 0; font: italic 16px/1.4 var(--beach-serif); color: var(--beach-ink); quotes: '\201C' '\201D'; }
 .beach-detail-status-source { margin: 5px 0 0; font-size: 11px; line-height: 1.5; color: var(--beach-muted); }
+/* Off-season: the block holds one quiet line, set like the plain English, not a label. */
+.beach-detail-status-line { margin: 0; font-size: 13px; line-height: 1.5; color: var(--beach-ink); }
 
 .beach-detail-plain { margin: 12px 0 0; font-size: 13px; line-height: 1.6; }
 /* One quiet line of current conditions; the figures are the reading's, never invented. */
 .beach-detail-conditions { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: var(--beach-muted); font-variant-numeric: tabular-nums; }
+/* Out of season it is the answer, so it leads under the heading in the ink at the plain-English size. */
+.beach-detail-conditions[data-lead='true'] { margin-top: 12px; font-size: 13px; line-height: 1.6; color: var(--beach-ink); }
 
 .beach-detail-actions { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; }
 .beach-detail-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 12px; border: 1px solid var(--beach-accent); border-radius: 4px; font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; transition: background-color var(--beach-duration) var(--beach-ease), border-color var(--beach-duration) var(--beach-ease); }
@@ -356,6 +362,8 @@
   .beach-detail-status-source { margin-top: 2px; font-size: 10px; line-height: 1.4; }
   .beach-detail-plain { margin-top: 6px; font-size: 12px; line-height: 1.4; }
   .beach-detail-conditions { margin-top: 4px; font-size: 11px; line-height: 1.4; }
+  .beach-detail-conditions[data-lead='true'] { margin-top: 6px; font-size: 12px; line-height: 1.4; }
+  .beach-detail-status-line { font-size: 12px; line-height: 1.4; }
   .beach-detail-actions { margin-top: 6px; }
   .beach-detail-action { min-height: 40px; }
   .beach-detail-facts { margin-top: 14px; padding-top: 12px; }

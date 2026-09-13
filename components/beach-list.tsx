@@ -5,6 +5,8 @@ import { ArrowUpRight, Waves } from 'lucide-react'
 import { StatusPin } from '@/components/status-pin'
 import { resolveState } from '@/lib/beach-filter'
 import { statusPresentation, type PinState } from '@/lib/beach-status'
+import type { ConditionsView } from '@/lib/conditions'
+import { formatConditions } from '@/lib/copy'
 import { formatDistance } from '@/lib/geo'
 import type { Beach } from '@/lib/seed/beaches'
 
@@ -14,6 +16,12 @@ export interface BeachListProps {
   status: Record<string, PinState | undefined>
   /** Kilometres from the origin per beach id; a beach with no entry shows no distance. */
   distances: Record<string, number | undefined>
+  /**
+   * Current conditions per beach id. Out of season they take the status
+   * word's place on the row, since there is no status to give; in season the
+   * detail carries them.
+   */
+  conditions?: Record<string, ConditionsView | undefined>
   selectedId: string | null
   onSelect: (id: string) => void
   onReset: () => void
@@ -25,7 +33,7 @@ export interface BeachListProps {
  * row the visitor left from when the detail view closes. Order is the caller's:
  * closest-first from the user or from downtown Halifax.
  */
-export function BeachList({ beaches, status, distances, selectedId, onSelect, onReset }: BeachListProps) {
+export function BeachList({ beaches, status, distances, conditions = {}, selectedId, onSelect, onReset }: BeachListProps) {
   if (beaches.length === 0) {
     return (
       <div className="beach-shell-empty">
@@ -46,6 +54,9 @@ export function BeachList({ beaches, status, distances, selectedId, onSelect, on
         const { label } = statusPresentation(state, beach.authority)
         const km = distances[beach.id]
         const distance = km === undefined ? '' : formatDistance(km)
+        // Off-season the right-hand column is the conditions, short form; with
+        // nothing to show it falls back to the word rather than go blank.
+        const current = state === 'offseason' ? conditions[beach.id] : undefined
         return (
           <li key={beach.id}>
             <button
@@ -68,8 +79,8 @@ export function BeachList({ beaches, status, distances, selectedId, onSelect, on
                 <span>
                   {beach.waterBody} · {beach.region}
                 </span>
-                <span className="beach-shell-row-status" data-state={state}>
-                  {label}
+                <span className="beach-shell-row-status" data-state={state} data-conditions={current !== undefined}>
+                  {current ? formatConditions(current, { short: true }) : label}
                 </span>
               </span>
               <ArrowUpRight className="beach-shell-row-arrow" size={17} aria-hidden="true" />

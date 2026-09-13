@@ -135,9 +135,9 @@ describe('beach-status', () => {
         expect(result.label).toBe('Off-season')
       })
 
-      it('explains off-season status', () => {
-        const result = statusPresentation('offseason', 'hrm')
-        expect(result.explanation).toContain('off-season')
+      it('explains off-season with when that authority\'s lifeguards return', () => {
+        expect(statusPresentation('offseason', 'hrm').explanation).toBe('Off-season. Lifeguards return late June.')
+        expect(statusPresentation('offseason', 'province').explanation).toBe('Off-season. Lifeguards return July 1.')
       })
 
       it('has no caveat', () => {

@@ -1,4 +1,5 @@
 import { HALIFAX_BUOY, type BuoyReading, type ConditionsRow } from '@/lib/conditions'
+import { offseasonStatus } from '@/lib/season'
 import { BEACHES, BEACHES_BY_ID, HRM_STATUS_URL, type Beach, type BeachState, type Region } from '@/lib/seed/beaches'
 import type { LiveStatus, SourceHealthView } from '@/lib/status'
 
@@ -138,6 +139,34 @@ export const FIXTURE_HEALTH: SourceHealthView[] = (['hrm', 'parks', 'algae', 'wi
     lastError: null,
   }),
 )
+
+// ---------------------------------------------------------------- off-season
+
+/**
+ * The other fixture day, reached with `?fixture=offseason`: 8:02 a.m. on a
+ * Saturday in mid-September, when neither authority tests or supervises. It is
+ * exactly what the refresh writes out of season (lib/ingest/refresh-live.ts):
+ * every beach off-season from source `season`, no status source attempted
+ * since the last in-season run, wind and the buoy still read hourly. The test
+ * flag exists so these screens can be looked at in any month without faking
+ * the clock in the browser.
+ */
+export const FIXTURE_OFFSEASON_CHECKED_AT = '2026-09-12T11:02:00Z'
+
+/** Each authority's last in-season read: the evening its window closed. */
+const LAST_IN_SEASON_READ = { hrm: '2026-08-31T20:02:00Z', province: '2026-08-30T20:02:00Z' } as const
+
+/** One off-season row per roster beach. */
+export const FIXTURE_OFFSEASON: LiveStatus[] = BEACHES.map((beach) => offseasonStatus(beach, FIXTURE_OFFSEASON_CHECKED_AT))
+
+/** Status sources rest on their last in-season read; the conditions feeds are current. */
+export const FIXTURE_OFFSEASON_HEALTH: SourceHealthView[] = [
+  { source: 'hrm', lastAttemptAt: LAST_IN_SEASON_READ.hrm, lastSuccessAt: LAST_IN_SEASON_READ.hrm, lastError: null },
+  { source: 'parks', lastAttemptAt: LAST_IN_SEASON_READ.province, lastSuccessAt: LAST_IN_SEASON_READ.province, lastError: null },
+  { source: 'algae', lastAttemptAt: LAST_IN_SEASON_READ.province, lastSuccessAt: LAST_IN_SEASON_READ.province, lastError: null },
+  { source: 'wind', lastAttemptAt: FIXTURE_OFFSEASON_CHECKED_AT, lastSuccessAt: FIXTURE_OFFSEASON_CHECKED_AT, lastError: null },
+  { source: 'buoy', lastAttemptAt: FIXTURE_OFFSEASON_CHECKED_AT, lastSuccessAt: FIXTURE_OFFSEASON_CHECKED_AT, lastError: null },
+]
 
 // ---------------------------------------------------------------- conditions
 

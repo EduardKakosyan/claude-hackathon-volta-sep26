@@ -4,6 +4,16 @@ import { SEED_DAYS } from '@/lib/seed/days'
 import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
 
 /**
+ * The fixture days a test may ask for by name with `?fixture=`. Only the
+ * fixture store knows them; every other store ignores the flag.
+ */
+export type FixtureVariant = 'offseason'
+
+export function isFixtureVariant(value: unknown): value is FixtureVariant {
+  return value === 'offseason'
+}
+
+/**
  * The read port the page depends on. `FixtureStore` (fixture-store.ts) serves it
  * from a hand-written day plus the seeded replay days in git, with no credentials
  * at all; `SupabaseStore` (supabase-store.ts) serves it from the tables. The page
@@ -11,6 +21,12 @@ import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
  */
 export interface PageStore {
   readonly kind: 'fixture' | 'supabase'
+  /**
+   * Fixture mode only: the same store serving another hand-written day, so the
+   * rig can reach the off-season screens in any month. Absent on a real store,
+   * which is how `?fixture=` is ignored with a database.
+   */
+  fixtureVariant?(variant: FixtureVariant): PageStore
   liveStatus(): Promise<LiveStatus[]>
   dayStatus(day: string): Promise<StatusDayView[]>
   /** Every status_day row with fromDay <= day <= toDay, any beach. */

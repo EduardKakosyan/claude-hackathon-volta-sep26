@@ -4,7 +4,7 @@ import { BEACHES, BEACHES_BY_ID, type Beach } from '@/lib/seed/beaches'
 import { toReplay, type SourceHealthView, type StatusDayView, type StatusView } from '@/lib/status'
 import { readUrlState } from '@/lib/url-state'
 
-import type { PageStore } from './store'
+import { isFixtureVariant, type PageStore } from './store'
 
 export const HISTORY_DAYS = 14
 
@@ -38,9 +38,16 @@ export interface LoadPageInput {
   now?: Date
 }
 
-/** The whole read contract. `day` switches the status source; nothing else does. */
-export async function loadPage({ params, store, now = new Date() }: LoadPageInput): Promise<PageData> {
+/**
+ * The whole read contract. `day` switches the status source; nothing else does.
+ * `?fixture=<variant>` is the rig's one test-only flag: it picks another
+ * hand-written day from a fixture store and means nothing to a real one, so a
+ * deployment with a database can never be talked into showing it.
+ */
+export async function loadPage({ params, store: requested, now = new Date() }: LoadPageInput): Promise<PageData> {
   const url = readUrlState(params, (id) => id in BEACHES_BY_ID)
+  const fixture = Array.isArray(params.fixture) ? params.fixture[0] : params.fixture
+  const store = isFixtureVariant(fixture) && requested.fixtureVariant ? requested.fixtureVariant(fixture) : requested
   const today = halifaxToday(now)
   const historyTo = url.day ?? today
   const historyFrom = addDays(historyTo, -(HISTORY_DAYS - 1))

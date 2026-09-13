@@ -3,9 +3,11 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeachApp, SUGGEST_URL, type BeachAppProps } from '@/components/beach-app'
 import { SHEET_MEDIA } from '@/components/bottom-sheet'
+import type { ConditionsView } from '@/lib/conditions'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
 import type { GeolocationProvider } from '@/lib/geolocation'
-import type { LiveStatus, StatusView } from '@/lib/status'
+import { offseasonStatus } from '@/lib/season'
+import type { LiveStatus, SourceHealthView, StatusView } from '@/lib/status'
 
 interface MockBeachMapProps {
   beaches: typeof BEACHES
@@ -411,6 +413,97 @@ describe('BeachApp', () => {
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('No source has been read yet')
     expect(footer?.textContent).not.toContain('fixture')
+  })
+
+  it('in supabase mode the footer names each source it read, the conditions feeds as one', () => {
+    const at = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const health: SourceHealthView[] = (['hrm', 'parks', 'algae', 'wind', 'buoy'] as const).map((source) => ({
+      source,
+      lastAttemptAt: at,
+      lastSuccessAt: at,
+      lastError: null,
+    }))
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'supabase', health })} />)
+
+    const line = container.querySelector('.beach-shell-footer')!.textContent!
+    expect(line).toMatch(/HRM checked today, \d{1,2}:\d{2} [ap]\.m\. · Province checked today/)
+    expect(line).toMatch(/Algae feed checked today, .* · conditions checked today, /)
+    expect(line).not.toMatch(/Wind checked|Buoy checked/)
+  })
+
+  describe('out of season', () => {
+    const NOW = '2026-09-12T11:02:00.000Z'
+    const allOffseason = (): Record<string, StatusView | undefined> =>
+      Object.fromEntries(BEACHES.map((b) => [b.id, offseasonStatus(b, NOW)]))
+    const wind: ConditionsView = { windKmh: 19, windDir: 'SW', observedAt: '2026-09-12T19:30:00Z', sunrise: '2026-09-12T09:41:00Z', sunset: '2026-09-12T22:32:00Z' }
+    const allConditions = (): Record<string, ConditionsView | undefined> =>
+      Object.fromEntries(BEACHES.map((b) => [b.id, b.id === 'ns-rainbow-haven' ? { ...wind, waterTempC: 16.4 } : wind]))
+
+    it('every row shows its conditions where the status word was, and none says "No status"', () => {
+      const { container } = render(<BeachApp {...makePageData({ status: allOffseason(), conditions: allConditions() })} />)
+
+      const cells = [...container.querySelectorAll('.beach-shell-row-status')]
+      expect(cells).toHaveLength(35)
+      expect(cells.every((el) => el.getAttribute('data-state') === 'offseason')).toBe(true)
+      expect(cells.every((el) => /km\/h/.test(el.textContent ?? ''))).toBe(true)
+      expect(container.querySelector('[data-beach-id="hrm-chocolate-lake"] .beach-shell-row-status')).toHaveTextContent(/^19 km\/h SW$/)
+      expect(container.querySelector('[data-beach-id="ns-rainbow-haven"] .beach-shell-row-status')).toHaveTextContent(/^16 °C · 19 km\/h SW$/)
+      expect(container.querySelector('.beach-shell-footer')?.textContent).not.toContain('no status available')
+    })
+
+    it('the open detail leads with wind and daylight, then the quiet line', async () => {
+      const user = userEvent.setup()
+      render(<BeachApp {...makePageData({ status: allOffseason(), conditions: allConditions() })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      const line = document.querySelector('.beach-detail-conditions')!
+      expect(line).toHaveTextContent('Wind 19 km/h SW · 4:30 p.m. · Sunrise 6:41 a.m. · Sunset 7:32 p.m.')
+      expect(line.previousElementSibling).toHaveClass('beach-detail-head')
+      expect(document.querySelector('.beach-detail-status')).toHaveTextContent('Off-season. Lifeguards return late June.')
+      expect(document.querySelector('.beach-detail-plain')).toBeNull()
+    })
+
+    it('with a database the footer says both authorities are off-season and when conditions were checked', () => {
+      const at = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+      const august = { lastAttemptAt: '2026-08-31T20:02:00.000Z', lastSuccessAt: '2026-08-31T20:02:00.000Z', lastError: null }
+      const health: SourceHealthView[] = [
+        { source: 'hrm', ...august },
+        { source: 'parks', ...august },
+        { source: 'algae', ...august },
+        { source: 'wind', lastAttemptAt: at, lastSuccessAt: at, lastError: null },
+        { source: 'buoy', lastAttemptAt: at, lastSuccessAt: at, lastError: null },
+      ]
+      const { container } = render(
+        <BeachApp {...makePageData({ storeKind: 'supabase', status: allOffseason(), conditions: allConditions(), health })} />,
+      )
+
+      const line = container.querySelector('.beach-shell-footer')!.textContent!
+      expect(line).toMatch(/HRM off-season · Province off-season · conditions checked today, \d{1,2}:\d{2} [ap]\.m\./)
+      expect(line).not.toMatch(/HRM checked|Aug 31/)
+    })
+
+    it('in fixture mode the footer keeps the fixture line and adds the off-season ones', () => {
+      const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture', status: allOffseason(), conditions: allConditions() })} />)
+
+      expect(container.querySelector('.beach-shell-footer')?.textContent).toContain(
+        'Showing a fixture day, not live status · HRM off-season · Province off-season',
+      )
+    })
+
+    it('one authority still in season keeps its rows\' status words and its footer line', () => {
+      const status = allOffseason()
+      for (const beach of BEACHES) {
+        if (beach.authority === 'hrm') status[beach.id] = makeLiveStatus(beach.id, 'open')
+      }
+      const { container } = render(<BeachApp {...makePageData({ status, conditions: allConditions() })} />)
+
+      expect(container.querySelector('[data-beach-id="hrm-chocolate-lake"] .beach-shell-row-status')).toHaveTextContent(/^Open$/)
+      expect(container.querySelector('[data-beach-id="ns-rissers"] .beach-shell-row-status')).toHaveTextContent(/km\/h/)
+      const footer = container.querySelector('.beach-shell-footer')!.textContent!
+      expect(footer).toContain('Province off-season')
+      expect(footer).not.toContain('HRM off-season')
+    })
   })
 
   it('with a populated status record the count matches', () => {

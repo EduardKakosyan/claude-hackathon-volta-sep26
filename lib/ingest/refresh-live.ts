@@ -1,13 +1,14 @@
-import { BEACHES } from '@/lib/seed/beaches'
+import { BEACHES, type Authority } from '@/lib/seed/beaches'
 import type { PageStore, StatusWriter } from '@/lib/db/store'
-import type { SourceHealthView, StatusDayView, StatusIngestSource as IngestSource } from '@/lib/status'
+import type { LiveStatus, SourceHealthView, StatusDayView, StatusIngestSource as IngestSource } from '@/lib/status'
 import { describeError } from '@/lib/ingest/errors'
 import { halifaxDay } from '@/lib/ingest/halifax-day'
 import { resolve } from '@/lib/ingest/resolve'
 import { fetchAlgae, parseAlgae } from '@/lib/ingest/sources/algae'
 import { fetchHrm, parseHrm } from '@/lib/ingest/sources/hrm'
 import { fetchParks, parseParks } from '@/lib/ingest/sources/parks'
-import type { IngestAnomaly, ParseResult, Roster, SourceReading } from '@/lib/ingest/types'
+import type { CalendarDay, IngestAnomaly, ParseResult, Roster, SourceReading } from '@/lib/ingest/types'
+import { AUTHORITIES, inSeason, offseasonStatus } from '@/lib/season'
 
 /** One source's fetch + parse pair, injectable so tests never touch the network. */
 export interface SourceFetcher {
@@ -40,16 +41,43 @@ export interface SourceOutcome {
 export interface IngestResult {
   attemptedAt: string
   today: string
+  /** Only the sources that were read: an out-of-season source records no attempt. */
   sources: SourceOutcome[]
+  /** The authorities written as off-season this run, without a fetch. */
+  offseason: Authority[]
   written: number
   omitted: number
 }
 
 /**
- * Reads the three government sources concurrently, resolves every roster beach it
- * can attribute, and upserts only what it read: live status, today's status_day
- * row, and source_health. A failed source leaves its beaches' existing rows
- * untouched — `resolve()` already excludes readings from sources not in `ok`.
+ * Which sources a day's refresh reads. HRM's table is HRM's season; the parks
+ * advisories are the province's. The algae feed attributes a notice to any
+ * beach on the named lake, HRM lakes included, so it is read whenever any
+ * beach is in season — a bloom on an HRM lake in the last days of June must
+ * close that beach even though the province has not opened yet.
+ */
+export function activeSources(today: CalendarDay): IngestSource[] {
+  const hrm = inSeason('hrm', today)
+  const province = inSeason('province', today)
+  const active: IngestSource[] = []
+  if (hrm) active.push('hrm')
+  if (province) active.push('parks')
+  if (hrm || province) active.push('algae')
+  return active
+}
+
+/**
+ * Reads the government sources whose authority is in season, concurrently,
+ * resolves every in-season roster beach it can attribute, and upserts only what
+ * it read: live status, today's status_day row, and source_health. A failed
+ * source leaves its beaches' existing rows untouched — `resolve()` already
+ * excludes readings from sources not in `ok`.
+ *
+ * Out of season nothing is fetched for that authority: every one of its beaches
+ * is written as `offseason` from source `season` (lib/season.ts), so the page
+ * leads with conditions instead of reading a stale in-season row as today's,
+ * and no `unknown` can look like an outage. The skipped source records no
+ * attempt, so its health row keeps the last in-season read.
  */
 export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> {
   const { writer, roster = BEACHES, log } = deps
@@ -62,7 +90,7 @@ export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> 
   const ok = new Set<IngestSource>()
   const outcomes: SourceOutcome[] = []
 
-  const sources: IngestSource[] = ['hrm', 'parks', 'algae']
+  const sources = activeSources(today)
   await Promise.all(
     sources.map(async (source) => {
       const { fetch: doFetch, parse } = fetchers[source]!
@@ -81,7 +109,21 @@ export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> 
     }),
   )
 
-  const { statuses, omitted } = resolve({ roster, readings, ok, today, now: nowIso })
+  const offseason = AUTHORITIES.filter((authority) => !inSeason(authority, today))
+  const inSeasonRoster = roster.filter((beach) => inSeason(beach.authority, today))
+  const resolved = resolve({ roster: inSeasonRoster, readings, ok, today, now: nowIso })
+  const resolvedById = new Map(resolved.statuses.map((s) => [s.beachId, s]))
+
+  // Roster order: an in-season beach carries what its source said (or nothing,
+  // and stays omitted); an out-of-season beach carries the calendar's row.
+  const statuses: LiveStatus[] = []
+  for (const beach of roster) {
+    if (!inSeason(beach.authority, today)) statuses.push(offseasonStatus(beach, nowIso))
+    else {
+      const row = resolvedById.get(beach.id)
+      if (row) statuses.push(row)
+    }
+  }
 
   const dayRows: StatusDayView[] = statuses.map((s) => ({
     beachId: s.beachId,
@@ -107,5 +149,5 @@ export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> 
   await writer.upsertStatusDays(dayRows)
   await writer.upsertSourceHealth(mergedHealth)
 
-  return { attemptedAt: nowIso, today, sources: outcomes, written, omitted: omitted.length }
+  return { attemptedAt: nowIso, today, sources: outcomes, offseason, written, omitted: resolved.omitted.length }
 }

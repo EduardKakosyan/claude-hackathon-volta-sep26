@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react'
 import { BeachActions } from '@/components/beach-actions'
 import { authorityName, statusPresentation, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import type { ConditionsView } from '@/lib/conditions'
-import { formatConditions, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
+import { formatConditions, offseasonLine, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
 import { addDays, formatDay, formatDayShort, formatPosted } from '@/lib/dates'
 import { formatDistance } from '@/lib/geo'
 import type { Beach } from '@/lib/seed/beaches'
@@ -46,6 +46,11 @@ const BASIS_LINE: Record<DayBasis, string> = {
  * only one) and no scroller of its own (the sheet or panel column is the only
  * thing that scrolls), and every rule it wears is a `.beach-detail-*` class in
  * beach-shell.css.
+ *
+ * Out of season the same note flips what it leads with: the conditions line,
+ * with sunrise and sunset, comes first under the heading, the status block
+ * holds one quiet line saying when the lifeguards return, and there is no
+ * plain-English line — there is no status to explain.
  */
 export function BeachDetail({
   beach,
@@ -60,6 +65,7 @@ export function BeachDetail({
   const state: PinState = status?.state ?? 'unknown'
   const { label } = statusPresentation(state, beach.authority)
   const distance = distanceKm === undefined ? null : formatDistance(distanceKm)
+  const offseason = status?.kind === 'live' && status.state === 'offseason'
 
   // The row that opened this has unmounted, so focus would otherwise fall to
   // <body>; the name is where a screen reader should land.
@@ -99,8 +105,14 @@ export function BeachDetail({
       ? `This app has no status for this beach on that day. ${UNKNOWN_CAVEAT}`
       : `No government source has been read for this beach yet, so no colour is shown. ${UNKNOWN_CAVEAT}`
 
+  const conditionsLine = conditions ? (
+    <p className="beach-detail-conditions" data-lead={offseason}>
+      {formatConditions(conditions, { daylight: offseason })}
+    </p>
+  ) : null
+
   return (
-    <article className="beach-detail" aria-label={beach.name}>
+    <article className="beach-detail" aria-label={beach.name} data-offseason={offseason}>
       <header className="beach-detail-head">
         <h2 className="beach-detail-name" tabIndex={-1} ref={nameRef}>
           {beach.name}
@@ -110,16 +122,24 @@ export function BeachDetail({
         </p>
       </header>
 
+      {offseason ? conditionsLine : null}
+
       <section className="beach-detail-status" data-state={state} aria-label="Status">
-        <p className="beach-detail-status-label">{label}</p>
-        {quote ? <q className="beach-detail-status-quote">{quote}</q> : null}
-        <p className="beach-detail-status-source">{attribution}</p>
-        {basis ? <p className="beach-detail-status-source">{basis}</p> : null}
+        {offseason ? (
+          <p className="beach-detail-status-line">{offseasonLine(beach.authority)}</p>
+        ) : (
+          <>
+            <p className="beach-detail-status-label">{label}</p>
+            {quote ? <q className="beach-detail-status-quote">{quote}</q> : null}
+            <p className="beach-detail-status-source">{attribution}</p>
+            {basis ? <p className="beach-detail-status-source">{basis}</p> : null}
+          </>
+        )}
       </section>
 
-      <p className="beach-detail-plain">{plain}</p>
+      {offseason ? null : <p className="beach-detail-plain">{plain}</p>}
 
-      {conditions ? <p className="beach-detail-conditions">{formatConditions(conditions)}</p> : null}
+      {offseason ? null : conditionsLine}
 
       <BeachActions beach={beach} />
 

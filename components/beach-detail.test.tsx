@@ -255,6 +255,77 @@ describe('BeachDetail', () => {
     })
   })
 
+  describe('out of season', () => {
+    /** A September afternoon: 4:30 p.m. ADT, sun up 6:41 a.m., down 7:32 p.m. */
+    const conditions: ConditionsView = {
+      windKmh: 19,
+      windDir: 'SW',
+      airTempC: 14,
+      observedAt: '2026-09-12T19:30:00Z',
+      sunrise: '2026-09-12T09:41:00Z',
+      sunset: '2026-09-12T22:32:00Z',
+    }
+    const offseason = (overrides: Partial<LiveStatus> = {}) =>
+      makeLiveStatus('offseason', { source: 'season', verbatim: 'Off-season', ...overrides })
+
+    it('leads with the conditions line, sunrise and sunset included, straight under the heading', () => {
+      render(<BeachDetail beach={createBeach({ water: 'fresh' })} status={offseason()} {...baseProps} conditions={conditions} />)
+
+      const line = document.querySelector('.beach-detail-conditions')!
+      expect(line).toHaveTextContent('Wind 19 km/h SW · 4:30 p.m. · Sunrise 6:41 a.m. · Sunset 7:32 p.m.')
+      expect(line).toHaveAttribute('data-lead', 'true')
+      expect(line.previousElementSibling).toHaveClass('beach-detail-head')
+      expect(line.nextElementSibling).toHaveClass('beach-detail-status')
+      expect(document.querySelector('article')).toHaveAttribute('data-offseason', 'true')
+    })
+
+    it('an ocean beach near the buoy still leads with the water figure', () => {
+      render(<BeachDetail beach={createBeach()} status={offseason()} {...baseProps} conditions={{ ...conditions, waterTempC: 16.4 }} />)
+
+      expect(document.querySelector('.beach-detail-conditions')).toHaveTextContent(/^16 °C water · Wind 19 km\/h SW · 4:30 p\.m\. · Sunrise/)
+    })
+
+    it('the status block is one quiet line saying when that authority\'s lifeguards return, and there is no plain-English line', () => {
+      const { unmount } = render(<BeachDetail beach={createBeach({ authority: 'hrm' })} status={offseason()} {...baseProps} conditions={conditions} />)
+
+      expect(statusBox()).toHaveAttribute('data-state', 'offseason')
+      expect(statusBox()).toHaveTextContent(/^Off-season\. Lifeguards return late June\.$/)
+      expect(document.querySelector('.beach-detail-status-label')).toBeNull()
+      expect(document.querySelector('.beach-detail-status-source')).toBeNull()
+      expect(document.querySelector('.beach-detail-plain')).toBeNull()
+      unmount()
+
+      render(<BeachDetail beach={createBeach({ authority: 'province' })} status={offseason()} {...baseProps} conditions={conditions} />)
+      expect(statusBox()).toHaveTextContent(/^Off-season\. Lifeguards return July 1\.$/)
+    })
+
+    it('with no conditions the note is the quiet line and the actions, nothing invented', () => {
+      render(<BeachDetail beach={createBeach()} status={offseason()} {...baseProps} />)
+
+      expect(document.querySelector('.beach-detail-conditions')).toBeNull()
+      expect(statusBox()).toHaveTextContent('Off-season. Lifeguards return late June.')
+      expect(document.querySelector('article')?.textContent).not.toMatch(/wind|unavailable|sunrise/i)
+      expect(screen.getByRole('link', { name: /Directions/ })).toBeInTheDocument()
+    })
+
+    it('the source\'s own "Supervision ended" in season is off-season too, with its page still linked', () => {
+      const status = offseason({ source: 'hrm', verbatim: 'Supervision ended for the season', sourceUrl: 'https://hrm.example.com/beach' })
+      render(<BeachDetail beach={createBeach()} status={status} {...baseProps} conditions={conditions} />)
+
+      expect(statusBox()).toHaveTextContent('Off-season. Lifeguards return late June.')
+      expect(document.querySelector('.beach-detail-conditions')).toHaveAttribute('data-lead', 'true')
+      expect(screen.getByRole('link', { name: /open the source page/i })).toHaveAttribute('href', 'https://hrm.example.com/beach')
+    })
+
+    it('a replayed off-season day keeps the replay layout: its status is a record, not the calendar', () => {
+      render(<BeachDetail beach={createBeach()} status={makeReplayStatus('offseason')} {...baseProps} replayDay="2026-07-10" />)
+
+      expect(document.querySelector('article')).toHaveAttribute('data-offseason', 'false')
+      expect(screen.getByText(/Replayed status for/)).toBeInTheDocument()
+      expect(document.querySelector('.beach-detail-plain')).toHaveTextContent('Supervision had ended for the season.')
+    })
+  })
+
   it('no rendered text asserts the water is safe', () => {
     const statuses: (StatusView | undefined)[] = [
       makeLiveStatus('open'),

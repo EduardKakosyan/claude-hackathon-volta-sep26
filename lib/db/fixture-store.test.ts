@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { FIXTURE_CHECKED_AT, FIXTURE_OMITTED, FIXTURE_TODAY } from '@/lib/fixture/today'
+import { FIXTURE_CHECKED_AT, FIXTURE_OFFSEASON_CHECKED_AT, FIXTURE_OMITTED, FIXTURE_TODAY } from '@/lib/fixture/today'
 import { BEACHES, BEACHES_BY_ID } from '@/lib/seed/beaches'
 
 import { FixtureStore } from './fixture-store'
@@ -94,5 +94,52 @@ describe('FixtureStore', () => {
     rows.length = 0
     expect(FIXTURE_TODAY.length).toBeGreaterThan(0)
     expect(await store.liveStatus()).toHaveLength(FIXTURE_TODAY.length)
+  })
+
+  describe('the off-season variant', () => {
+    const clock = () => new Date('2026-09-12T15:07:00Z')
+    const off = new FixtureStore(clock).fixtureVariant('offseason')
+
+    it('is still the fixture kind, and leaves the store it came from on the in-season day', async () => {
+      expect(off.kind).toBe('fixture')
+      expect((await new FixtureStore(clock).liveStatus()).some((r) => r.state !== 'offseason')).toBe(true)
+    })
+
+    it('serves every beach as offseason from source season, exactly as the refresh writes it', async () => {
+      const rows = await off.liveStatus()
+      expect(rows).toHaveLength(BEACHES.length)
+      expect(new Set(rows.map((r) => r.beachId)).size).toBe(BEACHES.length)
+      for (const row of rows) {
+        expect(row).toMatchObject({
+          kind: 'live',
+          state: 'offseason',
+          source: 'season',
+          verbatim: 'Off-season',
+          sourceUrl: BEACHES_BY_ID[row.beachId].sourceUrl,
+          postedAt: null,
+          confirmedAt: FIXTURE_OFFSEASON_CHECKED_AT,
+        })
+      }
+    })
+
+    it('reports the conditions feeds as current and the status sources as last read in season', async () => {
+      const health = new Map((await off.health()).map((h) => [h.source, h]))
+      expect([...health.keys()].sort()).toEqual(['algae', 'buoy', 'hrm', 'parks', 'wind'])
+      for (const source of ['wind', 'buoy'] as const) {
+        expect(health.get(source)).toMatchObject({ lastAttemptAt: FIXTURE_OFFSEASON_CHECKED_AT, lastSuccessAt: FIXTURE_OFFSEASON_CHECKED_AT, lastError: null })
+      }
+      for (const source of ['hrm', 'parks', 'algae'] as const) {
+        const h = health.get(source)!
+        expect(h.lastError).toBeNull()
+        expect(h.lastSuccessAt).toBe(h.lastAttemptAt)
+        expect(h.lastAttemptAt < FIXTURE_OFFSEASON_CHECKED_AT).toBe(true)
+      }
+    })
+
+    it('keeps the conditions, the buoy and the replay days of the in-season store', async () => {
+      expect(await off.conditions()).toEqual(await new FixtureStore(clock).conditions())
+      expect(await off.buoy()).toEqual(await new FixtureStore(clock).buoy())
+      expect(await off.days()).toEqual(['2026-08-14'])
+    })
   })
 })
