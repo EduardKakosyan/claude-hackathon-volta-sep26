@@ -105,6 +105,17 @@ export function BeachApp(data: BeachAppProps) {
     }
   }, [replayDay])
 
+  // Escape is listened for on the document, not on <main>: clicking a row unmounts
+  // the row, focus falls to <body>, and a keydown there would never reach <main>.
+  useEffect(() => {
+    if (!selected) return
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') closeDetail()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [selected, closeDetail])
+
   useEffect(() => {
     if (selectedId || !restoreFocus.current) return
     restoreFocus.current = false
@@ -144,8 +155,8 @@ export function BeachApp(data: BeachAppProps) {
 
   const footer = replayDay
     ? `Replayed: ${formatPosted(replayDay)}`
-    : storeKind === 'seed'
-      ? 'Not connected to a database; no source has been read yet'
+    : storeKind === 'fixture'
+      ? 'Showing a fixture day, not live status'
       : health.length === 0
         ? 'No source has been read yet'
         : health
@@ -159,13 +170,7 @@ export function BeachApp(data: BeachAppProps) {
             .join(' / ')
 
   return (
-    <main
-      className="beach-shell"
-      data-expanded={isPanelExpanded}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && selected) closeDetail()
-      }}
-    >
+    <main className="beach-shell" data-expanded={isPanelExpanded}>
       <BeachToolbar
         beachCount={beaches.length}
         query={query}

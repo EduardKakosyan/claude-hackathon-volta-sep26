@@ -3,12 +3,13 @@ import { SEED_DAYS } from '@/lib/seed/days'
 import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
 
 /**
- * The read port the page depends on. `SeedStore` serves it from the files in
- * git with no credentials at all; `SupabaseStore` (supabase-store.ts) serves it
- * from the tables. The page cannot tell which it got except through `kind`.
+ * The read port the page depends on. `FixtureStore` (fixture-store.ts) serves it
+ * from a hand-written day plus the seeded replay days in git, with no credentials
+ * at all; `SupabaseStore` (supabase-store.ts) serves it from the tables. The page
+ * cannot tell which it got except through `kind`, which the footer reports.
  */
 export interface PageStore {
-  readonly kind: 'seed' | 'supabase'
+  readonly kind: 'fixture' | 'supabase'
   liveStatus(): Promise<LiveStatus[]>
   dayStatus(day: string): Promise<StatusDayView[]>
   /** Every status_day row with fromDay <= day <= toDay, any beach. */
@@ -39,33 +40,6 @@ export function seedDayRows(day: string): StatusDayView[] {
     basis: r.basis,
     note: r.note,
   }))
-}
-
-/** Reads only what is in git. No live status, no health: the footer says so. */
-export class SeedStore implements PageStore {
-  readonly kind = 'seed' as const
-
-  async liveStatus(): Promise<LiveStatus[]> {
-    return []
-  }
-
-  async dayStatus(day: string): Promise<StatusDayView[]> {
-    return seedDayRows(day)
-  }
-
-  async history(fromDay: string, toDay: string): Promise<StatusDayView[]> {
-    return Object.keys(SEED_DAYS)
-      .filter((d) => d >= fromDay && d <= toDay)
-      .flatMap((d) => seedDayRows(d))
-  }
-
-  async health(): Promise<SourceHealthView[]> {
-    return []
-  }
-
-  async days(): Promise<string[]> {
-    return Object.keys(SEED_DAYS).sort().reverse()
-  }
 }
 
 /** In-memory store for tests: a PageStore and a StatusWriter over plain maps. */

@@ -19,6 +19,9 @@ next-env.d.ts
 /blob-report
 /.playwright
 
+# MapLibre worker chunks, copied from node_modules on postinstall
+/public/maplibre/
+
 # vercel
 .vercel
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { setWorkerUrl } from 'maplibre-gl'
 import { useCallback, useEffect, useRef } from 'react'
 import Map, { Marker, type MapRef } from 'react-map-gl/maplibre'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -9,7 +10,12 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { statusAccessibleName, type PinState } from '@/lib/beach-status'
 import { resolveState } from '@/lib/beach-filter'
 import { BEACH_VIEW, NOVA_SCOTIA_VIEW, SATELLITE_TERRAIN_STYLE } from '@/lib/map-style'
+import { MAPLIBRE_WORKER_URL } from '@/lib/maplibre-worker'
 import type { Beach } from '@/lib/seed/beaches'
+
+// Under Turbopack MapLibre's default worker URL resolves to '' — this document —
+// and every worker dies parsing HTML. Start them from the copy in public/ instead.
+setWorkerUrl(MAPLIBRE_WORKER_URL)
 
 export interface BeachMapProps {
   /** The visible roster. The shell filters once; the map and the directory show the same beaches. */

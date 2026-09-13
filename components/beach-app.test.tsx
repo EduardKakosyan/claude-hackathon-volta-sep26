@@ -69,7 +69,7 @@ function makePageData(overrides: Partial<PageData> = {}): PageData {
     days: [],
     historyFrom: '2026-09-01',
     historyTo: '2026-09-14',
-    storeKind: 'seed',
+    storeKind: 'fixture',
     ...overrides,
   }
 }
@@ -237,6 +237,26 @@ describe('BeachApp', () => {
     })
   })
 
+  it('pressing Escape closes the detail even after the clicked row has unmounted and focus fell to body', async () => {
+    const user = userEvent.setup()
+    render(<BeachApp {...makePageData()} />)
+
+    const beachRows = document.querySelectorAll('[data-beach-id]')
+    await user.click(beachRows[0] as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('article')).toBeInTheDocument()
+    })
+    // The row is gone, so nothing inside <main> holds focus any more.
+    expect(document.activeElement).toBe(document.body)
+
+    await user.keyboard('{Escape}')
+
+    await waitFor(() => {
+      expect(screen.queryByRole('article')).not.toBeInTheDocument()
+    })
+  })
+
   it('changing the query while a beach is selected clears the selection', async () => {
     const user = userEvent.setup()
     render(<BeachApp {...makePageData()} />)
@@ -262,6 +282,22 @@ describe('BeachApp', () => {
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('35 beaches have no status available')
     expect(footer?.textContent).toContain('Unknown does not mean open')
+  })
+
+  it('in fixture mode the footer says it is a fixture day, not live status', () => {
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture' })} />)
+
+    const footer = container.querySelector('.beach-shell-footer')
+    expect(footer?.textContent).toContain('Showing a fixture day, not live status')
+    expect(footer?.textContent).not.toContain('Not connected to a database')
+  })
+
+  it('in supabase mode with nothing read yet the footer says so instead', () => {
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'supabase' })} />)
+
+    const footer = container.querySelector('.beach-shell-footer')
+    expect(footer?.textContent).toContain('No source has been read yet')
+    expect(footer?.textContent).not.toContain('fixture')
   })
 
   it('with a populated status record the count matches', () => {

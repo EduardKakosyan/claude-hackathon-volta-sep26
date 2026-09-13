@@ -1,0 +1,82 @@
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test'
+
+/**
+ * Shared helpers for the rig. Specs assert on roles, shell classes and `data-*`
+ * hooks — never on pixels — so they survive the layout and detail rewrites that
+ * later phases make.
+ */
+
+/**
+ * Abort every imagery request. The suite verifies the app is usable with no
+ * tiles, not that tiles render; blocking them also keeps every run offline.
+ */
+export async function stubMapTiles(page: Page): Promise<void> {
+  await page.route(/tiles\.maps\.eox\.at|s3\.amazonaws\.com/, (route) =>
+    route.abort('blockedbyclient'),
+  )
+}
+
+/**
+ * Collect uncaught errors, including a Web Worker that fails to start. WebKit
+ * raises those on the page; Chromium only fires `error` on the Worker object, so
+ * an init script forwards them too. Call before `page.goto`; read at the end.
+ */
+export async function watchPageErrors(page: Page): Promise<() => string[]> {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(`${error.name}: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() === 'error' && message.text().startsWith('[worker]')) errors.push(message.text())
+  })
+  await page.addInitScript(() => {
+    const NativeWorker = window.Worker
+    window.Worker = class extends NativeWorker {
+      constructor(url: string | URL, options?: WorkerOptions) {
+        super(url, options)
+        this.addEventListener('error', (event) => {
+          const detail = (event as ErrorEvent).message || 'failed to start'
+          console.error(`[worker] ${String(url) || '(empty url)'}: ${detail}`)
+        })
+      }
+    } as unknown as typeof Worker
+  })
+  return () => [...errors]
+}
+
+/** Every directory row. */
+export function rows(page: Page): Locator {
+  return page.locator('.beach-shell-list > li')
+}
+
+/** The row button for one beach, matched on its exact name. */
+export function row(page: Page, name: string): Locator {
+  return page.locator('.beach-shell-row').filter({ has: page.getByText(name, { exact: true }) })
+}
+
+/** The detail view, whichever markup renders it. */
+export function detail(page: Page): Locator {
+  return page.getByRole('article')
+}
+
+/** Click a beach in the directory and wait for its detail to open. */
+export async function openBeach(page: Page, name: string): Promise<Locator> {
+  await row(page, name).click()
+  const article = detail(page)
+  await expect(article).toBeVisible()
+  await expect(article.getByRole('heading', { level: 2 })).toHaveText(name)
+  return article
+}
+
+/** True for the three phone projects (portrait and landscape, both engines). */
+export function isPhone(testInfo: TestInfo): boolean {
+  return testInfo.project.name.includes('iphone')
+}
+
+/** Skip unless the project is a phone viewport. */
+export function phoneOnly(testInfo: TestInfo): void {
+  testInfo.skip(!isPhone(testInfo), 'phone viewports only')
+}
+
+/** Skip on the phone projects: desktop and tablet keep the panel layout. */
+export function desktopOnly(testInfo: TestInfo): void {
+  testInfo.skip(isPhone(testInfo), 'desktop and tablet viewports only')
+}
