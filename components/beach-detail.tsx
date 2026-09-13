@@ -5,7 +5,8 @@ import { useEffect, useRef } from 'react'
 
 import { BeachActions } from '@/components/beach-actions'
 import { authorityName, statusPresentation, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
-import { plainEnglish, SOURCE_SAYS } from '@/lib/copy'
+import type { ConditionsView } from '@/lib/conditions'
+import { formatConditions, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
 import { addDays, formatDay, formatDayShort, formatPosted } from '@/lib/dates'
 import { formatDistance } from '@/lib/geo'
 import type { Beach } from '@/lib/seed/beaches'
@@ -24,6 +25,11 @@ export interface BeachDetailProps {
    * downtown Halifax); undefined when the beach is not in the current roster.
    */
   distanceKm: number | undefined
+  /**
+   * Current wind, and water temperature where a buoy really measures it. The
+   * line is omitted when absent: no placeholder, no "unavailable".
+   */
+  conditions?: ConditionsView
 }
 
 /** How a replayed day's row came to exist. */
@@ -49,6 +55,7 @@ export function BeachDetail({
   historyTo,
   replayDay,
   distanceKm,
+  conditions,
 }: BeachDetailProps) {
   const state: PinState = status?.state ?? 'unknown'
   const { label } = statusPresentation(state, beach.authority)
@@ -111,6 +118,8 @@ export function BeachDetail({
       </section>
 
       <p className="beach-detail-plain">{plain}</p>
+
+      {conditions ? <p className="beach-detail-conditions">{formatConditions(conditions)}</p> : null}
 
       <BeachActions beach={beach} />
 

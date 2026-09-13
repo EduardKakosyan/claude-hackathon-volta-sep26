@@ -54,9 +54,9 @@ describe('FixtureStore', () => {
     }
   })
 
-  it('reports all three sources as healthy at the fixture time', async () => {
+  it('reports all five sources as healthy at the fixture time', async () => {
     const health = await store.health()
-    expect(health.map((h) => h.source).sort()).toEqual(['algae', 'hrm', 'parks'])
+    expect(health.map((h) => h.source).sort()).toEqual(['algae', 'buoy', 'hrm', 'parks', 'wind'])
     for (const h of health) {
       expect(h.lastAttemptAt).toBe(FIXTURE_CHECKED_AT)
       expect(h.lastSuccessAt).toBe(FIXTURE_CHECKED_AT)
@@ -70,6 +70,23 @@ describe('FixtureStore', () => {
     expect(await store.dayStatus('2026-07-01')).toEqual([])
     expect(await store.history('2026-08-01', '2026-08-14')).toHaveLength(35)
     expect(await store.history('2026-08-15', '2026-08-28')).toEqual([])
+  })
+
+  it('serves a wind row for every beach and one buoy reading, both stamped just before the clock', async () => {
+    const clocked = new FixtureStore(() => new Date('2026-09-12T15:07:00Z'))
+    const rows = await clocked.conditions()
+    expect(rows).toHaveLength(BEACHES.length)
+    expect(new Set(rows.map((r) => r.beachId)).size).toBe(BEACHES.length)
+    for (const row of rows) {
+      expect(row.observedAt).toBe('2026-09-12T15:00:00.000Z')
+      expect(row.windKmh).toBeGreaterThan(0)
+      expect(row.windDirDeg).toBeGreaterThanOrEqual(0)
+    }
+    expect(await clocked.buoy()).toEqual({
+      buoy: 'smartatlantic-halifax',
+      waterTempC: 16.4,
+      observedAt: '2026-09-12T14:30:00.000Z',
+    })
   })
 
   it('hands out copies, never the module constants', async () => {

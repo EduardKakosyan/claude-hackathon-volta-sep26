@@ -22,6 +22,8 @@ import {
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import { formatPosted } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
+import { OPEN_METEO_CREDIT_URL } from '@/lib/ingest/sources/open-meteo'
+import { SMARTATLANTIC_CREDIT_URL } from '@/lib/ingest/sources/smartatlantic'
 import { resolveOrigin, sortByDistance } from '@/lib/geo'
 import type { GeolocationProvider } from '@/lib/geolocation'
 import { LATE_ARRIVAL_MS, useGeolocation } from '@/hooks/use-geolocation'
@@ -50,7 +52,7 @@ export type BeachAppProps = PageData & {
 
 type SelectionOrigin = 'list' | 'map'
 
-const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
+const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed', wind: 'Wind', buoy: 'Buoy' } as const
 
 /**
  * Where "Suggest one" in the footer goes: a new issue on the public repository,
@@ -108,6 +110,7 @@ export function BeachApp(data: BeachAppProps) {
     status,
     health,
     history,
+    conditions,
     days,
     historyFrom,
     historyTo,
@@ -343,6 +346,17 @@ export function BeachApp(data: BeachAppProps) {
               )}
               <p>{footer}</p>
               <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
+              <p className="beach-shell-credits">
+                Wind from{' '}
+                <a href={OPEN_METEO_CREDIT_URL} target="_blank" rel="noreferrer">
+                  Open-Meteo
+                </a>
+                ; water temperature from the{' '}
+                <a href={SMARTATLANTIC_CREDIT_URL} target="_blank" rel="noreferrer">
+                  SmartAtlantic
+                </a>{' '}
+                Halifax buoy. Both CC BY 4.0.
+              </p>
               <p>
                 Ideas or problems?{' '}
                 <a href={SUGGEST_URL} target="_blank" rel="noreferrer">
@@ -362,6 +376,7 @@ export function BeachApp(data: BeachAppProps) {
               historyTo={historyTo}
               replayDay={replayDay}
               distanceKm={distances[selected.id]}
+              conditions={conditions[selected.id]}
             />
           ) : (
             <>

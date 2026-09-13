@@ -44,12 +44,30 @@ test.describe('detail', () => {
     await expect(status.locator('.beach-detail-status-source')).toContainText('halifax.ca says')
     await expect(article.locator('.beach-detail-plain')).not.toBeEmpty()
 
+    // A lake: wind only, with the reading's time — no water figure and no placeholder.
+    const conditions = article.locator('.beach-detail-conditions')
+    await expect(conditions).toHaveText(/^Wind \d+ km\/h (N|NE|E|SE|S|SW|W|NW) · \d{1,2}(:\d{2})? [ap]\.m\.$/)
+    await expect(conditions).not.toContainText('water')
+
     await expect(article.getByRole('link', { name: 'Directions' })).toHaveAttribute('href', /maps\.apple\.com|google\.com\/maps|^geo:/)
     await expect(article.getByRole('button', { name: 'Share' })).toBeVisible()
 
     const sourceLink = article.getByRole('link', { name: /open the source page/i })
     await expect(sourceLink).toHaveAttribute('target', '_blank')
     await expect(article.locator('.beach-detail-history ol li')).toHaveCount(14)
+  })
+
+  test('an ocean beach near the buoy leads its conditions line with the water temperature', async ({ page }) => {
+    await page.goto('/')
+    const article = await openBeach(page, 'Rainbow Haven Beach')
+
+    await expect(article.locator('.beach-detail-conditions')).toHaveText(
+      /^\d+ °C water · Wind \d+ km\/h (N|NE|E|SE|S|SW|W|NW) · \d{1,2}(:\d{2})? [ap]\.m\.$/,
+    )
+    // The credits for both feeds sit in the footer, below the fold.
+    const footer = page.locator('.beach-shell-footer')
+    await expect(footer.locator('a', { hasText: 'Open-Meteo' })).toHaveAttribute('href', /open-meteo\.com/)
+    await expect(footer.locator('a', { hasText: 'SmartAtlantic' })).toHaveAttribute('href', /smartatlantic\.ca/)
   })
 
   test('there is exactly one back control, and nothing inside the sheet body scrolls on its own', async ({ page }) => {
@@ -73,26 +91,31 @@ test.describe('detail', () => {
   }, testInfo) => {
     testInfo.skip(!isPhone(testInfo) || testInfo.project.name.includes('land'), 'portrait phone projects only')
 
-    await page.goto('/')
-    const article = await openBeach(page, BEACH)
-    await expect(sheet(page)).toHaveAttribute('data-snap', 'half')
-    await page.waitForFunction(() => document.querySelector('.beach-sheet')!.getAnimations().length === 0)
+    // A lake with a one-word status, and the tallest field note the fixture has:
+    // an advisory with a quoted title plus the water figure on the conditions line.
+    for (const name of [BEACH, 'Rainbow Haven Beach']) {
+      await page.goto('/')
+      const article = await openBeach(page, name)
+      await expect(sheet(page)).toHaveAttribute('data-snap', 'half')
+      await page.waitForFunction(() => document.querySelector('.beach-sheet')!.getAnimations().length === 0)
 
-    for (const target of [
-      page.getByRole('button', { name: 'Back to beaches' }),
-      article.locator('.beach-detail-name'),
-      article.locator('.beach-detail-status'),
-      article.locator('.beach-detail-plain'),
-      article.getByRole('link', { name: 'Directions' }),
-      article.getByRole('button', { name: 'Share' }),
-    ]) {
-      expect(await inViewport(page, target), `${await target.evaluate((el) => el.className)} above the fold`).toBe(true)
+      for (const target of [
+        page.getByRole('button', { name: 'Back to beaches' }),
+        article.locator('.beach-detail-name'),
+        article.locator('.beach-detail-status'),
+        article.locator('.beach-detail-plain'),
+        article.locator('.beach-detail-conditions'),
+        article.getByRole('link', { name: 'Directions' }),
+        article.getByRole('button', { name: 'Share' }),
+      ]) {
+        expect(await inViewport(page, target), `${name}: ${await target.evaluate((el) => el.className)} above the fold`).toBe(true)
+      }
+
+      // The map still owns the top half.
+      const sheetTop = (await sheet(page).boundingBox())!.y
+      const mapBox = (await page.locator('.beach-shell-map').boundingBox())!
+      expect(sheetTop - mapBox.y).toBeGreaterThan(mapBox.height * 0.4)
     }
-
-    // The map still owns the top half.
-    const sheetTop = (await sheet(page).boundingBox())!.y
-    const mapBox = (await page.locator('.beach-shell-map').boundingBox())!
-    expect(sheetTop - mapBox.y).toBeGreaterThan(mapBox.height * 0.4)
   })
 
   test('selecting a map pin opens the same detail; closing it returns focus to the search box', async ({ page }) => {

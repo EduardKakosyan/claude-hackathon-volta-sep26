@@ -1,3 +1,4 @@
+import type { BuoyReading, ConditionsRow } from '@/lib/conditions'
 import type { Beach } from '@/lib/seed/beaches'
 import { SEED_DAYS } from '@/lib/seed/days'
 import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
@@ -17,17 +18,23 @@ export interface PageStore {
   health(): Promise<SourceHealthView[]>
   /** Distinct replayable days, newest first. */
   days(): Promise<string[]>
+  /** The last wind reading per beach, whatever its age; `loadPage` decides staleness. */
+  conditions(): Promise<ConditionsRow[]>
+  /** The Halifax buoy's last reading, or null when none was ever written. */
+  buoy(): Promise<BuoyReading | null>
 }
 
 /**
- * The write port the refresh route depends on. Phase 2 only seeds through it;
- * the live ingest will call `upsertLiveStatus` and `upsertSourceHealth`.
+ * The write port the refresh route depends on: the seed, the live status
+ * ingest, and the conditions ingest all go through it.
  */
 export interface StatusWriter {
   upsertBeaches(beaches: Beach[]): Promise<number>
   upsertStatusDays(rows: StatusDayView[]): Promise<number>
   upsertLiveStatus(rows: LiveStatus[]): Promise<number>
   upsertSourceHealth(rows: SourceHealthView[]): Promise<number>
+  upsertConditions(rows: ConditionsRow[]): Promise<number>
+  upsertBuoy(reading: BuoyReading): Promise<void>
 }
 
 export function seedDayRows(day: string): StatusDayView[] {
@@ -49,6 +56,8 @@ export class MemoryStore implements PageStore, StatusWriter {
   live = new Map<string, LiveStatus>()
   daysByKey = new Map<string, StatusDayView>()
   healthBySource = new Map<string, SourceHealthView>()
+  conditionsByBeach = new Map<string, ConditionsRow>()
+  buoyReading: BuoyReading | null = null
 
   async liveStatus() {
     return [...this.live.values()]
@@ -65,6 +74,12 @@ export class MemoryStore implements PageStore, StatusWriter {
   async days() {
     return [...new Set([...this.daysByKey.values()].map((r) => r.day))].sort().reverse()
   }
+  async conditions() {
+    return [...this.conditionsByBeach.values()]
+  }
+  async buoy() {
+    return this.buoyReading
+  }
   async upsertBeaches(beaches: Beach[]) {
     for (const b of beaches) this.beaches.set(b.id, b)
     return beaches.length
@@ -80,5 +95,12 @@ export class MemoryStore implements PageStore, StatusWriter {
   async upsertSourceHealth(rows: SourceHealthView[]) {
     for (const r of rows) this.healthBySource.set(r.source, r)
     return rows.length
+  }
+  async upsertConditions(rows: ConditionsRow[]) {
+    for (const r of rows) this.conditionsByBeach.set(r.beachId, r)
+    return rows.length
+  }
+  async upsertBuoy(reading: BuoyReading) {
+    this.buoyReading = reading
   }
 }

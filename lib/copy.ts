@@ -1,3 +1,5 @@
+import type { ConditionsView } from '@/lib/conditions'
+import { formatClock } from '@/lib/dates'
 import type { BeachState } from '@/lib/seed/beaches'
 import type { StatusSource, StatusView } from '@/lib/status'
 
@@ -50,4 +52,19 @@ export const SOURCE_SAYS: Record<StatusSource, string> = {
 export function plainEnglish(status: StatusView): string {
   if (status.kind === 'replay') return REPLAY_LINE[status.state]
   return PLAIN_ENGLISH[`${status.state}:${status.source}`]
+}
+
+/**
+ * The one quiet line of current conditions under the plain English:
+ * "16 °C water · Wind 25 km/h SW · 2 p.m." for a salt beach near the buoy,
+ * "Wind 25 km/h SW · 2 p.m." everywhere else. The time is the wind reading's,
+ * never the page's. Nothing is printed for a figure the app does not have.
+ */
+export function formatConditions(c: ConditionsView): string {
+  const parts: string[] = []
+  if (c.waterTempC !== undefined) parts.push(`${Math.round(c.waterTempC)} °C water`)
+  parts.push(`Wind ${Math.round(c.windKmh)} km/h ${c.windDir}`)
+  const clock = formatClock(c.observedAt)
+  if (clock) parts.push(clock)
+  return parts.join(' · ')
 }

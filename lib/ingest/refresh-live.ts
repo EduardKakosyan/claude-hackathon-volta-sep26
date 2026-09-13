@@ -1,6 +1,6 @@
 import { BEACHES } from '@/lib/seed/beaches'
 import type { PageStore, StatusWriter } from '@/lib/db/store'
-import type { IngestSource, SourceHealthView, StatusDayView } from '@/lib/status'
+import type { SourceHealthView, StatusDayView, StatusIngestSource as IngestSource } from '@/lib/status'
 import { describeError } from '@/lib/ingest/errors'
 import { halifaxDay } from '@/lib/ingest/halifax-day'
 import { resolve } from '@/lib/ingest/resolve'

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { BeachDetail, type BeachDetailProps } from '@/components/beach-detail'
+import type { ConditionsView } from '@/lib/conditions'
 import type { Beach } from '@/lib/seed/beaches'
 import type { LiveStatus, ReplayStatus, StatusView } from '@/lib/status'
 
@@ -214,6 +215,44 @@ describe('BeachDetail', () => {
     render(<BeachDetail beach={createBeach()} status={undefined} {...baseProps} replayDay="2026-07-10" />)
 
     expect(screen.getByText(/No record for/)).toBeInTheDocument()
+  })
+
+  describe('conditions line', () => {
+    const conditions: ConditionsView = {
+      windKmh: 25,
+      windDir: 'SW',
+      airTempC: 21,
+      observedAt: '2026-07-15T17:00:00Z', // 2 p.m. ADT
+      sunrise: '2026-07-15T08:40:00Z',
+      sunset: '2026-07-16T00:00:00Z',
+    }
+
+    it('an ocean beach near the buoy shows water temperature, wind and the reading\'s time under the plain English', () => {
+      render(
+        <BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} conditions={{ ...conditions, waterTempC: 16.4 }} />,
+      )
+
+      const line = document.querySelector('.beach-detail-conditions')!
+      expect(line).toHaveTextContent('16 °C water · Wind 25 km/h SW · 2 p.m.')
+      const plain = document.querySelector('.beach-detail-plain')!
+      expect(plain.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      const directions = screen.getByRole('link', { name: /Directions/ })
+      expect(line.compareDocumentPosition(directions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('a lake shows wind only: no water figure and no placeholder', () => {
+      render(<BeachDetail beach={createBeach({ water: 'fresh' })} status={makeLiveStatus('open')} {...baseProps} conditions={conditions} />)
+
+      expect(document.querySelector('.beach-detail-conditions')).toHaveTextContent(/^Wind 25 km\/h SW · 2 p\.m\.$/)
+      expect(document.querySelector('.beach-detail-conditions')?.textContent).not.toMatch(/water/i)
+    })
+
+    it('with no conditions the line is absent altogether', () => {
+      render(<BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} />)
+
+      expect(document.querySelector('.beach-detail-conditions')).toBeNull()
+      expect(document.querySelector('article')?.textContent).not.toMatch(/wind|unavailable/i)
+    })
   })
 
   it('no rendered text asserts the water is safe', () => {

@@ -3,7 +3,14 @@ import type { BeachState } from '@/lib/seed/beaches'
 /** Who a live status came from. `season` is the resolver's "no notice, in/out of season" fallback. */
 export type StatusSource = 'hrm' | 'parks' | 'algae' | 'season'
 
-export type IngestSource = 'hrm' | 'parks' | 'algae'
+/** The three government sources the status resolver reads. */
+export type StatusIngestSource = 'hrm' | 'parks' | 'algae'
+
+/** The two conditions feeds: Open-Meteo wind and the SmartAtlantic Halifax buoy. */
+export type ConditionsSource = 'wind' | 'buoy'
+
+/** Everything the hourly refresh reads; one `source_health` row each. */
+export type IngestSource = StatusIngestSource | ConditionsSource
 
 /**
  * A live status row: one per beach, written only by a real read of a source.

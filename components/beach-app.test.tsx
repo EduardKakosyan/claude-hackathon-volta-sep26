@@ -113,6 +113,7 @@ function makePageData(overrides: Partial<BeachAppProps> = {}): BeachAppProps {
     status: {},
     health: [],
     history: {},
+    conditions: {},
     days: [],
     historyFrom: '2026-09-01',
     historyTo: '2026-09-14',
@@ -349,6 +350,33 @@ describe('BeachApp', () => {
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('Showing a fixture day, not live status')
     expect(footer?.textContent).not.toContain('Not connected to a database')
+  })
+
+  it('the footer credits Open-Meteo for wind and SmartAtlantic for the buoy', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    const credits = container.querySelector('.beach-shell-credits')!
+    expect(credits.textContent).toMatch(/Wind from Open-Meteo; water temperature from the SmartAtlantic Halifax buoy/)
+    expect(screen.getByRole('link', { name: 'Open-Meteo' })).toHaveAttribute('href', 'https://open-meteo.com/')
+    expect(screen.getByRole('link', { name: 'SmartAtlantic' })).toHaveAttribute('href', 'https://www.smartatlantic.ca/')
+  })
+
+  it('the open detail carries that beach\'s conditions line', async () => {
+    const user = userEvent.setup()
+    const id = 'hrm-chocolate-lake'
+    render(
+      <BeachApp
+        {...makePageData({
+          conditions: {
+            [id]: { windKmh: 19, windDir: 'SW', observedAt: '2026-07-15T17:00:00Z', sunrise: 'x', sunset: 'y' },
+          },
+        })}
+      />,
+    )
+
+    await user.click(document.querySelector(`[data-beach-id="${id}"]`) as HTMLButtonElement)
+    await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+    expect(document.querySelector('.beach-detail-conditions')).toHaveTextContent('Wind 19 km/h SW · 2 p.m.')
   })
 
   it('the footer offers "Suggest one", a new issue on the public repository', () => {

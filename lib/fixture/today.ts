@@ -1,4 +1,5 @@
-import { BEACHES_BY_ID, HRM_STATUS_URL, type Beach, type BeachState } from '@/lib/seed/beaches'
+import { HALIFAX_BUOY, type BuoyReading, type ConditionsRow } from '@/lib/conditions'
+import { BEACHES, BEACHES_BY_ID, HRM_STATUS_URL, type Beach, type BeachState, type Region } from '@/lib/seed/beaches'
 import type { LiveStatus, SourceHealthView } from '@/lib/status'
 
 /**
@@ -128,8 +129,8 @@ export const FIXTURE_TODAY: LiveStatus[] = Object.entries(CLAIMS).flatMap(([beac
   return [{ kind: 'live' as const, beachId, confirmedAt: FIXTURE_CHECKED_AT, ...resolved }]
 })
 
-/** All three sources read cleanly at the fixture time. */
-export const FIXTURE_HEALTH: SourceHealthView[] = (['hrm', 'parks', 'algae'] as const).map(
+/** All five sources read cleanly at the fixture time. */
+export const FIXTURE_HEALTH: SourceHealthView[] = (['hrm', 'parks', 'algae', 'wind', 'buoy'] as const).map(
   (source) => ({
     source,
     lastAttemptAt: FIXTURE_CHECKED_AT,
@@ -137,3 +138,53 @@ export const FIXTURE_HEALTH: SourceHealthView[] = (['hrm', 'parks', 'algae'] as 
     lastError: null,
   }),
 )
+
+// ---------------------------------------------------------------- conditions
+
+/**
+ * A south-westerly afternoon: one wind per region, so the Halifax cluster reads
+ * the same and the far coasts differ. Air temperatures are plausible for the
+ * date; nothing is measured.
+ */
+const REGION_WIND: Record<Region, { kmh: number; deg: number; airC: number }> = {
+  Halifax: { kmh: 19, deg: 225, airC: 21.4 },
+  'Eastern Shore': { kmh: 23, deg: 210, airC: 19.8 },
+  'South Shore': { kmh: 17, deg: 230, airC: 20.6 },
+  Valley: { kmh: 12, deg: 270, airC: 23.1 },
+  'North Shore': { kmh: 26, deg: 315, airC: 22.0 },
+  'Cape Breton': { kmh: 31, deg: 280, airC: 18.7 },
+}
+
+/** What the fixture's buoy reads. Shown on the nine salt beaches within reach. */
+export const FIXTURE_WATER_TEMP_C = 16.4
+
+/** The start of the current quarter hour: what Open-Meteo's `current.time` would be. */
+export function quarterHourBefore(now: Date): string {
+  const d = new Date(now)
+  d.setUTCMinutes(Math.floor(d.getUTCMinutes() / 15) * 15, 0, 0)
+  return d.toISOString()
+}
+
+/**
+ * One wind row per roster beach, stamped at the quarter hour before `now` so
+ * the page's staleness rule keeps them whenever the fixture is served.
+ */
+export function fixtureConditions(now: Date): ConditionsRow[] {
+  const observedAt = quarterHourBefore(now)
+  return BEACHES.map((beach) => {
+    const wind = REGION_WIND[beach.region]
+    return {
+      beachId: beach.id,
+      windKmh: wind.kmh,
+      windDirDeg: wind.deg,
+      airTempC: wind.airC,
+      observedAt,
+    }
+  })
+}
+
+/** The buoy reported half an hour before the wind. */
+export function fixtureBuoy(now: Date): BuoyReading {
+  const observedAt = new Date(new Date(quarterHourBefore(now)).getTime() - 30 * 60 * 1000).toISOString()
+  return { buoy: HALIFAX_BUOY.id, waterTempC: FIXTURE_WATER_TEMP_C, observedAt }
+}
