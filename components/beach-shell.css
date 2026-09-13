@@ -5,6 +5,18 @@
  * borrow green, amber or red.
  */
 
+/*
+ * How much of the phone sheet shows at its lowest rest. Registered so its
+ * computed value is a resolved length: `BottomSheet` reads it back to place the
+ * finger-follow clamp and the release snap exactly where the CSS rest is, in
+ * portrait and landscape alike, without duplicating the number in JS.
+ */
+@property --sheet-peek {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 96px;
+}
+
 .beach-shell {
   /* Surfaces */
   --beach-bg: #efeeea;
@@ -70,7 +82,9 @@
 
 .beach-shell-workspace { display: grid; grid-template-columns: 370px minmax(0, 1fr); flex: 1; min-height: 0; }
 
-.beach-shell-map { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; background: var(--beach-deep); isolation: isolate; }
+.beach-shell-map { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; background: var(--beach-deep); isolation: isolate; --sheet-visible: 0px; }
+/* Resolves `--sheet-visible` to pixels for the map's camera padding. Zero-width, never painted. */
+.beach-map-probe { position: absolute; left: 0; bottom: 0; width: 0; height: var(--sheet-visible); pointer-events: none; visibility: hidden; }
 .beach-shell-map-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: radial-gradient(ellipse at center, #27464b, var(--beach-deep)); color: #d5e2e0; font: italic 17px var(--beach-serif); }
 .beach-shell-map-loading svg { animation: beach-shell-drift 2.4s var(--beach-ease) infinite; }
 
@@ -101,12 +115,19 @@
 
 /* --- Directory / detail panel --------------------------------------------- */
 
-.beach-shell-panel { grid-column: 1; grid-row: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--beach-panel); border-right: 1px solid var(--beach-rule); }
+/*
+ * `.beach-sheet` is the panel column here and the three-snap sheet on a phone
+ * (see the phone block). Its children are the same nodes in both layouts:
+ * grab area (handle + heading), body (the only scroller), footer.
+ */
+.beach-sheet { grid-column: 1; grid-row: 1; min-height: 0; min-width: 0; display: flex; flex-direction: column; background: var(--beach-panel); border-right: 1px solid var(--beach-rule); }
+.beach-sheet-grab { flex: none; }
+.beach-sheet-handle { display: none; }
 .beach-shell-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: var(--beach-gutter) var(--beach-gutter) 18px; flex: none; }
 .beach-shell-panel-heading h2 { margin: 0; font: 500 23px var(--beach-serif); letter-spacing: -.025em; }
 .beach-shell-count { margin: 0; color: var(--beach-muted); font-size: 11px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .beach-shell-back { display: flex; align-items: center; gap: 9px; color: var(--beach-accent); min-height: 32px; font-size: 13px; background: none; border: 0; padding: 0; }
-.beach-shell-panel-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--beach-rule) transparent; }
+.beach-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--beach-rule) transparent; }
 
 .beach-shell-list-note { display: flex; justify-content: space-between; gap: 8px; margin: 0 var(--beach-gutter); padding-bottom: 13px; border-bottom: 1px solid var(--beach-rule); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
 .beach-shell-list-note span { font-family: var(--beach-serif); font-style: italic; text-transform: none; letter-spacing: 0; }
@@ -138,9 +159,6 @@
 .beach-shell-footer p + p { margin-top: 7px; }
 .beach-shell-footer strong { color: var(--beach-ink); font-weight: 500; }
 
-/* The phone-only control that trades map height for list height. */
-.beach-shell-sheet-toggle { display: none; }
-
 @keyframes beach-shell-drift {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
@@ -162,7 +180,14 @@
   .beach-shell-list-note span { display: none; }
 }
 
-@media (max-width: 760px) {
+/*
+ * The phone layout. A phone turned sideways is still a phone: Mobile Safari on
+ * an iPhone 16 lays the page out 852 px wide in landscape (956 on a Pro Max),
+ * so the short-and-not-wide clause keeps the sheet there instead of handing a
+ * 393 px-tall screen the desktop columns. bottom-sheet.tsx mirrors this query
+ * as SHEET_MEDIA.
+ */
+@media (max-width: 760px), (max-height: 600px) and (max-width: 1000px) {
   .beach-shell { --beach-gutter: 18px; }
   .beach-shell-header { padding: max(12px, env(safe-area-inset-top)) 16px 8px; }
   .beach-shell-masthead { gap: 8px; padding-bottom: 12px; }
@@ -177,37 +202,60 @@
   .beach-shell-filters { margin: 6px -3px 0; }
   .beach-shell-filters button { min-height: 38px; padding: 0 11px; font-size: 11px; }
 
-  /* In flow, not a modal: the map stays interactive above the results. */
-  .beach-shell-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(130px, 1fr) minmax(0, 44%); }
-  .beach-shell[data-expanded='true'] .beach-shell-workspace { grid-template-rows: minmax(90px, 1fr) minmax(0, 66%); }
-  .beach-shell-map { grid-column: 1; grid-row: 1; }
-  .beach-shell-key { left: auto; right: 12px; top: 12px; bottom: auto; z-index: 2; max-width: min(270px, calc(100% - 24px)); }
+  /*
+   * The map is the whole workspace; the directory is a sheet over it with three
+   * resting positions. Rests are CSS so reduced motion, the rig and the desktop
+   * column need no JS to know where the sheet is; `--sheet-visible` (set inline
+   * by BeachApp from the snap) tells the map's floating controls where the edge is.
+   * `--sheet-peek` is registered at the top of this file; BottomSheet reads it back.
+   */
+  .beach-shell-workspace { --sheet-peek: calc(96px + env(safe-area-inset-bottom, 0px)); --sheet-duration: 280ms; display: block; position: relative; }
+  .beach-shell-map { position: absolute; inset: 0; --sheet-visible: inherit; }
+  .beach-shell-key { left: auto; right: 12px; top: auto; bottom: calc(var(--sheet-visible) + 12px); z-index: 2; max-width: min(270px, calc(100% - 24px)); transition: bottom var(--sheet-duration) var(--beach-ease); }
   .beach-shell-key-content { max-height: 28dvh; }
   .beach-shell-map-failed { padding: 18px; gap: 7px; }
   .beach-shell-map-failed h2 { font-size: 19px; }
   .beach-shell-map-failed p { font-size: 12px; }
 
-  .beach-shell-panel { grid-column: 1; grid-row: 2; border: 0; border-top: 1px solid var(--beach-rule); z-index: 1; }
-  .beach-shell-sheet-toggle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 42px; flex: none; color: var(--beach-muted); background: none; border: 0; }
-  .beach-shell-handle { width: 34px; height: 3px; background: var(--beach-rule); border-radius: 3px; }
-  .beach-shell-sheet-toggle > span:last-child { display: flex; align-items: center; gap: 5px; font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
-  .beach-shell-sheet-toggle[aria-expanded='false'] svg { transform: rotate(180deg); }
+  .beach-sheet { position: absolute; inset: 0; z-index: 3; border: 0; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px #0003; padding-bottom: env(safe-area-inset-bottom, 0px); transform: translateY(var(--sheet-offset)); transition: transform var(--sheet-duration) var(--beach-ease); will-change: transform; }
+  .beach-sheet[data-snap='peek'] { --sheet-offset: calc(100% - var(--sheet-peek)); }
+  .beach-sheet[data-snap='half'] { --sheet-offset: 50%; }
+  .beach-sheet[data-snap='full'] { --sheet-offset: 0px; }
+  /* The finger-follow transform is inline; the transition would only lag behind it. */
+  .beach-sheet[data-dragging='true'] { transition: none; }
+  /* The browser must not claim a press as a scroll, pan, or selection while the sheet is the thing that moves. */
+  .beach-sheet:not([data-snap='full']), .beach-sheet-grab { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .beach-sheet-grab { cursor: grab; }
+  .beach-sheet[data-dragging='true'] .beach-sheet-grab { cursor: grabbing; }
+  .beach-sheet-handle { display: block; width: 36px; height: 4px; margin: 10px auto 8px; border-radius: 2px; background: var(--beach-rule); }
+  /* The list scrolls only at full; at half a pull on it moves the sheet instead. */
+  .beach-sheet-body[data-scroll='false'] { overflow: hidden; }
+  .beach-sheet-body[data-scroll='true'] { touch-action: pan-y; }
   .beach-shell-panel-heading { padding: 0 var(--beach-gutter) 10px; }
   .beach-shell-panel-heading h2 { font-size: 22px; }
   .beach-shell-list-note { padding-bottom: 10px; }
   .beach-shell-row { padding: 14px var(--beach-gutter); }
   .beach-shell-row-arrow { opacity: 1; transform: none; }
-  .beach-shell-footer { padding: 8px var(--beach-gutter) max(8px, env(safe-area-inset-bottom)); }
+  /* The sheet already carries the home-indicator inset. */
+  .beach-shell-footer { padding: 8px var(--beach-gutter); }
   .beach-shell-footer p { font-size: 9px; }
   .beach-shell-footer p + p { margin-top: 3px; }
 }
 
 /* A landscape phone has no room for the masthead furniture. */
-@media (max-height: 600px) and (max-width: 760px) {
+@media (max-height: 600px) and (max-width: 1000px) {
   .beach-shell-header { padding-top: 8px; }
   .beach-shell-eyebrow, .beach-shell-list-note { display: none; }
   .beach-shell-masthead { padding-bottom: 8px; }
-  .beach-shell-workspace { grid-template-rows: minmax(80px, 1fr) minmax(0, 50%); }
+  /* Search and filters share one row so the sheet keeps a usable half. */
+  .beach-shell-toolbar { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .beach-shell-search { flex: 0 1 300px; min-height: 40px; }
+  .beach-shell-filters { margin: 0; flex: 1; }
+  /* Three snaps still; the peek needs less because the heading row is shorter. */
+  .beach-shell-workspace { --sheet-peek: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .beach-sheet-handle { margin: 6px auto 4px; }
+  .beach-shell-panel-heading { padding-bottom: 6px; }
+  .beach-shell-panel-heading h2 { font-size: 18px; }
   .beach-shell-footer { display: none; }
 }
 

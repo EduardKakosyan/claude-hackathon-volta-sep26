@@ -25,14 +25,19 @@ import { defineConfig, devices } from '@playwright/test'
  * production bundle instead: a cold dev server compiling chunks on demand under
  * parallel workers can hand a script request an HTML page ("Unexpected token
  * '<'"), and the production server is what nsbeaches.ca runs anyway.
- * Screenshots land in test-results/<test>/ per project.
+ * Screenshots land in test-results/e2e/<test>/ per project.
  */
 export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Locally cap at 2 workers (override with PW_WORKERS=n): the default of
+  // cores/2 spawns a browser per worker across five projects and pegs the CPU.
+  workers: process.env.CI ? 1 : Number(process.env.PW_WORKERS ?? 2),
+  // Playwright empties its output directory before every run. Keep it to its
+  // own subdirectory so `pnpm sim shot` (test-results/sim/) is not wiped.
+  outputDir: 'test-results/e2e',
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL: 'http://localhost:3000',

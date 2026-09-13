@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeachApp } from '@/components/beach-app'
+import { SHEET_MEDIA } from '@/components/bottom-sheet'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
 import type { PageData } from '@/lib/db/queries'
 import type { LiveStatus, StatusView } from '@/lib/status'
@@ -46,6 +47,27 @@ vi.mock('@/components/beach-map', () => ({
     </div>
   )),
 }))
+
+/** Make `matchMedia` report the phone breakpoint so the sheet's gestures are live. */
+function setPhoneLayout(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn((query: string) => ({
+      matches: query === SHEET_MEDIA && matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
+
+function sheetOf(container: HTMLElement): HTMLElement {
+  return container.querySelector<HTMLElement>('.beach-sheet')!
+}
 
 function makeLiveStatus(beachId: string, state: BeachState): LiveStatus {
   return {
@@ -340,6 +362,76 @@ describe('BeachApp', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('fake-beach-map')).toBeInTheDocument()
+    })
+  })
+
+  describe('the sheet', () => {
+    beforeEach(() => setPhoneLayout(true))
+    afterEach(() => setPhoneLayout(false))
+
+    it('rests at half on load and tells the workspace how much it covers', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+      const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('50%')
+    })
+
+    it('the heading, the list and the footer are the sheet\'s children, in that order', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+      const sheet = sheetOf(container)
+      expect(sheet.querySelector('.beach-sheet-grab .beach-shell-panel-heading h2')).toHaveTextContent(
+        'Find your next shore',
+      )
+      expect(sheet.querySelector('.beach-sheet-body .beach-shell-list')).not.toBeNull()
+      expect(sheet.lastElementChild).toHaveClass('beach-shell-footer')
+    })
+
+    it('selecting a beach keeps the sheet at half', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+      const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('50%')
+    })
+
+    it('selecting from the full list brings the sheet back to half so the map shows the pin', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(container.querySelector('.beach-shell-panel-heading h2')!)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+      expect(container.querySelector<HTMLElement>('.beach-shell-workspace')!.style.getPropertyValue('--sheet-visible')).toBe('100%')
+
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+    })
+
+    it('closing the detail keeps whatever snap the sheet is at', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      // Tapping the count (part of the heading row, not a control) cycles half → full.
+      await user.click(container.querySelector('.beach-shell-count')!)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await waitFor(() => expect(screen.queryByRole('article')).not.toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+    })
+
+    it('the back control in the heading row closes the detail without cycling the sheet', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await waitFor(() => expect(screen.queryByRole('article')).not.toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
     })
   })
 })

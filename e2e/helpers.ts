@@ -52,6 +52,21 @@ export function row(page: Page, name: string): Locator {
   return page.locator('.beach-shell-row').filter({ has: page.getByText(name, { exact: true }) })
 }
 
+/** The directory container: the phone sheet, or the panel column on desktop and tablet. */
+export function sheet(page: Page): Locator {
+  return page.locator('.beach-sheet')
+}
+
+/**
+ * Wait until React has hydrated: the map is client-only, so its first pin (or
+ * the "map could not load" fallback) only exists once the app is interactive.
+ */
+export async function waitForApp(page: Page): Promise<void> {
+  const pin = page.locator('.beach-map-pin').first()
+  const mapUnavailable = page.getByRole('alert').filter({ hasText: 'The map could not load' })
+  await expect(pin.or(mapUnavailable).first()).toBeAttached({ timeout: 30_000 })
+}
+
 /** The detail view, whichever markup renders it. */
 export function detail(page: Page): Locator {
   return page.getByRole('article')

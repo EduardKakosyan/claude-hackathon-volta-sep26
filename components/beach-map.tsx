@@ -52,7 +52,20 @@ export default function BeachMap({
   /** The camera only moves for a *new* selection, so searching never re-flies the map. */
   const flownToId = useRef<string | null>(null)
   const hasReportedFatal = useRef(false)
+  /** A zero-width element whose height is `--sheet-visible`, so the phone sheet's cover resolves to pixels. */
+  const probeRef = useRef<HTMLDivElement | null>(null)
   const reducedMotion = useReducedMotion()
+
+  /**
+   * On a phone the sheet covers the bottom of the map; a selected pin has to land
+   * in the uncovered part. Capped below the map height so the camera maths stays sane.
+   */
+  const sheetPadding = useCallback((): number => {
+    const probe = probeRef.current
+    const container = probe?.parentElement
+    if (!probe || !container) return 0
+    return Math.max(0, Math.min(probe.offsetHeight, Math.floor(container.clientHeight * 0.8)))
+  }, [])
 
   const flyToBeach = useCallback(
     (id: string) => {
@@ -61,11 +74,12 @@ export default function BeachMap({
       if (!beach || !map) return
       flownToId.current = id
       const center: [number, number] = [beach.lon, beach.lat]
+      const padding = { top: 0, right: 0, left: 0, bottom: sheetPadding() }
       // Reduced motion still needs the camera to arrive — it just gets there without the flight.
-      if (reducedMotion) map.jumpTo({ center, ...BEACH_VIEW })
-      else map.flyTo({ center, ...BEACH_VIEW, speed: 0.9, curve: 1.4, essential: true })
+      if (reducedMotion) map.jumpTo({ center, padding, ...BEACH_VIEW })
+      else map.flyTo({ center, padding, ...BEACH_VIEW, speed: 0.9, curve: 1.4, essential: true })
     },
-    [beaches, reducedMotion],
+    [beaches, reducedMotion, sheetPadding],
   )
 
   const handleLoad = useCallback(() => {
@@ -103,42 +117,45 @@ export default function BeachMap({
   )
 
   return (
-    <Map
-      ref={mapRef}
-      initialViewState={NOVA_SCOTIA_VIEW}
-      mapStyle={SATELLITE_TERRAIN_STYLE}
-      projection="globe"
-      terrain={{ source: 'dem', exaggeration: 1.6 }}
-      attributionControl={{ compact: true }}
-      onLoad={handleLoad}
-      onError={handleError}
-      style={{ position: 'absolute', inset: 0 }}
-    >
-      {beaches.map((beach) => {
-        const state = resolveState(status, beach.id)
-        return (
-          <Marker key={beach.id} longitude={beach.lon} latitude={beach.lat} anchor="center">
-            {/* A button, not a span: a pin is a control, so it has to be reachable by keyboard. */}
-            <button
-              type="button"
-              className="beach-map-pin"
-              aria-label={statusAccessibleName(beach.name, state, beach.authority)}
-              aria-pressed={beach.id === selectedId}
-              onClick={(event) => {
-                event.stopPropagation()
-                onSelect(beach.id)
-              }}
-            >
-              <StatusPin
-                state={state}
-                hollow={beach.authority === 'province'}
-                selected={beach.id === selectedId}
-                label={beach.name}
-              />
-            </button>
-          </Marker>
-        )
-      })}
-    </Map>
+    <>
+      <Map
+        ref={mapRef}
+        initialViewState={NOVA_SCOTIA_VIEW}
+        mapStyle={SATELLITE_TERRAIN_STYLE}
+        projection="globe"
+        terrain={{ source: 'dem', exaggeration: 1.6 }}
+        attributionControl={{ compact: true }}
+        onLoad={handleLoad}
+        onError={handleError}
+        style={{ position: 'absolute', inset: 0 }}
+      >
+        {beaches.map((beach) => {
+          const state = resolveState(status, beach.id)
+          return (
+            <Marker key={beach.id} longitude={beach.lon} latitude={beach.lat} anchor="center">
+              {/* A button, not a span: a pin is a control, so it has to be reachable by keyboard. */}
+              <button
+                type="button"
+                className="beach-map-pin"
+                aria-label={statusAccessibleName(beach.name, state, beach.authority)}
+                aria-pressed={beach.id === selectedId}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onSelect(beach.id)
+                }}
+              >
+                <StatusPin
+                  state={state}
+                  hollow={beach.authority === 'province'}
+                  selected={beach.id === selectedId}
+                  label={beach.name}
+                />
+              </button>
+            </Marker>
+          )
+        })}
+      </Map>
+      <div ref={probeRef} className="beach-map-probe" aria-hidden="true" />
+    </>
   )
 }

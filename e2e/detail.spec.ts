@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { detail, openBeach, phoneOnly, row, rows, stubMapTiles, watchPageErrors } from './helpers'
+import { detail, openBeach, row, rows, stubMapTiles, watchPageErrors } from './helpers'
 
 /** Open in the fixture day via halifax.ca, so the detail carries a live source link. */
 const BEACH = 'Chocolate Lake Beach'
@@ -89,24 +89,5 @@ test.describe('detail', () => {
     await expect(detail(page)).not.toBeVisible()
 
     expect(errors()).toEqual([])
-  })
-
-  // Replaced by sheet.spec.ts in Phase 3, when the fixed split becomes a three-snap sheet.
-  test('phone: map and results both visible, no horizontal overflow, toggle flips aria-expanded', async ({ page }, testInfo) => {
-    phoneOnly(testInfo)
-    await page.goto('/')
-
-    await expect(page.locator('.beach-shell-map')).toBeVisible()
-    await expect(page.locator('.beach-shell-panel')).toBeVisible()
-
-    const hasHorizontalScroll = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-    )
-    expect(hasHorizontalScroll).toBe(false)
-
-    const toggle = page.locator('.beach-shell-sheet-toggle')
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
-    await toggle.click()
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true')
   })
 })

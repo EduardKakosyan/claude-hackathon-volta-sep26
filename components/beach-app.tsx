@@ -2,13 +2,13 @@
 
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { BeachDetail } from '@/components/beach-detail'
 import { BeachList } from '@/components/beach-list'
 import { BeachToolbar } from '@/components/beach-toolbar'
-import { Legend } from '@/components/legend'
+import { BottomSheet, SHEET_VISIBLE, type Snap } from '@/components/bottom-sheet'
 import { MapKey } from '@/components/map-key'
 import { MapUnavailable } from '@/components/map-unavailable'
 import { ReplayBanner } from '@/components/replay-banner'
@@ -41,6 +41,36 @@ type SelectionOrigin = 'list' | 'map'
 
 const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
 
+interface PanelHeadingProps {
+  selected: boolean
+  isFiltered: boolean
+  visibleCount: number
+  total: number
+  onBack: () => void
+}
+
+/**
+ * The row at the top of the panel: the single back control when a beach is
+ * open, the directory title otherwise, and the count. On a phone it lives in
+ * the sheet's grab area, so tapping it cycles the snap.
+ */
+function PanelHeading({ selected, isFiltered, visibleCount, total, onBack }: PanelHeadingProps) {
+  return (
+    <div className="beach-shell-panel-heading">
+      {selected ? (
+        <button type="button" className="beach-shell-back" onClick={onBack}>
+          <ArrowLeft size={16} aria-hidden="true" /> Back to beaches
+        </button>
+      ) : (
+        <h2>{isFiltered ? 'Your results' : 'Find your next shore'}</h2>
+      )}
+      <p className="beach-shell-count" role="status">
+        {selected ? `1 of ${total} beaches` : `${visibleCount} of ${total} beaches`}
+      </p>
+    </div>
+  )
+}
+
 export function BeachApp(data: BeachAppProps) {
   const {
     beaches,
@@ -57,7 +87,8 @@ export function BeachApp(data: BeachAppProps) {
   const [selectedId, setSelectedId] = useState<string | null>(data.initialBeachId ?? null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<StatusFilter>('all')
-  const [isPanelExpanded, setPanelExpanded] = useState(false)
+  /** Where the phone sheet rests. Ignored by the desktop column, which never moves. */
+  const [snap, setSnap] = useState<Snap>('half')
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapAttempt, setMapAttempt] = useState(0)
 
@@ -89,6 +120,8 @@ export function BeachApp(data: BeachAppProps) {
       originRef.current = origin
       lastSelectedId.current = id
       setSelectedId(id)
+      // The detail answers "is it open?" with the map still visible, so it always opens at half.
+      setSnap('half')
       panelRef.current?.scrollTo({ top: 0 })
       if (typeof window !== 'undefined') {
         window.history.replaceState(null, '', buildHref({ day: replayDay, beach: id }))
@@ -170,7 +203,7 @@ export function BeachApp(data: BeachAppProps) {
             .join(' / ')
 
   return (
-    <main className="beach-shell" data-expanded={isPanelExpanded}>
+    <main className="beach-shell">
       <BeachToolbar
         beachCount={beaches.length}
         query={query}
@@ -180,7 +213,10 @@ export function BeachApp(data: BeachAppProps) {
         searchRef={searchRef}
       />
 
-      <div className="beach-shell-workspace">
+      <div
+        className="beach-shell-workspace"
+        style={{ '--sheet-visible': SHEET_VISIBLE[snap] } as CSSProperties}
+      >
         <section className="beach-shell-map" aria-label="Satellite map of Nova Scotia beaches">
           {mapError ? (
             <MapUnavailable message={mapError} onRetry={retryMap} />
@@ -214,80 +250,62 @@ export function BeachApp(data: BeachAppProps) {
           )}
         </section>
 
-        <aside className="beach-shell-panel" aria-label={selected ? 'Selected beach' : 'Beach directory'}>
-          <button
-            className="beach-shell-sheet-toggle"
-            type="button"
-            aria-expanded={isPanelExpanded}
-            aria-controls="beach-shell-panel-content"
-            onClick={() => setPanelExpanded((expanded) => !expanded)}
-          >
-            <span className="beach-shell-handle" />
-            <span>
-              {isPanelExpanded ? 'Show more map' : 'Show more of the list'}
-              <ChevronDown size={14} aria-hidden="true" />
-            </span>
-          </button>
-
-          <div className="beach-shell-panel-heading">
-            {selected ? (
-              <button type="button" className="beach-shell-back" onClick={closeDetail}>
-                <ArrowLeft size={16} aria-hidden="true" /> Back to beaches
-              </button>
-            ) : (
-              <h2>{isFiltered ? 'Your results' : 'Find your next shore'}</h2>
-            )}
-            <p className="beach-shell-count" role="status">
-              {selected
-                ? `1 of ${beaches.length} beaches`
-                : `${visible.length} of ${beaches.length} beaches`}
-            </p>
-          </div>
-
-          <div className="beach-shell-panel-scroll" ref={panelRef} id="beach-shell-panel-content">
-            {selected ? (
-              <BeachDetail
-                key={selected.id}
-                beach={selected}
-                status={status[selected.id]}
-                history={history[selected.id] ?? []}
-                historyFrom={historyFrom}
-                historyTo={historyTo}
-                replayDay={replayDay}
-                onBack={closeDetail}
-              />
-            ) : (
-              <>
-                <p className="beach-shell-list-note">
-                  Alphabetical directory <span>Choose a beach to explore</span>
+        <BottomSheet
+          snap={snap}
+          onSnapChange={setSnap}
+          aria-label={selected ? 'Selected beach' : 'Beach directory'}
+          bodyRef={panelRef}
+          heading={
+            <PanelHeading
+              selected={selected !== null}
+              isFiltered={isFiltered}
+              visibleCount={visible.length}
+              total={beaches.length}
+              onBack={closeDetail}
+            />
+          }
+          footer={
+            <footer className="beach-shell-footer">
+              {counts.unknown > 0 && (
+                <p>
+                  <strong>
+                    {counts.unknown} {counts.unknown === 1 ? 'beach has' : 'beaches have'} no status
+                    available.
+                  </strong>{' '}
+                  {UNKNOWN_CAVEAT}
                 </p>
-                <BeachList
-                  beaches={visible}
-                  status={pinState}
-                  selectedId={selectedId}
-                  onSelect={(id) => selectBeach(id, 'list')}
-                  onReset={resetSearch}
-                />
-              </>
-            )}
-          </div>
-
-          <footer className="beach-shell-footer">
-            {counts.unknown > 0 && (
-              <p>
-                <strong>
-                  {counts.unknown} {counts.unknown === 1 ? 'beach has' : 'beaches have'} no status
-                  available.
-                </strong>{' '}
-                {UNKNOWN_CAVEAT}
+              )}
+              <p>{footer}</p>
+              <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
+            </footer>
+          }
+        >
+          {selected ? (
+            <BeachDetail
+              key={selected.id}
+              beach={selected}
+              status={status[selected.id]}
+              history={history[selected.id] ?? []}
+              historyFrom={historyFrom}
+              historyTo={historyTo}
+              replayDay={replayDay}
+              onBack={closeDetail}
+            />
+          ) : (
+            <>
+              <p className="beach-shell-list-note">
+                Alphabetical directory <span>Choose a beach to explore</span>
               </p>
-            )}
-            <p>{footer}</p>
-            <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
-          </footer>
-        </aside>
-
-        <Legend className="hidden md:block absolute bottom-3 left-3 z-10 max-w-xs" />
+              <BeachList
+                beaches={visible}
+                status={pinState}
+                selectedId={selectedId}
+                onSelect={(id) => selectBeach(id, 'list')}
+                onReset={resetSearch}
+              />
+            </>
+          )}
+        </BottomSheet>
       </div>
     </main>
   )
