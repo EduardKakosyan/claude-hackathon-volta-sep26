@@ -104,3 +104,26 @@ describe('parseHrm — structural failures', () => {
     ])
   })
 })
+
+describe('parseHrm on the 2026 table', () => {
+  const html = readFileSync(new URL('../__fixtures__/hrm-2026-07-24.html', import.meta.url), 'utf8')
+
+  it('reads every row of the July 24, 2026 archive, advisories in the new wording included', () => {
+    const { readings, anomalies } = parseHrm(html)
+    expect(anomalies).toEqual([])
+    expect(readings).toHaveLength(18)
+    const byId = Object.fromEntries(readings.map((r) => [r.beachId, r]))
+    expect(byId['hrm-kearney-lake']).toMatchObject({ kind: 'advisory', verbatim: 'Water Quality Advisory in Effect' })
+    expect(byId['hrm-penhorn-lake']).toMatchObject({ kind: 'advisory', verbatim: 'Water Quality Advisory' })
+    expect(byId['hrm-kidston-lake']).toMatchObject({ kind: 'open', verbatim: 'Open' })
+    expect(readings.filter((r) => r.kind === 'advisory').map((r) => r.beachId).sort()).toEqual([
+      'hrm-albro-lake',
+      'hrm-birch-cove',
+      'hrm-kearney-lake',
+      'hrm-kinap',
+      'hrm-long-pond',
+      'hrm-penhorn-lake',
+      'hrm-springfield',
+    ])
+  })
+})

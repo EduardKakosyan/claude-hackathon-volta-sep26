@@ -1,7 +1,7 @@
 import { mergeConditions, type ConditionsView } from '@/lib/conditions'
 import { addDays, halifaxToday } from '@/lib/dates'
 import { BEACHES, BEACHES_BY_ID, type Beach } from '@/lib/seed/beaches'
-import { toReplay, type SourceHealthView, type StatusDayView, type StatusView } from '@/lib/status'
+import { toReplay, type DaySummary, type SourceHealthView, type StatusDayView, type StatusView } from '@/lib/status'
 import { readUrlState } from '@/lib/url-state'
 
 import { isFixtureVariant, type PageStore } from './store'
@@ -22,11 +22,13 @@ export interface PageData {
    * replay day: yesterday's status never wears today's wind.
    */
   conditions: Record<string, ConditionsView | undefined>
-  /** Distinct replayable days, newest first. */
-  days: string[]
+  /** Every recorded day with its state counts, newest first: the day scrubber. */
+  days: DaySummary[]
   /** The window the history covers, inclusive. */
   historyFrom: string
   historyTo: string
+  /** Today's Halifax calendar date: the scrubber's last chip, and where "Back to today" goes. */
+  today: string
   replayDay?: string
   initialBeachId?: string
   storeKind: PageStore['kind']
@@ -88,6 +90,7 @@ export async function loadPage({ params, store: requested, now = new Date() }: L
     days,
     historyFrom,
     historyTo,
+    today,
     replayDay: url.day,
     initialBeachId: url.beach,
     storeKind: store.kind,

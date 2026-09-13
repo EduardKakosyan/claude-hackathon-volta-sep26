@@ -9,11 +9,10 @@ import { BeachDetail } from '@/components/beach-detail'
 import { BeachList } from '@/components/beach-list'
 import { BeachToolbar } from '@/components/beach-toolbar'
 import { BottomSheet, SHEET_VISIBLE, type Snap } from '@/components/bottom-sheet'
+import { DayScrubber } from '@/components/day-scrubber'
 import { LocateButton } from '@/components/locate-button'
 import { MapKey } from '@/components/map-key'
 import { MapUnavailable } from '@/components/map-unavailable'
-import { ReplayBanner } from '@/components/replay-banner'
-import { ReplayControl } from '@/components/replay-control'
 import {
   countByState,
   filterBeaches,
@@ -21,7 +20,7 @@ import {
 } from '@/lib/beach-filter'
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import { formatFreshness, offseasonLabel } from '@/lib/copy'
-import { formatPosted } from '@/lib/dates'
+import { formatDay } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
 import { OPEN_METEO_CREDIT_URL } from '@/lib/ingest/sources/open-meteo'
 import { SMARTATLANTIC_CREDIT_URL } from '@/lib/ingest/sources/smartatlantic'
@@ -117,6 +116,7 @@ export function BeachApp(data: BeachAppProps) {
     days,
     historyFrom,
     historyTo,
+    today,
     replayDay,
     storeKind,
   } = data
@@ -262,7 +262,7 @@ export function BeachApp(data: BeachAppProps) {
   // season it still says which authorities the calendar has closed, so the
   // off-season screens read the same in fixture mode as against the database.
   const footer = replayDay
-    ? `Replayed: ${formatPosted(replayDay)}`
+    ? `Replaying ${formatDay(replayDay)} — not today’s status`
     : storeKind === 'fixture'
       ? ['Showing a fixture day, not live status', ...offseason.map(offseasonLabel)].join(' · ')
       : formatFreshness(health, offseason)
@@ -301,19 +301,12 @@ export function BeachApp(data: BeachAppProps) {
               <MapKey />
               <LocateButton status={geo.status} onRequest={locate} />
 
-              {replayDay ? (
-                <ReplayBanner
-                  replayDay={replayDay}
-                  beachId={selectedId}
-                  className="absolute inset-x-0 top-0 z-10 mx-3 mt-3"
-                />
-              ) : null}
-
-              <ReplayControl
+              <DayScrubber
                 days={days}
+                today={today}
                 replayDay={replayDay}
                 beachId={selectedId}
-                className="beach-shell-replay absolute top-3 right-3 z-10"
+                className="beach-shell-replay"
               />
             </>
           )}

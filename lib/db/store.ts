@@ -1,7 +1,7 @@
 import type { BuoyReading, ConditionsRow } from '@/lib/conditions'
 import type { Beach } from '@/lib/seed/beaches'
 import { SEED_DAYS } from '@/lib/seed/days'
-import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
+import type { DaySummary, LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
 
 /**
  * The fixture days a test may ask for by name with `?fixture=`. Only the
@@ -32,8 +32,8 @@ export interface PageStore {
   /** Every status_day row with fromDay <= day <= toDay, any beach. */
   history(fromDay: string, toDay: string): Promise<StatusDayView[]>
   health(): Promise<SourceHealthView[]>
-  /** Distinct replayable days, newest first. */
-  days(): Promise<string[]>
+  /** Every recorded day with its state counts, newest first. */
+  days(): Promise<DaySummary[]>
   /** The last wind reading per beach, whatever its age; `loadPage` decides staleness. */
   conditions(): Promise<ConditionsRow[]>
   /** The Halifax buoy's last reading, or null when none was ever written. */
@@ -51,6 +51,20 @@ export interface StatusWriter {
   upsertSourceHealth(rows: SourceHealthView[]): Promise<number>
   upsertConditions(rows: ConditionsRow[]): Promise<number>
   upsertBuoy(reading: BuoyReading): Promise<void>
+}
+
+/** One summary per day from any set of rows, newest first: what the view does in SQL. */
+export function summarizeDays(rows: Iterable<Pick<StatusDayView, 'day' | 'state'>>): DaySummary[] {
+  const byDay = new Map<string, DaySummary>()
+  for (const row of rows) {
+    let summary = byDay.get(row.day)
+    if (!summary) {
+      summary = { day: row.day, open: 0, advisory: 0, closed: 0, offseason: 0 }
+      byDay.set(row.day, summary)
+    }
+    summary[row.state] += 1
+  }
+  return [...byDay.values()].sort((a, b) => b.day.localeCompare(a.day))
 }
 
 export function seedDayRows(day: string): StatusDayView[] {
@@ -88,7 +102,7 @@ export class MemoryStore implements PageStore, StatusWriter {
     return [...this.healthBySource.values()]
   }
   async days() {
-    return [...new Set([...this.daysByKey.values()].map((r) => r.day))].sort().reverse()
+    return summarizeDays(this.daysByKey.values())
   }
   async conditions() {
     return [...this.conditionsByBeach.values()]

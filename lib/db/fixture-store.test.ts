@@ -65,11 +65,14 @@ describe('FixtureStore', () => {
   })
 
   it('keeps the seeded replay days', async () => {
-    expect(await store.days()).toEqual(['2026-08-14'])
+    const days = await store.days()
+    expect(days).toHaveLength(255)
+    expect(days[0]).toEqual({ day: '2026-09-12', open: 0, advisory: 0, closed: 0, offseason: 35 })
+    expect(days.find((d) => d.day === '2026-08-14')).toEqual({ day: '2026-08-14', open: 32, advisory: 2, closed: 1, offseason: 0 })
     expect(await store.dayStatus('2026-08-14')).toHaveLength(35)
-    expect(await store.dayStatus('2026-07-01')).toEqual([])
-    expect(await store.history('2026-08-01', '2026-08-14')).toHaveLength(35)
-    expect(await store.history('2026-08-15', '2026-08-28')).toEqual([])
+    expect(await store.dayStatus('2025-07-01')).toEqual([])
+    expect(await store.history('2026-08-01', '2026-08-14')).toHaveLength(14 * 35)
+    expect(await store.history('2025-08-15', '2025-08-28')).toEqual([])
   })
 
   it('serves a wind row for every beach and one buoy reading, both stamped just before the clock', async () => {
@@ -139,7 +142,7 @@ describe('FixtureStore', () => {
     it('keeps the conditions, the buoy and the replay days of the in-season store', async () => {
       expect(await off.conditions()).toEqual(await new FixtureStore(clock).conditions())
       expect(await off.buoy()).toEqual(await new FixtureStore(clock).buoy())
-      expect(await off.days()).toEqual(['2026-08-14'])
+      expect(await off.days()).toEqual(await new FixtureStore(clock).days())
     })
   })
 })

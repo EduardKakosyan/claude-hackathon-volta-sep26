@@ -199,7 +199,7 @@ describe('BeachDetail', () => {
     const status: ReplayStatus = { ...makeReplayStatus('closed'), basis: 'verified', note: 'Per CBC coverage.' }
     render(<BeachDetail beach={createBeach()} status={status} {...baseProps} replayDay="2026-07-10" />)
 
-    expect(screen.getByText(/Reconstructed from dated news coverage\. Per CBC coverage\./)).toBeInTheDocument()
+    expect(screen.getByText(/Reconstructed from a dated notice or an archived status table\. Per CBC coverage\./)).toBeInTheDocument()
   })
 
   it('no status shows "No status read yet" in live mode, reads unknown, and repeats the caveat', () => {

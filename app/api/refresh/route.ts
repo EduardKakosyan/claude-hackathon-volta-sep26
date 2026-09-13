@@ -8,7 +8,10 @@ import { createWebPushSender, resolveVapid } from '@/lib/push/server'
 export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/refresh — the only thing that writes to the database.
+ * GET /api/refresh — the only thing that writes to the database. Vercel Cron
+ * calls it at seven past every hour (vercel.json): Supabase's gateway was seen
+ * failing calls made in the first second of the hour, and the store retries
+ * each call besides (lib/db/retry.ts).
  * 401 without the cron secret; 503 when the server has no database to write to.
  * Four stages: seed (idempotent), then the live status sources, then
  * conditions, then one Web Push per follower of every beach whose state the
@@ -34,6 +37,8 @@ export async function GET(req: Request) {
     live = await refreshLive({ writer, log: console.warn })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
+    // Logged as well as returned: a cron's response body is never seen, its logs are.
+    console.error(`refresh failed before the status write: ${message}`)
     return Response.json({ error: message }, { status: 500 })
   }
 

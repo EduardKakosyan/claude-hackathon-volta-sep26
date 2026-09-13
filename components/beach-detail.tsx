@@ -46,8 +46,9 @@ export interface FollowSlot {
 /** How a replayed day's row came to exist. */
 const BASIS_LINE: Record<DayBasis, string> = {
   scraped: 'Recorded by this app on the day.',
-  verified: 'Reconstructed from dated news coverage.',
+  verified: 'Reconstructed from a dated notice or an archived status table.',
   inferred: 'Reconstruction: no notice was found for this beach that day.',
+  calendar: 'Outside the published supervision season: nothing was read that day.',
 }
 
 /**

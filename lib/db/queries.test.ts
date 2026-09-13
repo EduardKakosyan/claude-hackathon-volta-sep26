@@ -17,10 +17,24 @@ describe('loadPage', () => {
     expect(data.replayDay).toBe('2026-08-14')
     expect(Object.keys(data.status)).toHaveLength(35)
     expect(data.status['ns-rainbow-haven']).toMatchObject({ kind: 'replay', state: 'advisory' })
-    expect(data.days).toEqual(['2026-08-14'])
+    // Every day of the year to the eve of the refresh, newest first, with the day's counts.
+    expect(data.days).toHaveLength(255)
+    expect(data.days[0].day).toBe('2026-09-12')
+    expect(data.days.at(-1)?.day).toBe('2026-01-01')
+    expect(data.days.find((d) => d.day === '2026-08-14')).toEqual({
+      day: '2026-08-14',
+      open: 32,
+      advisory: 2,
+      closed: 1,
+      offseason: 0,
+    })
+    expect(data.today).toBe('2026-09-12')
     expect(data.historyTo).toBe('2026-08-14')
     expect(data.historyFrom).toBe('2026-08-01')
-    expect(data.history['hrm-kinap']?.map((r) => r.day)).toEqual(['2026-08-14'])
+    const kinap = data.history['hrm-kinap']?.map((r) => r.day)
+    expect(kinap).toHaveLength(14)
+    expect(kinap?.[0]).toBe('2026-08-01')
+    expect(kinap?.at(-1)).toBe('2026-08-14')
   })
 
   it('fixture mode: live rows for every beach but the omitted two, and three healthy sources', async () => {
@@ -136,8 +150,8 @@ describe('loadPage', () => {
   })
 
   it('replays a day that was never recorded as all unknown, still labelled', async () => {
-    const data = await loadPage({ params: { day: '2026-07-01' }, store: new FixtureStore(), now: NOW })
-    expect(data.replayDay).toBe('2026-07-01')
+    const data = await loadPage({ params: { day: '2025-07-01' }, store: new FixtureStore(), now: NOW })
+    expect(data.replayDay).toBe('2025-07-01')
     expect(data.status).toEqual({})
   })
 

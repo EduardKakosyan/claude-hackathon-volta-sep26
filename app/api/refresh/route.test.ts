@@ -103,11 +103,13 @@ describe('GET /api/refresh', () => {
     expect(body.conditions).toEqual({ error: 'open-meteo exploded' })
   })
 
-  it('a live stage that throws is still a 500, and conditions never run after it', async () => {
+  it('a live stage that throws is still a 500, logged, and conditions never run after it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     refreshLive.mockRejectedValue(new Error('supabase beach_status upsert: down'))
     const res = await GET(request('Bearer shh'))
     expect(res.status).toBe(500)
     expect(await res.json()).toEqual({ error: 'supabase beach_status upsert: down' })
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('supabase beach_status upsert: down'))
     expect(refreshConditions).not.toHaveBeenCalled()
     expect(sendTransitions).not.toHaveBeenCalled()
   })

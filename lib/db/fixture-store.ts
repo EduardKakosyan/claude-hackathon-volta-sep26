@@ -8,9 +8,9 @@ import {
   fixtureConditions,
 } from '@/lib/fixture/today'
 import { SEED_DAYS } from '@/lib/seed/days'
-import type { LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
+import type { DaySummary, LiveStatus, SourceHealthView, StatusDayView } from '@/lib/status'
 
-import { seedDayRows, type FixtureVariant, type PageStore } from './store'
+import { seedDayRows, summarizeDays, type FixtureVariant, type PageStore } from './store'
 
 /**
  * The no-credentials store. Live status and health come from the hand-written
@@ -50,8 +50,8 @@ export class FixtureStore implements PageStore {
     return this.variant === 'offseason' ? [...FIXTURE_OFFSEASON_HEALTH] : [...FIXTURE_HEALTH]
   }
 
-  async days(): Promise<string[]> {
-    return Object.keys(SEED_DAYS).sort().reverse()
+  async days(): Promise<DaySummary[]> {
+    return summarizeDays(Object.keys(SEED_DAYS).flatMap((d) => seedDayRows(d)))
   }
 
   async conditions(): Promise<ConditionsRow[]> {

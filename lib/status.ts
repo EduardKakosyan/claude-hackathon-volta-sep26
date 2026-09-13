@@ -29,8 +29,13 @@ export interface LiveStatus {
   confirmedAt: string
 }
 
-/** Where a `status_day` row came from. `scraped` rows are written by the ingest; the other two by seeds. */
-export type DayBasis = 'scraped' | 'verified' | 'inferred'
+/**
+ * Where a `status_day` row came from. `scraped` rows are written by the
+ * ingest; the seed writes the other three: `verified` from a dated notice or
+ * an archived table, `inferred` between such evidence, and `calendar` for a
+ * day outside the authority's published supervision window.
+ */
+export type DayBasis = 'scraped' | 'verified' | 'inferred' | 'calendar'
 
 /** One beach on one Halifax calendar day. Carries a state, never provenance. */
 export interface StatusDayView {
@@ -39,6 +44,15 @@ export interface StatusDayView {
   state: BeachState
   basis: DayBasis
   note: string | null
+}
+
+/** One recorded day and how many beaches stood in each state: the day scrubber's chips. */
+export interface DaySummary {
+  day: string
+  open: number
+  advisory: number
+  closed: number
+  offseason: number
 }
 
 /** A replayed status: the `status_day` row for the requested day. */

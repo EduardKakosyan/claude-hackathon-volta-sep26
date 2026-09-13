@@ -291,6 +291,53 @@
 
 /* --- Responsive ----------------------------------------------------------- */
 
+/* --- Replay: the day scrubber --------------------------------------------- */
+
+/*
+ * One pill at the top-right of the map; open, it grows a strip across the map's
+ * width under itself. On ink while replaying: a replayed map can never pass
+ * for a live one. The chips' dots are the one place outside the pins and the
+ * 14-day strip that wear the status colours, and they mean the same thing.
+ */
+.beach-scrubber { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: calc(100% - 24px); }
+.beach-scrubber[data-open='true'] { left: 12px; }
+.beach-scrubber-pill { display: flex; align-items: stretch; border: 1px solid var(--beach-rule); border-radius: 4px; background: var(--beach-panel); color: var(--beach-ink); box-shadow: 0 4px 20px #0002; overflow: hidden; }
+.beach-scrubber-toggle { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px 0 14px; border: 0; background: transparent; color: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.beach-scrubber-toggle svg:last-child { color: var(--beach-muted); transition: transform var(--beach-duration) var(--beach-ease); }
+.beach-scrubber[data-open='true'] .beach-scrubber-toggle svg:last-child { transform: rotate(180deg); }
+.beach-scrubber-close { display: grid; place-items: center; width: 40px; border-left: 1px solid var(--beach-rule); color: inherit; }
+.beach-scrubber-toggle:hover, .beach-scrubber-close:hover { background: var(--beach-bg); }
+.beach-scrubber[data-replaying='true'] .beach-scrubber-pill { background: var(--beach-deep); border-color: var(--beach-deep); color: #e4ece9; }
+.beach-scrubber[data-replaying='true'] .beach-scrubber-toggle svg:last-child { color: #9fb7b5; }
+.beach-scrubber[data-replaying='true'] .beach-scrubber-close { border-color: #2c414a; }
+.beach-scrubber[data-replaying='true'] .beach-scrubber-toggle:hover, .beach-scrubber[data-replaying='true'] .beach-scrubber-close:hover { background: #1d3139; }
+
+.beach-scrubber-strip { display: flex; align-items: stretch; width: 100%; min-height: 58px; border: 1px solid var(--beach-rule); border-radius: 4px; background: var(--beach-panel); box-shadow: 0 4px 20px #0002; }
+.beach-scrubber-arrow { flex: none; display: grid; place-items: center; width: 36px; border: 0; background: transparent; color: var(--beach-muted); }
+.beach-scrubber-arrow:first-child { border-right: 1px solid var(--beach-rule); }
+.beach-scrubber-arrow:last-child { border-left: 1px solid var(--beach-rule); }
+.beach-scrubber-arrow:hover { color: var(--beach-ink); background: var(--beach-bg); }
+.beach-scrubber-days { position: relative; display: flex; flex: 1; gap: 12px; min-width: 0; margin: 0; padding: 6px 10px; list-style: none; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 10px; scrollbar-width: none; }
+.beach-scrubber-days::-webkit-scrollbar { display: none; }
+.beach-scrubber-month { flex: none; display: flex; align-items: stretch; gap: 4px; scroll-snap-align: start; }
+/* Sticky within the scroller, so the month stays named while any of its days are in view. */
+.beach-scrubber-month-label { position: sticky; left: 0; z-index: 1; display: flex; align-items: center; padding: 0 6px 0 2px; margin-left: -2px; background: var(--beach-panel); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-scrubber-month > ol { display: flex; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.beach-scrubber-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 38px; height: 44px; border-radius: 4px; color: var(--beach-ink); text-decoration: none; scroll-snap-align: start; font-variant-numeric: tabular-nums; }
+.beach-scrubber-day:hover { background: var(--beach-bg); }
+.beach-scrubber-day[data-today='true'] { box-shadow: inset 0 0 0 1px var(--beach-rule); }
+.beach-scrubber-day[aria-current='date'] { background: var(--beach-accent); color: #fff; box-shadow: none; }
+.beach-scrubber-weekday { font-size: 9px; line-height: 1; text-transform: uppercase; color: var(--beach-muted); }
+.beach-scrubber-day[aria-current='date'] .beach-scrubber-weekday { color: #d8e7e6; }
+.beach-scrubber-num { font-size: 13px; line-height: 1.1; font-weight: 500; }
+.beach-scrubber-dot { width: 5px; height: 5px; border-radius: 9999px; background: var(--status-unknown); }
+.beach-scrubber-day[data-tone='open'] .beach-scrubber-dot { background: var(--status-open); }
+.beach-scrubber-day[data-tone='advisory'] .beach-scrubber-dot { background: var(--status-advisory); }
+.beach-scrubber-day[data-tone='closed'] .beach-scrubber-dot { background: var(--status-closed); }
+.beach-scrubber-day[data-tone='offseason'] .beach-scrubber-dot { background: var(--status-offseason); }
+.beach-scrubber-day[data-tone='live'] .beach-scrubber-dot { visibility: hidden; }
+.beach-scrubber-day[aria-current='date'] .beach-scrubber-dot { box-shadow: 0 0 0 1px #fff8; }
+
 @media (min-width: 1500px) {
   .beach-shell-workspace { grid-template-columns: 420px minmax(0, 1fr); }
   .beach-shell { --beach-gutter: 28px; }
@@ -341,6 +388,12 @@
   .beach-shell-locate { right: 12px; bottom: calc(var(--sheet-visible) + 44px); }
   .beach-shell-map .maplibregl-ctrl-bottom-right { bottom: var(--sheet-visible); transition: bottom var(--sheet-duration) var(--beach-ease); }
   .beach-shell-key-content { max-height: 28dvh; }
+  .beach-scrubber-toggle { min-height: 40px; padding: 0 10px 0 12px; font-size: 11px; }
+  .beach-scrubber-close { width: 36px; }
+  .beach-scrubber-strip { min-height: 52px; }
+  .beach-scrubber-arrow { display: none; }
+  .beach-scrubber-days { gap: 10px; padding: 5px 8px; }
+  .beach-scrubber-day { width: 34px; height: 40px; }
   .beach-shell-map-failed { padding: 18px; gap: 7px; }
   .beach-shell-map-failed h2 { font-size: 19px; }
   .beach-shell-map-failed p { font-size: 12px; }
@@ -405,9 +458,16 @@
   .beach-shell-filters { margin: 0; flex: 1; }
   /* Three snaps still; the peek needs less because the heading row is shorter. */
   .beach-shell-workspace { --sheet-peek: calc(72px + env(safe-area-inset-bottom, 0px)); }
-  /* A short map: measured from the sheet edge the locate button would land on the replay control, so they share the top row instead — the native select's height varies by platform, so nothing may depend on it. */
+  /* A short map: measured from the sheet edge the locate button would land on the day scrubber, so they share the top row instead; the scrubber stops 64px short of the right edge to leave it room. */
   .beach-shell-locate { top: 12px; bottom: auto; }
   .beach-shell-replay { right: 64px; }
+  /* A short map has no room for a second row: open, the strip shares the pill's row. */
+  .beach-scrubber[data-open='true'] { flex-direction: row-reverse; align-items: stretch; }
+  .beach-scrubber[data-open='true'] .beach-scrubber-pill { flex: none; }
+  .beach-scrubber[data-open='true'] .beach-scrubber-toggle span { display: none; }
+  .beach-scrubber-strip { flex: 1; width: auto; min-width: 0; min-height: 46px; }
+  .beach-scrubber-day { height: 34px; gap: 1px; }
+  .beach-scrubber-day .beach-scrubber-weekday { display: none; }
   .beach-sheet-handle { margin: 6px auto 4px; }
   .beach-shell-panel-heading { padding-bottom: 6px; }
   .beach-shell-panel-heading h2 { font-size: 18px; }

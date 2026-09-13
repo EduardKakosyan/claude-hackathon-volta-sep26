@@ -7,10 +7,18 @@ import type { IngestAnomaly, ParseResult, Roster, SourceReading } from '@/lib/in
 
 export { HRM_STATUS_URL }
 
-/** Exact status vocabulary, keyed by matchKey(cell). Anything else is an anomaly, never a guess. */
+/**
+ * Exact status vocabulary, keyed by matchKey(cell). Anything else is an
+ * anomaly, never a guess. The column header still says "Risk Advisory in
+ * Effect", but the 2026 table itself writes "Water Quality Advisory in Effect"
+ * (and once, on July 24, just "Water Quality Advisory"): both archived tables
+ * of the season carry the new words and none of the old, so both are here.
+ */
 export const HRM_STATUS_WORDS: Readonly<Record<string, BeachState>> = {
   open: 'open',
   'risk advisory in effect': 'advisory',
+  'water quality advisory in effect': 'advisory',
+  'water quality advisory': 'advisory',
   closed: 'closed',
   'supervision ended for the season': 'offseason',
 }
