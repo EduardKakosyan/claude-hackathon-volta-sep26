@@ -47,3 +47,4 @@ CLAUDE.md
 
 # Riptide artifacts (cloud-synced)
 .humanlayer/tasks/
+supabase/.temp/

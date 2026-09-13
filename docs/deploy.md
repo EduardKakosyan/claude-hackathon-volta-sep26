@@ -2,8 +2,8 @@
 
 The site is one Vercel project (`claude-hackathon-volta-sep26`, production
 domain `www.nsbeaches.ca`) reading and writing one Supabase project
-(`nsbeaches`, ref `ahbvuiettzvapfeewpvz`, `ca-central-1`, in the AI-First
-Consulting org). Vercel Cron calls `/api/refresh` at the top of every hour;
+(`nsbeaches`, ref `rggtdnxmttkelupnudcj`, `ca-central-1`, free tier, in the
+Promptly org). Vercel Cron calls `/api/refresh` at the top of every hour;
 that route is the only thing that writes to the database.
 
 With no database credentials the app serves the fixture day (see
@@ -15,8 +15,8 @@ on purpose rather than pass a fixture off as live status.
 
 | Variable | Environments | Where it comes from |
 | --- | --- | --- |
-| `SUPABASE_URL` | production, development | `https://ahbvuiettzvapfeewpvz.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | production, development | Supabase dashboard → Project Settings → API keys → `service_role` (secret). Copied by hand once; nothing in this repo or the connector can read it. |
+| `SUPABASE_URL` | production, development | `https://rggtdnxmttkelupnudcj.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | production, development | `supabase projects api-keys --project-ref rggtdnxmttkelupnudcj --reveal` (the CLI is logged in to the Promptly account), or the dashboard's API keys page. |
 | `CRON_SECRET` | production, development | `openssl rand -hex 32`. Vercel Cron sends it as the bearer token; the same value in `.env.local` lets you curl the refresh locally. |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | production | One pair, generated once with `web-push generateVAPIDKeys()`. Rotating it orphans every stored subscription. |
 | `VAPID_SUBJECT` | production | `https://www.nsbeaches.ca`. Push services need a contact for the sender; web-push accepts a `mailto:` address or an `https:` URL, and the site URL keeps a personal address out of every push JWT. |
@@ -38,14 +38,13 @@ vercel env ls        # names and environments only; values are never printed
 
 ## The database
 
-The six migrations in `supabase/migrations/` were applied in order through
-the Supabase connector's `apply_migration` (the local CLI is logged in to a
-different account, so `supabase link` was not an option). To apply a new one
-the same way, or with the CLI against the direct connection string:
+The CLI is linked to the project (`supabase link --project-ref rggtdnxmttkelupnudcj`;
+the link lives in the ignored `supabase/.temp/`). The six migrations in
+`supabase/migrations/` were applied with it. To apply a new one:
 
 ```bash
-supabase db push --db-url "$POSTGRES_URL_NON_POOLING"     # percent-encode the password
-supabase migration list --db-url "$POSTGRES_URL_NON_POOLING"
+supabase db push
+supabase migration list      # local = remote
 ```
 
 `supabase_migrations.schema_migrations` on the project lists what has been
@@ -59,8 +58,7 @@ service role bypasses RLS. Nothing in the app holds the anon key.
 
 ## First run, and the checks
 
-1. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (table above). Every
-   other variable is already on the project.
+1. Every variable in the table is on the project.
 2. Merge to `main`. `main` is protected: the `typecheck · lint · test · e2e`
    check must pass and the branch must be current, for admins too, and it
    cannot be force-pushed or deleted. The merge is the production deploy.
