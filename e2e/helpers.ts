@@ -7,13 +7,15 @@ import { expect, type Locator, type Page, type TestInfo } from '@playwright/test
  */
 
 /**
- * Abort every imagery request. The suite verifies the app is usable with no
- * tiles, not that tiles render; blocking them also keeps every run offline.
+ * Abort every request to the tile host. The style itself ships in the bundle
+ * (lib/map-style/paper.json); its TileJSON, vector tiles, glyphs and sprite all
+ * live on tiles.openfreemap.org, so one pattern keeps every run offline. The
+ * suite verifies the app is usable with no tiles, not that tiles render: the
+ * style's background layer still paints paper, pins still attach, and the camera
+ * still flies.
  */
 export async function stubMapTiles(page: Page): Promise<void> {
-  await page.route(/tiles\.maps\.eox\.at|s3\.amazonaws\.com/, (route) =>
-    route.abort('blockedbyclient'),
-  )
+  await page.route(/tiles\.openfreemap\.org/, (route) => route.abort('blockedbyclient'))
 }
 
 /**

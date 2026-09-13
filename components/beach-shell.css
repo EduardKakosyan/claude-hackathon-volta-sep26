@@ -82,11 +82,12 @@
 
 .beach-shell-workspace { display: grid; grid-template-columns: 370px minmax(0, 1fr); flex: 1; min-height: 0; }
 
-.beach-shell-map { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; background: var(--beach-deep); isolation: isolate; --sheet-visible: 0px; }
+/* Paper under the map before the style paints, so a slow network never shows a dark hole. */
+.beach-shell-map { position: relative; grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; background: var(--beach-bg); isolation: isolate; --sheet-visible: 0px; }
 /* Resolves `--sheet-visible` to pixels for the map's camera padding. Zero-width, never painted. */
 .beach-map-probe { position: absolute; left: 0; bottom: 0; width: 0; height: var(--sheet-visible); pointer-events: none; visibility: hidden; }
-.beach-shell-map-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: radial-gradient(ellipse at center, #27464b, var(--beach-deep)); color: #d5e2e0; font: italic 17px var(--beach-serif); }
-.beach-shell-map-loading svg { animation: beach-shell-drift 2.4s var(--beach-ease) infinite; }
+.beach-shell-map-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: var(--beach-bg); color: var(--beach-muted); font: italic 17px var(--beach-serif); }
+.beach-shell-map-loading img { animation: beach-shell-drift 2.4s var(--beach-ease) infinite; }
 
 /* A failed map is a failure of this page. It must never read as a beach status. */
 .beach-shell-map-failed { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 28px; text-align: center; background: var(--beach-deep); color: #e4ece9; }
@@ -110,8 +111,10 @@
 .beach-shell-key-hollow > span:first-child { flex: none; margin-top: 2px; }
 
 /* Keyboard-reachable map pins. The pin itself is the only visible chrome. */
-.beach-map-pin { display: block; padding: 0; border: 0; background: none; border-radius: 9999px; cursor: pointer; }
-.beach-map-pin:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.beach-map-pin { display: block; padding: 0; border: 0; background: none; border-radius: 9999px; cursor: pointer; transition: transform var(--beach-duration) var(--beach-ease); }
+.beach-map-pin:focus-visible { outline: 2px solid var(--beach-accent); outline-offset: 3px; }
+/* At province zoom the 18 Halifax pins share a few pixels; smaller pins keep the cluster legible without clustering. */
+.beach-shell-map[data-zoom-band='province'] .beach-map-pin { transform: scale(0.7); }
 
 /* --- Directory / detail panel --------------------------------------------- */
 
@@ -211,7 +214,9 @@
    */
   .beach-shell-workspace { --sheet-peek: calc(96px + env(safe-area-inset-bottom, 0px)); --sheet-duration: 280ms; display: block; position: relative; }
   .beach-shell-map { position: absolute; inset: 0; --sheet-visible: inherit; }
-  .beach-shell-key { left: auto; right: 12px; top: auto; bottom: calc(var(--sheet-visible) + 12px); z-index: 2; max-width: min(270px, calc(100% - 24px)); transition: bottom var(--sheet-duration) var(--beach-ease); }
+  /* The key and MapLibre's attribution both ride the sheet edge, key left and credit right; under the sheet the credit would never be seen. */
+  .beach-shell-key { left: 12px; right: auto; top: auto; bottom: calc(var(--sheet-visible) + 12px); z-index: 2; max-width: min(270px, calc(100% - 24px)); transition: bottom var(--sheet-duration) var(--beach-ease); }
+  .beach-shell-map .maplibregl-ctrl-bottom-right { bottom: var(--sheet-visible); transition: bottom var(--sheet-duration) var(--beach-ease); }
   .beach-shell-key-content { max-height: 28dvh; }
   .beach-shell-map-failed { padding: 18px; gap: 7px; }
   .beach-shell-map-failed h2 { font-size: 19px; }

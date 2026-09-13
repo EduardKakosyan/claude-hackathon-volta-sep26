@@ -11,6 +11,7 @@ interface MockBeachMapProps {
   beaches: typeof BEACHES
   onSelect: (id: string) => void
   onFatalError: (error: string) => void
+  onZoomBandChange?: (band: 'province' | 'region' | 'beach') => void
 }
 
 vi.mock('next/navigation', () => ({
@@ -27,8 +28,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/components/beach-map', () => ({
-  default: vi.fn(({ beaches, onSelect, onFatalError }: MockBeachMapProps) => (
+  default: vi.fn(({ beaches, onSelect, onFatalError, onZoomBandChange }: MockBeachMapProps) => (
     <div data-testid="fake-beach-map">
+      <button data-testid="map-zoom-out-button" onClick={() => onZoomBandChange?.('province')}>
+        Zoom out
+      </button>
       {beaches.map((beach: (typeof BEACHES)[number]) => (
         <button
           key={beach.id}
@@ -363,6 +367,16 @@ describe('BeachApp', () => {
     await waitFor(() => {
       expect(screen.getByTestId('fake-beach-map')).toBeInTheDocument()
     })
+  })
+
+  it('the map section carries the zoom band: region on load, then whatever the map reports', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<BeachApp {...makePageData()} />)
+    const section = container.querySelector('.beach-shell-map')!
+    expect(section).toHaveAttribute('data-zoom-band', 'region')
+
+    await user.click(screen.getByTestId('map-zoom-out-button'))
+    await waitFor(() => expect(section).toHaveAttribute('data-zoom-band', 'province'))
   })
 
   describe('the sheet', () => {

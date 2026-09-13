@@ -1,6 +1,6 @@
 # Is the Beach Open
 
-A 3D map of every supervised beach around Halifax, coloured by whether you can swim
+A map of every supervised beach around Halifax, coloured by whether you can swim
 there right now. One question, answered in ten seconds, with the government's own
 words underneath it.
 
@@ -12,7 +12,7 @@ state per beach.
 ## Stack
 
 - Next.js 16 (App Router) on Vercel
-- MapLibre GL via `react-map-gl`, Sentinel-2 cloudless imagery, Terrarium terrain
+- MapLibre GL via `react-map-gl` on a paper-styled vector map (`lib/map-style/paper.json`, generated from OpenFreeMap positron by `pnpm map:style`)
 - Tailwind v4 + shadcn/ui
 - Supabase (Postgres) for status, history, and reports
 - Vitest over captured fixtures of the three source pages

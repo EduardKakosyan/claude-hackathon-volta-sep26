@@ -20,6 +20,8 @@ test.describe('directory', () => {
 
     // Give the map's workers time to start: a worker that dies parsing HTML shows up here.
     await expect(page.locator('.beach-map-pin').first()).toBeAttached({ timeout: 30_000 })
+    // The page opens on the Halifax region, the middle of the three zoom bands.
+    await expect(page.locator('.beach-shell-map')).toHaveAttribute('data-zoom-band', 'region')
     await page.waitForTimeout(1000)
     expect(errors()).toEqual([])
   })

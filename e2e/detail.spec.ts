@@ -31,11 +31,16 @@ test.describe('detail', () => {
     await expect(pin.or(mapUnavailable).first()).toBeAttached({ timeout: 30_000 })
     test.skip(await mapUnavailable.isVisible(), 'this browser cannot start the map (no WebGL)')
 
-    // Pins overlap at province zoom, so drive the control rather than hit-test the canvas.
+    const mapSection = page.locator('.beach-shell-map')
+    await expect(mapSection).toHaveAttribute('data-zoom-band', 'region')
+
+    // Pins can overlap, so drive the control rather than hit-test the canvas.
     await pin.dispatchEvent('click')
     const article = detail(page)
     await expect(article).toBeVisible()
     await expect(article.getByRole('heading', { level: 2 })).toHaveText(BEACH)
+    // The camera flies in to the beach; the pins are at full size there.
+    await expect(mapSection).toHaveAttribute('data-zoom-band', 'beach', { timeout: 15_000 })
 
     await page.getByRole('button', { name: 'Back to beaches' }).click()
     await expect(article).not.toBeVisible()

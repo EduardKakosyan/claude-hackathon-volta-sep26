@@ -11,6 +11,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "sim": "tsx scripts/sim.ts",
+    "map:style": "tsx scripts/build-map-style.ts",
     "postinstall": "node scripts/copy-maplibre-worker.mjs"
   },
   "dependencies": {

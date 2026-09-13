@@ -21,6 +21,7 @@ import {
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import { formatPosted } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
+import { HALIFAX_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
 import { buildHref } from '@/lib/url-state'
 
 import './beach-shell.css'
@@ -30,7 +31,7 @@ const BeachMap = dynamic(() => import('@/components/beach-map'), {
   loading: () => (
     <div className="beach-shell-map-loading" role="status">
       <Image src="/logo.png" alt="" width={32} height={32} aria-hidden="true" />
-      <span>Opening the satellite map...</span>
+      <span>Opening the map...</span>
     </div>
   ),
 })
@@ -89,6 +90,8 @@ export function BeachApp(data: BeachAppProps) {
   const [filter, setFilter] = useState<StatusFilter>('all')
   /** Where the phone sheet rests. Ignored by the desktop column, which never moves. */
   const [snap, setSnap] = useState<Snap>('half')
+  /** How far in the map is: the shell scales the pins by it so the Halifax cluster reads at province zoom. */
+  const [band, setBand] = useState<ZoomBand>(() => zoomBand(HALIFAX_VIEW.zoom))
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapAttempt, setMapAttempt] = useState(0)
 
@@ -217,7 +220,7 @@ export function BeachApp(data: BeachAppProps) {
         className="beach-shell-workspace"
         style={{ '--sheet-visible': SHEET_VISIBLE[snap] } as CSSProperties}
       >
-        <section className="beach-shell-map" aria-label="Satellite map of Nova Scotia beaches">
+        <section className="beach-shell-map" aria-label="Map of Nova Scotia beaches" data-zoom-band={band}>
           {mapError ? (
             <MapUnavailable message={mapError} onRetry={retryMap} />
           ) : (
@@ -229,6 +232,7 @@ export function BeachApp(data: BeachAppProps) {
                 selectedId={selectedId}
                 onSelect={(id) => selectBeach(id, 'map')}
                 onFatalError={setMapError}
+                onZoomBandChange={setBand}
               />
               <MapKey />
 
