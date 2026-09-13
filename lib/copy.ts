@@ -1,8 +1,12 @@
+// beach-status imports `offseasonLine` from here and this file imports the
+// label rule from there; both are used inside functions only, never while a
+// module is evaluating, so the two-way import is harmless.
+import { statusPresentation } from '@/lib/beach-status'
 import type { ConditionsView } from '@/lib/conditions'
 import { formatClock, formatPosted } from '@/lib/dates'
 import { SEASON } from '@/lib/season'
-import type { Authority, BeachState } from '@/lib/seed/beaches'
-import type { IngestSource, SourceHealthView, StatusSource, StatusView } from '@/lib/status'
+import type { Authority, Beach, BeachState } from '@/lib/seed/beaches'
+import type { IngestSource, LiveStatus, SourceHealthView, StatusSource, StatusView } from '@/lib/status'
 
 /**
  * The plain-English line under the status. Keyed by (state, source) because
@@ -99,6 +103,52 @@ export function formatConditions(c: ConditionsView, format: ConditionsFormat = {
     if (sunrise && sunset) parts.push(`Sunrise ${sunrise}`, `Sunset ${sunset}`)
   }
   return parts.join(' · ')
+}
+
+/** Who a status came from, as a notification names it: the site, not "says". */
+const SOURCE_NAME: Record<Exclude<StatusSource, 'season'>, string> = {
+  hrm: 'halifax.ca',
+  parks: 'parks.novascotia.ca',
+  algae: 'novascotia.ca algae notice',
+}
+
+export interface PushPayload {
+  title: string
+  body: string
+  beachId: string
+}
+
+/**
+ * The one notification a follower gets when a beach changes state, in the
+ * app's own words and the source's:
+ *
+ *   Chocolate Lake Beach is now Advisory
+ *   halifax.ca: "Risk advisory in effect." Posted today, 8:02 a.m.
+ *
+ * The title uses the same authority-aware label as the detail, so a provincial
+ * beach is never called "Open" — it reads "Rissers Beach: no advisory posted".
+ * A calendar row (source `season`) has no words to quote: off-season it says
+ * when the lifeguards return, in season that no notice is posted.
+ */
+export function pushPayload(beach: Pick<Beach, 'id' | 'name' | 'authority'>, status: LiveStatus, now: Date = new Date()): PushPayload {
+  const { label } = statusPresentation(status.state, beach.authority)
+  const title = /^No /.test(label)
+    ? `${beach.name}: ${label.charAt(0).toLowerCase()}${label.slice(1)}`
+    : `${beach.name} is now ${label}`
+
+  const when = status.postedAt
+    ? `Posted ${formatPosted(status.postedAt, now)}`
+    : `Confirmed ${formatPosted(status.confirmedAt, now)}`
+
+  let body: string
+  if (status.source === 'season') {
+    body = status.state === 'offseason' ? offseasonLine(beach.authority) : `${SOURCE_SAYS.season}. ${when}`
+  } else {
+    const words = status.verbatim?.trim()
+    body = words ? `${SOURCE_NAME[status.source]}: “${words}” ${when}` : `${SOURCE_NAME[status.source]}. ${when}`
+  }
+
+  return { title, body, beachId: beach.id }
 }
 
 /** How the footer names each thing the refresh reads. */

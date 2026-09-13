@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ConditionsView } from './conditions'
-import { formatConditions, formatFreshness, offseasonLabel, offseasonLine, PLAIN_ENGLISH, plainEnglish } from './copy'
+import { formatConditions, formatFreshness, offseasonLabel, offseasonLine, PLAIN_ENGLISH, plainEnglish, pushPayload } from './copy'
 import { formatClock } from './dates'
-import type { SourceHealthView } from './status'
+import { BEACHES_BY_ID } from './seed/beaches'
+import type { LiveStatus, SourceHealthView } from './status'
 
 /** 2 p.m. ADT (UTC−3) on the fixture-ish day. */
 const TWO_PM = '2026-08-15T17:00:00Z'
@@ -87,6 +88,85 @@ describe('formatConditions', () => {
         confirmedAt: TWO_PM,
       }),
     ).not.toMatch(/water is safe|safe to swim/i)
+  })
+})
+
+describe('pushPayload', () => {
+  /** 8:02 a.m. ADT on the fixture day, and a `now` the same afternoon so the time reads "today". */
+  const POSTED = '2026-08-15T11:02:00.000Z'
+  const NOW = new Date('2026-08-15T17:00:00.000Z')
+  const chocolate = BEACHES_BY_ID['hrm-chocolate-lake']
+  const rissers = BEACHES_BY_ID['ns-rissers']
+  const status = (overrides: Partial<LiveStatus>): LiveStatus => ({
+    kind: 'live',
+    beachId: chocolate.id,
+    state: 'advisory',
+    source: 'hrm',
+    verbatim: 'Risk advisory in effect',
+    sourceUrl: 'https://www.halifax.ca/x',
+    postedAt: null,
+    confirmedAt: POSTED,
+    ...overrides,
+  })
+
+  it('names the beach and its new state in the title, and quotes the source with when it said so', () => {
+    expect(pushPayload(chocolate, status({ postedAt: POSTED }), NOW)).toEqual({
+      title: 'Chocolate Lake Beach is now Advisory',
+      body: 'halifax.ca: “Risk advisory in effect” Posted today, 8:02 a.m.',
+      beachId: 'hrm-chocolate-lake',
+    })
+  })
+
+  it('says "Confirmed" when the source has no posting time of its own', () => {
+    expect(pushPayload(chocolate, status({ state: 'open', verbatim: 'Open' }), NOW).body).toBe('halifax.ca: “Open” Confirmed today, 8:02 a.m.')
+  })
+
+  it('a change back to Open is sent like any other: it is the one people wait for', () => {
+    expect(pushPayload(chocolate, status({ state: 'open', verbatim: 'Open' }), NOW).title).toBe('Chocolate Lake Beach is now Open')
+  })
+
+  it('a provincial beach is never called Open: the title carries the same label as the detail', () => {
+    const payload = pushPayload(rissers, status({ beachId: rissers.id, state: 'open', source: 'season', verbatim: 'No advisory posted' }), NOW)
+    expect(payload.title).toBe('Rissers Beach: no advisory posted')
+    expect(payload.body).toBe('No notice posted. Confirmed today, 8:02 a.m.')
+  })
+
+  it('a parks card and an algae notice name their sites', () => {
+    expect(pushPayload(rissers, status({ beachId: rissers.id, state: 'closed', source: 'parks', verbatim: 'Beach closed — high surf', postedAt: POSTED }), NOW)).toEqual({
+      title: 'Rissers Beach is now Closed',
+      body: 'parks.novascotia.ca: “Beach closed — high surf” Posted today, 8:02 a.m.',
+      beachId: 'ns-rissers',
+    })
+    expect(pushPayload(chocolate, status({ state: 'closed', source: 'algae', verbatim: 'Chocolate Lake — Bloom', postedAt: '2026-08-14T13:30:00.000Z' }), NOW).body).toBe(
+      'novascotia.ca algae notice: “Chocolate Lake — Bloom” Posted Aug 14, 10:30 a.m.',
+    )
+  })
+
+  it('the calendar closing the season says when the lifeguards return', () => {
+    expect(pushPayload(chocolate, status({ state: 'offseason', source: 'season', verbatim: 'Off-season' }), NOW)).toEqual({
+      title: 'Chocolate Lake Beach is now Off-season',
+      body: 'Off-season. Lifeguards return late June.',
+      beachId: 'hrm-chocolate-lake',
+    })
+    expect(pushPayload(rissers, status({ beachId: rissers.id, state: 'offseason', source: 'season', verbatim: 'Off-season' }), NOW).body).toBe(
+      'Off-season. Lifeguards return July 1.',
+    )
+  })
+
+  it('a source with no words of its own is named without a quote', () => {
+    expect(pushPayload(chocolate, status({ verbatim: null }), NOW).body).toBe('halifax.ca. Confirmed today, 8:02 a.m.')
+    expect(pushPayload(chocolate, status({ verbatim: '   ' }), NOW).body).toBe('halifax.ca. Confirmed today, 8:02 a.m.')
+  })
+
+  it('never asserts the water is safe', () => {
+    for (const state of ['open', 'advisory', 'closed', 'offseason'] as const) {
+      for (const source of ['hrm', 'parks', 'algae', 'season'] as const) {
+        for (const beach of [chocolate, rissers]) {
+          const { title, body } = pushPayload(beach, status({ state, source, verbatim: 'Open' }), NOW)
+          expect(`${title} ${body}`).not.toMatch(/\bsafe\b/i)
+        }
+      }
+    }
   })
 })
 

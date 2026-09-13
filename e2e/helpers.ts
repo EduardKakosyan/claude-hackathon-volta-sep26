@@ -44,6 +44,39 @@ export async function watchPageErrors(page: Page): Promise<() => string[]> {
   return () => [...errors]
 }
 
+/**
+ * Stand in for the push service. Headless Chromium has no push service behind
+ * `pushManager.subscribe()` — it rejects "Registration failed - permission
+ * denied" whatever the permission — and a real one would mean FCM on the
+ * network. Only that one call is replaced: the service worker registers for
+ * real, the permission is the context's, the hook, the client, the route and
+ * the memory store are all the real thing. Engines without a `PushManager`
+ * (WebKit) are left alone, so they read `needs-install` / `unsupported` as
+ * they would in the field. Call before `page.goto`.
+ */
+export async function stubPushService(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    if (!('PushManager' in window)) return
+    const endpoint = `https://push.example.org/rig/${Math.random().toString(36).slice(2)}`
+    const subscription = {
+      endpoint,
+      expirationTime: null,
+      options: { userVisibleOnly: true, applicationServerKey: null },
+      getKey: () => null,
+      toJSON: () => ({ endpoint, expirationTime: null, keys: { p256dh: 'BRigP256dh', auth: 'rigAuth' } }),
+      unsubscribe: async () => true,
+    }
+    let current: typeof subscription | null = null
+    PushManager.prototype.subscribe = async function subscribe() {
+      current = subscription
+      return current as unknown as PushSubscription
+    }
+    PushManager.prototype.getSubscription = async function getSubscription() {
+      return current as unknown as PushSubscription | null
+    }
+  })
+}
+
 /** Every directory row. */
 export function rows(page: Page): Locator {
   return page.locator('.beach-shell-list > li')

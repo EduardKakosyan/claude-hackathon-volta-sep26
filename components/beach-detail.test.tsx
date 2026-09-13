@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BeachDetail, type BeachDetailProps } from '@/components/beach-detail'
 import type { ConditionsView } from '@/lib/conditions'
 import type { Beach } from '@/lib/seed/beaches'
@@ -323,6 +324,44 @@ describe('BeachDetail', () => {
       expect(document.querySelector('article')).toHaveAttribute('data-offseason', 'false')
       expect(screen.getByText(/Replayed status for/)).toBeInTheDocument()
       expect(document.querySelector('.beach-detail-plain')).toHaveTextContent('Supervision had ended for the season.')
+    })
+  })
+
+  describe('follow bell', () => {
+    it('is absent unless the slot is given', () => {
+      render(<BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} />)
+      expect(document.querySelector('.beach-detail-follow')).toBeNull()
+    })
+
+    it('sits in the heading row beside the name, reads the state it is given, and a tap calls the toggle', async () => {
+      const user = userEvent.setup()
+      const onToggle = vi.fn()
+      render(<BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} follow={{ state: 'off', onToggle }} />)
+
+      const head = document.querySelector('.beach-detail-head')!
+      const bell = screen.getByRole('button', { name: 'Follow' })
+      expect(head.contains(bell)).toBe(true)
+      expect(head.querySelector('.beach-detail-name')!.compareDocumentPosition(bell) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(bell).toHaveAttribute('aria-pressed', 'false')
+      await user.click(bell)
+      expect(onToggle).toHaveBeenCalledTimes(1)
+    })
+
+    it('following reads "Following" and pressed; the hint states stay in the head too', () => {
+      const { unmount } = render(
+        <BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} follow={{ state: 'on', onToggle: () => {} }} />,
+      )
+      expect(screen.getByRole('button', { name: 'Following' })).toHaveAttribute('aria-pressed', 'true')
+      unmount()
+
+      render(<BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} follow={{ state: 'needs-install', onToggle: () => {} }} />)
+      expect(document.querySelector('.beach-detail-head .beach-detail-follow')).toHaveAttribute('data-state', 'needs-install')
+    })
+
+    it('the name still takes focus on open, not the bell, and the bell is not a back control', () => {
+      render(<BeachDetail beach={createBeach()} status={makeLiveStatus('open')} {...baseProps} follow={{ state: 'off', onToggle: () => {} }} />)
+      expect(screen.getByRole('heading', { level: 2 })).toHaveFocus()
+      expect(screen.queryByRole('button', { name: /back/i })).toBeNull()
     })
   })
 

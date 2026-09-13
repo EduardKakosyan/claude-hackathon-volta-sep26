@@ -1,4 +1,4 @@
-import { BEACHES, type Authority } from '@/lib/seed/beaches'
+import { BEACHES, type Authority, type BeachState } from '@/lib/seed/beaches'
 import type { PageStore, StatusWriter } from '@/lib/db/store'
 import type { LiveStatus, SourceHealthView, StatusDayView, StatusIngestSource as IngestSource } from '@/lib/status'
 import { describeError } from '@/lib/ingest/errors'
@@ -38,6 +38,18 @@ export interface SourceOutcome {
   anomalies: IngestAnomaly[]
 }
 
+/**
+ * A beach whose `state` this run wrote differently from the row before it.
+ * `from` is null for a beach that had no row at all. The row itself rides
+ * along so the notification can quote it without a second read.
+ */
+export interface StatusTransition {
+  beachId: string
+  from: BeachState | null
+  to: BeachState
+  status: LiveStatus
+}
+
 export interface IngestResult {
   attemptedAt: string
   today: string
@@ -47,6 +59,25 @@ export interface IngestResult {
   offseason: Authority[]
   written: number
   omitted: number
+  /**
+   * Every beach whose state changed against the rows that were there before
+   * the write. Unchanged status, a re-confirmation, a source outage (the row
+   * is kept, not rewritten) and conditions never appear here: this is exactly
+   * what the followers are told about.
+   */
+  transitions: StatusTransition[]
+}
+
+/** The diff the followers are told about: state to state, per beach, in roster order. */
+export function diffTransitions(previous: readonly LiveStatus[], next: readonly LiveStatus[]): StatusTransition[] {
+  const before = new Map(previous.map((row) => [row.beachId, row.state]))
+  const out: StatusTransition[] = []
+  for (const status of next) {
+    const from = before.get(status.beachId) ?? null
+    if (from === status.state) continue
+    out.push({ beachId: status.beachId, from, to: status.state, status })
+  }
+  return out
 }
 
 /**
@@ -133,7 +164,11 @@ export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> 
     note: null,
   }))
 
-  const existingHealth = await writer.health()
+  // Read before the write: the diff against these rows is what the followers
+  // are told about, and a beach a failed source left alone is not in `statuses`,
+  // so it can never read as a change.
+  const [existingHealth, previous] = await Promise.all([writer.health(), writer.liveStatus()])
+  const transitions = diffTransitions(previous, statuses)
   const healthBySource = new Map(existingHealth.map((h) => [h.source, h]))
   const mergedHealth: SourceHealthView[] = outcomes.map(({ source, ok: succeeded, error }) => {
     const prev = healthBySource.get(source)
@@ -149,5 +184,5 @@ export async function refreshLive(deps: RefreshLiveDeps): Promise<IngestResult> 
   await writer.upsertStatusDays(dayRows)
   await writer.upsertSourceHealth(mergedHealth)
 
-  return { attemptedAt: nowIso, today, sources: outcomes, offseason, written, omitted: resolved.omitted.length }
+  return { attemptedAt: nowIso, today, sources: outcomes, offseason, written, omitted: resolved.omitted.length, transitions }
 }

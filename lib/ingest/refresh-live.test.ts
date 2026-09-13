@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { MemoryStore } from '@/lib/db/store'
-import { activeSources, refreshLive, type SourceFetcher } from '@/lib/ingest/refresh-live'
+import { activeSources, diffTransitions, refreshLive, type SourceFetcher } from '@/lib/ingest/refresh-live'
 import type { ParseResult } from '@/lib/ingest/types'
 import { BEACHES } from '@/lib/seed/beaches'
+import type { LiveStatus } from '@/lib/status'
 
 const ok = (result: ParseResult): SourceFetcher => ({
   fetch: async () => 'raw',
@@ -46,7 +47,104 @@ describe('activeSources', () => {
   })
 })
 
+const row = (beachId: string, state: LiveStatus['state'], confirmedAt = '2026-08-13T12:00:00.000Z'): LiveStatus => ({
+  kind: 'live',
+  beachId,
+  state,
+  source: 'hrm',
+  verbatim: null,
+  sourceUrl: 'u',
+  postedAt: null,
+  confirmedAt,
+})
+
+describe('diffTransitions', () => {
+  it('is empty when every state is the same, however the rows otherwise differ', () => {
+    const before = [row('hrm-albro-lake', 'open'), row('hrm-chocolate-lake', 'advisory')]
+    const after = [row('hrm-albro-lake', 'open', '2026-08-14T12:00:00.000Z'), { ...row('hrm-chocolate-lake', 'advisory'), verbatim: 'Risk advisory in effect' }]
+    expect(diffTransitions(before, after)).toEqual([])
+  })
+
+  it('names every beach whose state changed, with the row it changed to, in the order written', () => {
+    const before = [row('hrm-albro-lake', 'offseason'), row('hrm-chocolate-lake', 'advisory')]
+    const next = [row('hrm-chocolate-lake', 'open'), row('hrm-albro-lake', 'open')]
+    expect(diffTransitions(before, next)).toEqual([
+      { beachId: 'hrm-chocolate-lake', from: 'advisory', to: 'open', status: next[0] },
+      { beachId: 'hrm-albro-lake', from: 'offseason', to: 'open', status: next[1] },
+    ])
+  })
+
+  it('a beach that had no row at all is a transition from null; a beach not written this run is not one', () => {
+    expect(diffTransitions([], [row('ns-rissers', 'open')])).toEqual([
+      { beachId: 'ns-rissers', from: null, to: 'open', status: row('ns-rissers', 'open') },
+    ])
+    expect(diffTransitions([row('ns-rissers', 'open')], [])).toEqual([])
+  })
+})
+
 describe('refreshLive', () => {
+  it('reports the state changes against the rows that were there before the write', async () => {
+    const writer = new MemoryStore()
+    await writer.upsertLiveStatus([row('hrm-chocolate-lake', 'open'), row('hrm-albro-lake', 'advisory')])
+    const result = await refreshLive({
+      writer,
+      now: NOW,
+      fetchers: {
+        hrm: ok({
+          readings: [
+            { beachId: 'hrm-chocolate-lake', source: 'hrm', kind: 'advisory', verbatim: 'Risk advisory in effect', url: 'u' },
+            { beachId: 'hrm-albro-lake', source: 'hrm', kind: 'advisory', verbatim: 'Risk advisory in effect', url: 'u' },
+          ],
+          anomalies: [],
+        }),
+        parks: empty(),
+        algae: empty(),
+      },
+    })
+
+    // Chocolate Lake changed; Albro Lake was re-confirmed; every provincial beach is new (no row before).
+    const changed = result.transitions.find((t) => t.beachId === 'hrm-chocolate-lake')
+    expect(changed).toMatchObject({ from: 'open', to: 'advisory', status: { verbatim: 'Risk advisory in effect', confirmedAt: '2026-08-14T12:00:00.000Z' } })
+    expect(result.transitions.find((t) => t.beachId === 'hrm-albro-lake')).toBeUndefined()
+    const provincial = BEACHES.filter((b) => b.authority === 'province').length
+    expect(result.transitions.filter((t) => t.from === null && t.to === 'open')).toHaveLength(provincial)
+  })
+
+  it('a second identical run has no transitions, and a failed source never makes one', async () => {
+    const writer = new MemoryStore()
+    const fetchers = {
+      hrm: ok({ readings: [{ beachId: 'hrm-chocolate-lake', source: 'hrm' as const, kind: 'open' as const, verbatim: 'Open', url: 'u' }], anomalies: [] }),
+      parks: empty(),
+      algae: empty(),
+    }
+    await refreshLive({ writer, now: NOW, fetchers })
+    const again = await refreshLive({ writer, now: NOW, fetchers })
+    expect(again.transitions).toEqual([])
+
+    const outage = await refreshLive({ writer, now: NOW, fetchers: { ...fetchers, hrm: failing('boom') } })
+    expect(outage.transitions).toEqual([])
+    expect((await writer.liveStatus()).find((r) => r.beachId === 'hrm-chocolate-lake')?.state).toBe('open')
+  })
+
+  it('opening day: the calendar\'s offseason row giving way to the table\'s Open is one transition', async () => {
+    const writer = new MemoryStore()
+    await refreshLive({ writer, now: SEPTEMBER, fetchers: { hrm: forbidden('hrm'), parks: forbidden('parks'), algae: forbidden('algae') } })
+    expect((await writer.liveStatus()).every((r) => r.state === 'offseason')).toBe(true)
+
+    const opening = await refreshLive({
+      writer,
+      now: LATE_JUNE,
+      fetchers: {
+        hrm: ok({ readings: [{ beachId: 'hrm-chocolate-lake', source: 'hrm', kind: 'open', verbatim: 'Open', url: 'u' }], anomalies: [] }),
+        parks: forbidden('parks'),
+        algae: empty(),
+      },
+    })
+    expect(opening.transitions).toEqual([
+      { beachId: 'hrm-chocolate-lake', from: 'offseason', to: 'open', status: expect.objectContaining({ state: 'open', source: 'hrm', verbatim: 'Open' }) },
+    ])
+  })
+
   it('writes live status and status_day rows for readings from ok sources', async () => {
     const writer = new MemoryStore()
     const result = await refreshLive({

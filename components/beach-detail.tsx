@@ -4,6 +4,8 @@ import { ExternalLink } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 import { BeachActions } from '@/components/beach-actions'
+import { FollowBell } from '@/components/follow-bell'
+import type { FollowState } from '@/hooks/use-follow'
 import { authorityName, statusPresentation, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import type { ConditionsView } from '@/lib/conditions'
 import { formatConditions, offseasonLine, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
@@ -30,6 +32,15 @@ export interface BeachDetailProps {
    * line is omitted when absent: no placeholder, no "unavailable".
    */
   conditions?: ConditionsView
+  /** The follow bell beside the name: its state for this beach, and the toggle. Absent, no bell. */
+  follow?: FollowSlot
+}
+
+export interface FollowSlot {
+  state: FollowState
+  busy?: boolean
+  error?: string | null
+  onToggle: () => void
 }
 
 /** How a replayed day's row came to exist. */
@@ -61,6 +72,7 @@ export function BeachDetail({
   replayDay,
   distanceKm,
   conditions,
+  follow,
 }: BeachDetailProps) {
   const state: PinState = status?.state ?? 'unknown'
   const { label } = statusPresentation(state, beach.authority)
@@ -120,6 +132,15 @@ export function BeachDetail({
         <p className="beach-detail-sub">
           {[distance, beach.waterBody, beach.community].filter(Boolean).join(' · ')}
         </p>
+        {follow ? (
+          <FollowBell
+            beachName={beach.name}
+            state={follow.state}
+            busy={follow.busy}
+            error={follow.error}
+            onToggle={follow.onToggle}
+          />
+        ) : null}
       </header>
 
       {offseason ? conditionsLine : null}

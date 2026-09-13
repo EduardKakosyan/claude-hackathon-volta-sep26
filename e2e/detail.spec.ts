@@ -102,6 +102,7 @@ test.describe('detail', () => {
       for (const target of [
         page.getByRole('button', { name: 'Back to beaches' }),
         article.locator('.beach-detail-name'),
+        article.locator('.beach-detail-follow-bell'),
         article.locator('.beach-detail-status'),
         article.locator('.beach-detail-plain'),
         article.locator('.beach-detail-conditions'),

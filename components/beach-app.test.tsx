@@ -6,6 +6,9 @@ import { SHEET_MEDIA } from '@/components/bottom-sheet'
 import type { ConditionsView } from '@/lib/conditions'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
 import type { GeolocationProvider } from '@/lib/geolocation'
+import type { PushPort } from '@/lib/push/browser'
+import type { FollowClient } from '@/lib/push/client'
+import { memoryFollowStorage } from '@/lib/push/follow-storage'
 import { offseasonStatus } from '@/lib/season'
 import type { LiveStatus, SourceHealthView, StatusView } from '@/lib/status'
 
@@ -668,6 +671,75 @@ describe('BeachApp', () => {
       await user.click(screen.getByTestId('map-fail-button'))
       await waitFor(() => expect(screen.getByText('The map could not load')).toBeInTheDocument())
       expect(container.querySelector('.beach-shell-locate')).toBeNull()
+    })
+  })
+
+  describe('following a beach', () => {
+    const SUB = { endpoint: 'https://push.example.org/one', keys: { p256dh: 'p', auth: 'a' } }
+    const supported = (): PushPort => ({
+      support: () => 'supported',
+      requestPermission: async () => 'granted',
+      subscribe: async () => SUB,
+    })
+    const client = (): FollowClient & { follow: ReturnType<typeof vi.fn>; unfollow: ReturnType<typeof vi.fn> } => ({
+      follow: vi.fn(async () => {}),
+      unfollow: vi.fn(async () => {}),
+    })
+
+    it('in jsdom, with no Push API, the open detail carries the bell in its unsupported state and nothing else changes', async () => {
+      const user = userEvent.setup()
+      render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      expect(document.querySelector('.beach-detail-head .beach-detail-follow')).toHaveAttribute('data-state', 'unsupported')
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+      // Still exactly one back control, and the name still has focus.
+      expect(screen.getAllByRole('button', { name: /back/i })).toHaveLength(1)
+      expect(screen.getByRole('article').querySelector('h2')).toHaveFocus()
+    })
+
+    it('tapping the bell walks the subscribe path, posts the follow, and the bell reads "Following" for that beach only', async () => {
+      const user = userEvent.setup()
+      const push = { client: client(), push: supported(), storage: memoryFollowStorage(), publicKey: 'BKey' }
+      render(<BeachApp {...makePageData({ push })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      await user.click(screen.getByRole('button', { name: 'Follow' }))
+
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Following' })).toHaveAttribute('aria-pressed', 'true'))
+      expect(push.client.follow).toHaveBeenCalledWith(SUB, 'hrm-chocolate-lake')
+      expect(push.storage.read()).toEqual({ endpoint: SUB.endpoint, beachIds: ['hrm-chocolate-lake'] })
+
+      // Another beach is still off; coming back, Chocolate Lake is still on.
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await user.click(document.querySelector('[data-beach-id="ns-rissers"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Rissers Beach'))
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Following' })).toBeInTheDocument())
+
+      // And tapping again unfollows through the stored endpoint.
+      await user.click(screen.getByRole('button', { name: 'Following' }))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false'))
+      expect(push.client.unfollow).toHaveBeenCalledWith(SUB.endpoint, 'hrm-chocolate-lake')
+    })
+
+    it('on iPhone Safari in a tab the bell explains the two install steps and never calls the server', async () => {
+      const user = userEvent.setup()
+      const push = { client: client(), push: { ...supported(), support: () => 'needs-install' as const }, storage: memoryFollowStorage(), publicKey: 'BKey' }
+      render(<BeachApp {...makePageData({ push })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      await user.click(screen.getByRole('button', { name: 'Follow' }))
+
+      expect(document.querySelector('.beach-detail-follow-hint')).toHaveTextContent(/Share, then Add to Home Screen/)
+      expect(push.client.follow).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
     })
   })
 

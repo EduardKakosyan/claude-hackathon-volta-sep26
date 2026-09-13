@@ -1,17 +1,20 @@
-import { getWriter } from '@/lib/db/client'
+import { getFollowStore, getWriter } from '@/lib/db/client'
 import { seedRefresh } from '@/lib/ingest/refresh'
 import { refreshConditions } from '@/lib/ingest/refresh-conditions'
 import { refreshLive } from '@/lib/ingest/refresh-live'
+import { sendTransitions } from '@/lib/push/send'
+import { createWebPushSender, resolveVapid } from '@/lib/push/server'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/refresh — the only thing that writes to the database.
  * 401 without the cron secret; 503 when the server has no database to write to.
- * Three stages: seed (idempotent), then the three live status sources, then
- * conditions. The conditions stage runs in its own try and never gates the
- * status write that came before it: a wind or buoy outage is reported in the
- * response, not raised.
+ * Four stages: seed (idempotent), then the live status sources, then
+ * conditions, then one Web Push per follower of every beach whose state the
+ * status stage changed. Conditions and push each run in their own try and
+ * never gate the status write that came before them: a wind, buoy or push
+ * outage is reported in the response, not raised.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET
@@ -43,5 +46,19 @@ export async function GET(req: Request) {
     conditions = { error: message }
   }
 
-  return Response.json({ ...seeded, live, conditions })
+  let pushed
+  try {
+    pushed = await sendTransitions({
+      transitions: live.transitions,
+      store: getFollowStore(),
+      sender: createWebPushSender(resolveVapid()),
+      log: console.warn,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.warn(`push stage failed: ${message}`)
+    pushed = { error: message }
+  }
+
+  return Response.json({ ...seeded, live, conditions, pushed })
 }

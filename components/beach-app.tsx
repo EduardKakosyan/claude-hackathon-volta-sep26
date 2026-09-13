@@ -27,6 +27,7 @@ import { OPEN_METEO_CREDIT_URL } from '@/lib/ingest/sources/open-meteo'
 import { SMARTATLANTIC_CREDIT_URL } from '@/lib/ingest/sources/smartatlantic'
 import { resolveOrigin, sortByDistance } from '@/lib/geo'
 import type { GeolocationProvider } from '@/lib/geolocation'
+import { useFollow, type UseFollowDeps } from '@/hooks/use-follow'
 import { LATE_ARRIVAL_MS, useGeolocation } from '@/hooks/use-geolocation'
 import { HALIFAX_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
 import { offseasonAuthorities } from '@/lib/season'
@@ -50,6 +51,8 @@ export type BeachAppProps = PageData & {
    * browser with none (the list sorts from downtown Halifax).
    */
   geolocation?: GeolocationProvider | null
+  /** Injected by tests: the push port, the follow client and the storage behind the bell. */
+  push?: UseFollowDeps
 }
 
 type SelectionOrigin = 'list' | 'map'
@@ -134,6 +137,8 @@ export function BeachApp(data: BeachAppProps) {
   // downtown Halifax at once, re-sorted and flown to the visitor if a position
   // arrives in time. A late position re-sorts silently and leaves the camera alone.
   const geo = useGeolocation({ provider: data.geolocation, auto: true, timeoutMs: LATE_ARRIVAL_MS })
+  // Nothing happens on load: the service worker and the permission prompt wait for the first bell tap.
+  const follow = useFollow(data.push)
 
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -225,15 +230,16 @@ export function BeachApp(data: BeachAppProps) {
     searchRef.current?.focus({ preventScroll: true })
   }, [selectedId])
 
-  function changeQuery(next: string) {
+  // Stable, so the memoised toolbar re-renders only when the query or filter change (see BeachToolbar).
+  const changeQuery = useCallback((next: string) => {
     setQuery(next)
     setSelectedId(null)
-  }
+  }, [])
 
-  function changeFilter(next: StatusFilter) {
+  const changeFilter = useCallback((next: StatusFilter) => {
     setFilter(next)
     setSelectedId(null)
-  }
+  }, [])
 
   function resetSearch() {
     setQuery('')
@@ -372,6 +378,12 @@ export function BeachApp(data: BeachAppProps) {
               replayDay={replayDay}
               distanceKm={distances[selected.id]}
               conditions={conditions[selected.id]}
+              follow={{
+                state: follow.stateOf(selected.id),
+                busy: follow.busy,
+                error: follow.error,
+                onToggle: () => void follow.toggle(selected.id),
+              }}
             />
           ) : (
             <>
