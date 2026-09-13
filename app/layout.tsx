@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Source_Serif_4 } from 'next/font/google'
 
 import './globals.css'
-import { baseMetadata } from '@/lib/metadata'
+import { THEME_COLOR, baseMetadata } from '@/lib/metadata'
 import { VAPID_META_NAME } from '@/lib/push/browser'
 import { vapidPublicKey } from '@/lib/push/server'
 
@@ -35,7 +35,7 @@ export function generateMetadata(): Metadata {
 export const viewport: Viewport = {
   // The results panel sits against the home indicator on a phone.
   viewportFit: 'cover',
-  themeColor: '#efeeea',
+  themeColor: THEME_COLOR,
 }
 
 export default function RootLayout({

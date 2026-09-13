@@ -6,7 +6,7 @@ export const SITE_NAME = 'Is the Beach Open'
 export const SITE_SHORT_NAME = 'Beach Open'
 export const SITE_DESCRIPTION =
   'Today’s official status for every government-monitored beach in Nova Scotia, on one map.'
-export const THEME_COLOR = '#0b1220'
+export const THEME_COLOR = '#efeeea'
 
 /**
  * Absolute base for OpenGraph URLs. `NEXT_PUBLIC_SITE_URL` wins when set; Vercel's
