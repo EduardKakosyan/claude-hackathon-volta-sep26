@@ -40,7 +40,8 @@ export default defineConfig({
   outputDir: 'test-results/e2e',
   reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'http://localhost:3000',
+    // PLAYWRIGHT_BASE_URL points the suite at a deployment (docs/deploy.md); no server is started then.
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
     screenshot: 'on',
     trace: 'on-first-retry',
     video: 'on-first-retry',
@@ -69,10 +70,12 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: process.env.CI ? 'pnpm build && pnpm start' : 'pnpm dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 240_000,
-  },
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: process.env.CI ? 'pnpm build && pnpm start' : 'pnpm dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 240_000,
+      },
 })
