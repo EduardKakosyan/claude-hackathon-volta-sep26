@@ -1,5 +1,3 @@
-import type { Beach, Region } from '@/lib/seed/beaches'
-
 export interface LatLon {
   lat: number
   lon: number
@@ -15,9 +13,9 @@ export const HALIFAX: LatLon = { lat: 44.65, lon: -63.58 }
 export const EARTH_RADIUS_KM = 6371.0088
 
 /**
- * A user position farther than this from Halifax is outside Nova Scotia; sorting
- * 35 beaches by distance from Toronto is honest but useless, so the list falls
- * back to Halifax order and says so.
+ * A user position farther than this from Halifax is outside Nova Scotia. The
+ * list still sorts from there with honest distances ("310 km"), but the note
+ * under the heading says the nearest monitored beach is far.
  */
 export const MAX_USEFUL_ORIGIN_KM = 400
 
@@ -66,46 +64,20 @@ export function nearest<T extends LatLon & { id: string }>(
   return sortByDistance(items, origin).slice(0, Math.max(0, limit))
 }
 
-/** Display order for the expanded list. Halifax first because most users are there. */
-export const REGION_ORDER: readonly Region[] = [
-  'Halifax',
-  'Eastern Shore',
-  'South Shore',
-  'Valley',
-  'North Shore',
-  'Cape Breton',
-]
-
-export interface RegionGroup {
-  region: Region
-  beaches: WithDistance<Beach>[]
-}
-
-/** Groups in REGION_ORDER, each sorted by distance from `origin`; empty groups are omitted. */
-export function groupByRegion(
-  beaches: readonly Beach[],
-  origin: LatLon,
-): RegionGroup[] {
-  const sorted = sortByDistance(beaches, origin)
-  return REGION_ORDER.flatMap((region) => {
-    const members = sorted.filter((b) => b.region === region)
-    return members.length ? [{ region, beaches: members }] : []
-  })
-}
-
 export type OriginKind = 'user' | 'halifax'
 
+/**
+ * Where the directory measures from. `user` when a position is known (the
+ * heading reads "Closest to you"), `halifax` otherwise ("Near Halifax").
+ */
 export interface ResolvedOrigin {
-  origin: LatLon
-  originKind: OriginKind
-  /** True when a real position was supplied but is too far away to be useful. */
-  farFromNovaScotia: boolean
+  kind: OriginKind
+  point: LatLon
+  /** True when the position is real but more than MAX_USEFUL_ORIGIN_KM from Halifax. */
+  far: boolean
 }
 
 export function resolveOrigin(position: LatLon | null | undefined): ResolvedOrigin {
-  if (!position) return { origin: HALIFAX, originKind: 'halifax', farFromNovaScotia: false }
-  if (haversineKm(position, HALIFAX) > MAX_USEFUL_ORIGIN_KM) {
-    return { origin: HALIFAX, originKind: 'halifax', farFromNovaScotia: true }
-  }
-  return { origin: position, originKind: 'user', farFromNovaScotia: false }
+  if (!position) return { kind: 'halifax', point: HALIFAX, far: false }
+  return { kind: 'user', point: position, far: haversineKm(position, HALIFAX) > MAX_USEFUL_ORIGIN_KM }
 }

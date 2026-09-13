@@ -7,14 +7,16 @@ export type {
   LiveStatus,
   StatusSource,
   IngestSource,
+  StatusIngestSource,
+  ConditionsSource,
   StatusDayView,
   DayBasis,
   SourceHealthView,
 } from '@/lib/status'
-import type { IngestSource } from '@/lib/status'
+import type { StatusIngestSource } from '@/lib/status'
 
-/** The three things we read. Alias of Phase 2's IngestSource. */
-export type SourceId = IngestSource
+/** The three status sources the resolver reads. Conditions feeds are not readings. */
+export type SourceId = StatusIngestSource
 export const SOURCE_IDS: readonly SourceId[] = ['hrm', 'parks', 'algae']
 
 /** ISO 8601 instant with offset or Z, e.g. '2026-09-12T12:40:03.000Z'. Serialisable; never a Date. */

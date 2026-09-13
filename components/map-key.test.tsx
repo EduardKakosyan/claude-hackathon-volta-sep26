@@ -25,6 +25,20 @@ describe('MapKey', () => {
     expect(screen.getByText(/Off-season/)).toBeInTheDocument()
   })
 
+  it('the off-season entry says nothing is tested and that rows show conditions instead', async () => {
+    const user = userEvent.setup()
+    render(<MapKey />)
+    await user.click(screen.getByText('Map key'))
+
+    const entry = screen.getByText(/^Off-season/)
+    expect(entry).toHaveTextContent('Off-season: not tested or supervised; rows show conditions instead')
+    // Its pin is the calm ring, not the dashed unknown.
+    const pin = entry.closest('li')!.querySelector('[data-slot="status-pin"]')!
+    expect(pin).toHaveAttribute('data-state', 'offseason')
+    expect(pin.className).not.toMatch(/dashed/)
+    expect(pin.className).toMatch(/beach-ink/)
+  })
+
   it('includes the hollow-pin explanation', async () => {
     const user = userEvent.setup()
     render(<MapKey />)

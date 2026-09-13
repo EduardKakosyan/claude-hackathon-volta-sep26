@@ -1,6 +1,7 @@
 import type { BeachState } from '@/lib/seed/beaches'
-import { daysBetween, inProvincialSeason } from '@/lib/ingest/halifax-day'
+import { daysBetween } from '@/lib/ingest/halifax-day'
 import type { CalendarDay, IsoInstant, LiveStatus, Roster, SourceId, SourceReading } from '@/lib/ingest/types'
+import { inSeason } from '@/lib/season'
 
 export type AlgaeWindow =
   | { kind: 'calendar-year' } // DEFAULT: matches novascotia.ca's own "reported in 2026" page
@@ -128,7 +129,9 @@ export function resolve(input: ResolveInput): ResolveResult {
     }
 
     if (ok.has('parks') && ok.has('algae')) {
-      const state: BeachState = inProvincialSeason(today) ? 'open' : 'offseason'
+      // refreshLive skips the province out of season, so this is `open` in practice;
+      // the calendar is still consulted so a caller that reads it anyway stays honest.
+      const state: BeachState = inSeason('province', today) ? 'open' : 'offseason'
       statuses.push({
         kind: 'live',
         beachId: beach.id,

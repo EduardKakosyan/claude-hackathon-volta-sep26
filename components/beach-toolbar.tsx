@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { Search, X } from 'lucide-react'
-import { type RefObject } from 'react'
+import { memo, type RefObject } from 'react'
 
 import { FILTER_LABEL, STATUS_FILTERS, type StatusFilter } from '@/lib/beach-filter'
 
@@ -19,8 +19,15 @@ export interface BeachToolbarProps {
  * The masthead plus the two controls that derive the visible roster. Both of them
  * feed one filter pass in `BeachApp`, so the map and the directory can never
  * disagree about which beaches are on screen.
+ *
+ * Memoised, and `BeachApp` hands it stable callbacks, so it only re-renders
+ * when the query or the filter change. That matters right after hydration: a
+ * controlled input snaps back to its React value on any re-render, so a
+ * re-render of the toolbar for an unrelated reason (a hook reading the browser
+ * after hydration, say) would wipe whatever a person had typed before React
+ * was listening. Left alone, the typed text survives until its own event lands.
  */
-export function BeachToolbar({
+export const BeachToolbar = memo(function BeachToolbar({
   beachCount,
   query,
   onQueryChange,
@@ -80,4 +87,4 @@ export function BeachToolbar({
       </div>
     </header>
   )
-}
+})

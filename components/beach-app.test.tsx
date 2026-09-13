@@ -1,15 +1,24 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BeachApp } from '@/components/beach-app'
+import { BeachApp, SUGGEST_URL, type BeachAppProps } from '@/components/beach-app'
+import { SHEET_MEDIA } from '@/components/bottom-sheet'
+import type { ConditionsView } from '@/lib/conditions'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
-import type { PageData } from '@/lib/db/queries'
-import type { LiveStatus, StatusView } from '@/lib/status'
+import type { GeolocationProvider } from '@/lib/geolocation'
+import type { PushPort } from '@/lib/push/browser'
+import type { FollowClient } from '@/lib/push/client'
+import { memoryFollowStorage } from '@/lib/push/follow-storage'
+import { offseasonStatus } from '@/lib/season'
+import type { LiveStatus, SourceHealthView, StatusView } from '@/lib/status'
 
 interface MockBeachMapProps {
   beaches: typeof BEACHES
   onSelect: (id: string) => void
   onFatalError: (error: string) => void
+  onZoomBandChange?: (band: 'province' | 'region' | 'beach') => void
+  userPosition?: { lat: number; lon: number } | null
+  flyToUser?: number
 }
 
 vi.mock('next/navigation', () => ({
@@ -26,8 +35,14 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/components/beach-map', () => ({
-  default: vi.fn(({ beaches, onSelect, onFatalError }: MockBeachMapProps) => (
-    <div data-testid="fake-beach-map">
+  default: vi.fn(({ beaches, onSelect, onFatalError, onZoomBandChange, userPosition, flyToUser }: MockBeachMapProps) => (
+    <div data-testid="fake-beach-map" data-fly-to-user={flyToUser ?? 0}>
+      {userPosition ? (
+        <span data-testid="user-marker" data-lat={userPosition.lat} data-lon={userPosition.lon} />
+      ) : null}
+      <button data-testid="map-zoom-out-button" onClick={() => onZoomBandChange?.('province')}>
+        Zoom out
+      </button>
       {beaches.map((beach: (typeof BEACHES)[number]) => (
         <button
           key={beach.id}
@@ -47,6 +62,27 @@ vi.mock('@/components/beach-map', () => ({
   )),
 }))
 
+/** Make `matchMedia` report the phone breakpoint so the sheet's gestures are live. */
+function setPhoneLayout(matches: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn((query: string) => ({
+      matches: query === SHEET_MEDIA && matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
+
+function sheetOf(container: HTMLElement): HTMLElement {
+  return container.querySelector<HTMLElement>('.beach-sheet')!
+}
+
 function makeLiveStatus(beachId: string, state: BeachState): LiveStatus {
   return {
     kind: 'live',
@@ -60,18 +96,45 @@ function makeLiveStatus(beachId: string, state: BeachState): LiveStatus {
   }
 }
 
-function makePageData(overrides: Partial<PageData> = {}): PageData {
+/** A provider that never answers: the page stays sorted from Halifax, and no update lands outside `act`. */
+const silent: GeolocationProvider = { getCurrentPosition: () => {} }
+
+/** Answers at once with the given position. */
+const at = (lat: number, lon: number): GeolocationProvider => ({
+  getCurrentPosition: (ok) => ok({ coords: { latitude: lat, longitude: lon, accuracy: 25 } }),
+})
+
+const denied: GeolocationProvider = {
+  getCurrentPosition: (_ok, err) => err?.({ code: 1, message: 'User denied Geolocation' }),
+}
+
+/** Halifax, by the Armdale Rotary: Chocolate Lake is the nearest monitored beach, under 3 km away. */
+const DOWNTOWN = { lat: 44.645, lon: -63.59 }
+const TORONTO = { lat: 43.6532, lon: -79.3832 }
+
+function makePageData(overrides: Partial<BeachAppProps> = {}): BeachAppProps {
   return {
     beaches: BEACHES,
     status: {},
     health: [],
     history: {},
+    conditions: {},
     days: [],
     historyFrom: '2026-09-01',
     historyTo: '2026-09-14',
-    storeKind: 'seed',
+    storeKind: 'fixture',
+    geolocation: silent,
     ...overrides,
   }
+}
+
+function rowIds(): string[] {
+  return [...document.querySelectorAll('[data-beach-id]')].map((el) => el.getAttribute('data-beach-id')!)
+}
+
+/** The distances on screen, in the order rendered, read back from their text ("7.8 km" → 7.8). */
+function kmOnScreen(): number[] {
+  return [...document.querySelectorAll('.beach-shell-row-distance')].map((el) => parseFloat(el.textContent ?? ''))
 }
 
 describe('BeachApp', () => {
@@ -228,8 +291,30 @@ describe('BeachApp', () => {
       expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
-    const backButton = screen.getByRole('button', { name: /back to the list/i })
-    backButton.focus()
+    // The detail put focus on its heading; Escape from anywhere inside closes it.
+    expect(screen.getByRole('article').querySelector('h2')).toHaveFocus()
+    await user.keyboard('{Escape}')
+
+    await waitFor(() => {
+      expect(screen.queryByRole('article')).not.toBeInTheDocument()
+    })
+  })
+
+  it('pressing Escape closes the detail even after the clicked row has unmounted and focus fell to body', async () => {
+    const user = userEvent.setup()
+    render(<BeachApp {...makePageData()} />)
+
+    const beachRows = document.querySelectorAll('[data-beach-id]')
+    await user.click(beachRows[0] as HTMLButtonElement)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('article')).toBeInTheDocument()
+    })
+    // The detail takes focus on open; drop it so nothing inside <main> holds focus,
+    // which is where a keydown listener on <main> would never hear the key.
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    expect(document.activeElement).toBe(document.body)
+
     await user.keyboard('{Escape}')
 
     await waitFor(() => {
@@ -262,6 +347,186 @@ describe('BeachApp', () => {
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('35 beaches have no status available')
     expect(footer?.textContent).toContain('Unknown does not mean open')
+  })
+
+  it('in fixture mode the footer says it is a fixture day, not live status', () => {
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture' })} />)
+
+    const footer = container.querySelector('.beach-shell-footer')
+    expect(footer?.textContent).toContain('Showing a fixture day, not live status')
+    expect(footer?.textContent).not.toContain('Not connected to a database')
+  })
+
+  it('the footer folds the disclaimer, the credits and the suggestion link behind one closed line', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    const footer = container.querySelector('.beach-shell-footer')!
+    const more = footer.querySelector<HTMLDetailsElement>('details.beach-shell-footer-more')!
+    expect(more.open).toBe(false)
+    expect(more.querySelector('summary')?.textContent).toContain('Not an official government service')
+    expect(more.textContent).toContain('Follow posted signs and lifeguard instructions')
+    expect(more.querySelector('.beach-shell-credits')).not.toBeNull()
+    expect(more.querySelector('a[href="' + SUGGEST_URL + '"]')).not.toBeNull()
+    // Above the fold: the unknown count and the freshness line, nothing else.
+    const open = Array.from(footer.children).filter((el) => el.tagName === 'P')
+    expect(open.map((el) => el.textContent)).toEqual([
+      '35 beaches have no status available. Unknown does not mean open.',
+      'Showing a fixture day, not live status',
+    ])
+  })
+
+  it('the footer credits Open-Meteo for wind and SmartAtlantic for the buoy', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    container.querySelector<HTMLDetailsElement>('.beach-shell-footer-more')!.open = true
+    const credits = container.querySelector('.beach-shell-credits')!
+    expect(credits.textContent).toMatch(/Wind from Open-Meteo; water temperature from the SmartAtlantic Halifax buoy/)
+    expect(screen.getByRole('link', { name: 'Open-Meteo' })).toHaveAttribute('href', 'https://open-meteo.com/')
+    expect(screen.getByRole('link', { name: 'SmartAtlantic' })).toHaveAttribute('href', 'https://www.smartatlantic.ca/')
+  })
+
+  it('the open detail carries that beach\'s conditions line', async () => {
+    const user = userEvent.setup()
+    const id = 'hrm-chocolate-lake'
+    render(
+      <BeachApp
+        {...makePageData({
+          conditions: {
+            [id]: { windKmh: 19, windDir: 'SW', observedAt: '2026-07-15T17:00:00Z', sunrise: 'x', sunset: 'y' },
+          },
+        })}
+      />,
+    )
+
+    await user.click(document.querySelector(`[data-beach-id="${id}"]`) as HTMLButtonElement)
+    await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+    expect(document.querySelector('.beach-detail-conditions')).toHaveTextContent('Wind 19 km/h SW · 2 p.m.')
+  })
+
+  it('the footer offers "Suggest one", a new issue on the public repository', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    const footer = container.querySelector('.beach-shell-footer')!
+    footer.querySelector<HTMLDetailsElement>('.beach-shell-footer-more')!.open = true
+    expect(footer.textContent).toContain('Ideas or problems?')
+    const link = screen.getByRole('link', { name: 'Suggest one' })
+    expect(link).toHaveAttribute('href', SUGGEST_URL)
+    expect(link.getAttribute('href')).toMatch(
+      /^https:\/\/github\.com\/EduardKakosyan\/claude-hackathon-volta-sep26\/issues\/new\?template=suggestion\.md$/,
+    )
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('the open detail carries the distance the directory measured', async () => {
+    const user = userEvent.setup()
+    render(<BeachApp {...makePageData()} />)
+
+    const firstKm = document.querySelector('.beach-shell-row-distance')!.textContent
+    await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+    await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+    expect(document.querySelector('.beach-detail-sub')?.textContent).toMatch(new RegExp(`^${firstKm} · `))
+    // One back control in the whole page: the heading row's.
+    expect(screen.getAllByRole('button', { name: /back/i })).toHaveLength(1)
+  })
+
+  it('in supabase mode with nothing read yet the footer says so instead', () => {
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'supabase' })} />)
+
+    const footer = container.querySelector('.beach-shell-footer')
+    expect(footer?.textContent).toContain('No source has been read yet')
+    expect(footer?.textContent).not.toContain('fixture')
+  })
+
+  it('in supabase mode the footer names each source it read, the conditions feeds as one', () => {
+    const at = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const health: SourceHealthView[] = (['hrm', 'parks', 'algae', 'wind', 'buoy'] as const).map((source) => ({
+      source,
+      lastAttemptAt: at,
+      lastSuccessAt: at,
+      lastError: null,
+    }))
+    const { container } = render(<BeachApp {...makePageData({ storeKind: 'supabase', health })} />)
+
+    const line = container.querySelector('.beach-shell-footer')!.textContent!
+    expect(line).toMatch(/HRM checked today, \d{1,2}:\d{2} [ap]\.m\. · Province checked today/)
+    expect(line).toMatch(/Algae feed checked today, .* · conditions checked today, /)
+    expect(line).not.toMatch(/Wind checked|Buoy checked/)
+  })
+
+  describe('out of season', () => {
+    const NOW = '2026-09-12T11:02:00.000Z'
+    const allOffseason = (): Record<string, StatusView | undefined> =>
+      Object.fromEntries(BEACHES.map((b) => [b.id, offseasonStatus(b, NOW)]))
+    const wind: ConditionsView = { windKmh: 19, windDir: 'SW', observedAt: '2026-09-12T19:30:00Z', sunrise: '2026-09-12T09:41:00Z', sunset: '2026-09-12T22:32:00Z' }
+    const allConditions = (): Record<string, ConditionsView | undefined> =>
+      Object.fromEntries(BEACHES.map((b) => [b.id, b.id === 'ns-rainbow-haven' ? { ...wind, waterTempC: 16.4 } : wind]))
+
+    it('every row shows its conditions where the status word was, and none says "No status"', () => {
+      const { container } = render(<BeachApp {...makePageData({ status: allOffseason(), conditions: allConditions() })} />)
+
+      const cells = [...container.querySelectorAll('.beach-shell-row-status')]
+      expect(cells).toHaveLength(35)
+      expect(cells.every((el) => el.getAttribute('data-state') === 'offseason')).toBe(true)
+      expect(cells.every((el) => /km\/h/.test(el.textContent ?? ''))).toBe(true)
+      expect(container.querySelector('[data-beach-id="hrm-chocolate-lake"] .beach-shell-row-status')).toHaveTextContent(/^19 km\/h SW$/)
+      expect(container.querySelector('[data-beach-id="ns-rainbow-haven"] .beach-shell-row-status')).toHaveTextContent(/^16 °C · 19 km\/h SW$/)
+      expect(container.querySelector('.beach-shell-footer')?.textContent).not.toContain('no status available')
+    })
+
+    it('the open detail leads with wind and daylight, then the quiet line', async () => {
+      const user = userEvent.setup()
+      render(<BeachApp {...makePageData({ status: allOffseason(), conditions: allConditions() })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      const line = document.querySelector('.beach-detail-conditions')!
+      expect(line).toHaveTextContent('Wind 19 km/h SW · 4:30 p.m. · Sunrise 6:41 a.m. · Sunset 7:32 p.m.')
+      expect(line.previousElementSibling).toHaveClass('beach-detail-head')
+      expect(document.querySelector('.beach-detail-status')).toHaveTextContent('Off-season. Lifeguards return late June.')
+      expect(document.querySelector('.beach-detail-plain')).toBeNull()
+    })
+
+    it('with a database the footer says both authorities are off-season and when conditions were checked', () => {
+      const at = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+      const august = { lastAttemptAt: '2026-08-31T20:02:00.000Z', lastSuccessAt: '2026-08-31T20:02:00.000Z', lastError: null }
+      const health: SourceHealthView[] = [
+        { source: 'hrm', ...august },
+        { source: 'parks', ...august },
+        { source: 'algae', ...august },
+        { source: 'wind', lastAttemptAt: at, lastSuccessAt: at, lastError: null },
+        { source: 'buoy', lastAttemptAt: at, lastSuccessAt: at, lastError: null },
+      ]
+      const { container } = render(
+        <BeachApp {...makePageData({ storeKind: 'supabase', status: allOffseason(), conditions: allConditions(), health })} />,
+      )
+
+      const line = container.querySelector('.beach-shell-footer')!.textContent!
+      expect(line).toMatch(/HRM off-season · Province off-season · conditions checked today, \d{1,2}:\d{2} [ap]\.m\./)
+      expect(line).not.toMatch(/HRM checked|Aug 31/)
+    })
+
+    it('in fixture mode the footer keeps the fixture line and adds the off-season ones', () => {
+      const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture', status: allOffseason(), conditions: allConditions() })} />)
+
+      expect(container.querySelector('.beach-shell-footer')?.textContent).toContain(
+        'Showing a fixture day, not live status · HRM off-season · Province off-season',
+      )
+    })
+
+    it('one authority still in season keeps its rows\' status words and its footer line', () => {
+      const status = allOffseason()
+      for (const beach of BEACHES) {
+        if (beach.authority === 'hrm') status[beach.id] = makeLiveStatus(beach.id, 'open')
+      }
+      const { container } = render(<BeachApp {...makePageData({ status, conditions: allConditions() })} />)
+
+      expect(container.querySelector('[data-beach-id="hrm-chocolate-lake"] .beach-shell-row-status')).toHaveTextContent(/^Open$/)
+      expect(container.querySelector('[data-beach-id="ns-rissers"] .beach-shell-row-status')).toHaveTextContent(/km\/h/)
+      const footer = container.querySelector('.beach-shell-footer')!.textContent!
+      expect(footer).toContain('Province off-season')
+      expect(footer).not.toContain('HRM off-season')
+    })
   })
 
   it('with a populated status record the count matches', () => {
@@ -304,6 +569,267 @@ describe('BeachApp', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('fake-beach-map')).toBeInTheDocument()
+    })
+  })
+
+  it('the map section carries the zoom band: region on load, then whatever the map reports', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<BeachApp {...makePageData()} />)
+    const section = container.querySelector('.beach-shell-map')!
+    expect(section).toHaveAttribute('data-zoom-band', 'region')
+
+    await user.click(screen.getByTestId('map-zoom-out-button'))
+    await waitFor(() => expect(section).toHaveAttribute('data-zoom-band', 'province'))
+  })
+
+  describe('location and the closest-first directory', () => {
+    it('before any answer the directory is sorted from downtown Halifax under "Near Halifax", with the note and distances', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-origin', 'halifax')
+      expect(note).toHaveTextContent('Showing distances from downtown Halifax.')
+
+      const ids = rowIds()
+      expect(ids.slice(0, 2)).toEqual(['hrm-chocolate-lake', 'hrm-cunard-pond'])
+      expect(ids.at(-1)).toBe('ns-dominion')
+      const km = kmOnScreen()
+      expect(km).toHaveLength(35)
+      expect(km).toEqual([...km].sort((a, b) => a - b))
+      expect(document.querySelector('.beach-shell-row-distance')).toHaveTextContent(/^\d+(\.\d)? km$/)
+
+      // Nothing has flown: the camera owes the visitor no flight without a position.
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+      expect(screen.queryByTestId('user-marker')).toBeNull()
+    })
+
+    it('a granted position re-sorts under "Closest to you", drops the note, shows the dot and owes the map one flight', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: at(DOWNTOWN.lat, DOWNTOWN.lon) })} />)
+
+      await waitFor(() => expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Closest to you'))
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-origin', 'user')
+      expect(note).toHaveAttribute('data-far', 'false')
+      expect(note.querySelector('.beach-shell-list-note-origin')).toBeNull()
+
+      expect(rowIds()[0]).toBe('hrm-chocolate-lake')
+      expect(kmOnScreen()[0]).toBeLessThan(5)
+
+      expect(screen.getByTestId('user-marker')).toHaveAttribute('data-lat', String(DOWNTOWN.lat))
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '1')
+      expect(screen.getByRole('button', { name: /centre on my location/i })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('a denied request keeps "Near Halifax" and the downtown note, and disables the locate button', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: denied })} />)
+
+      const locate = screen.getByRole('button', { name: /finding your location/i })
+      await waitFor(() => expect(container.querySelector('.beach-shell-locate')).toHaveAttribute('data-status', 'denied'))
+      expect(locate).toBeDisabled()
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+      expect(container.querySelector('.beach-shell-list-note')).toHaveTextContent('Showing distances from downtown Halifax.')
+      expect(screen.queryByTestId('user-marker')).toBeNull()
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+    })
+
+    it('a browser with no geolocation at all reads as unavailable, and the button stays pressable', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: null })} />)
+      await waitFor(() => expect(container.querySelector('.beach-shell-locate')).toHaveAttribute('data-status', 'unavailable'))
+      expect(screen.getByRole('button', { name: /location unavailable/i })).toBeEnabled()
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+    })
+
+    it('a far position still sorts from the visitor with honest distances, and the note says the nearest beach is far', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: at(TORONTO.lat, TORONTO.lon) })} />)
+
+      await waitFor(() => expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Closest to you'))
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-far', 'true')
+      expect(note).toHaveTextContent('The nearest monitored beach is far.')
+      expect(note).not.toHaveTextContent('downtown Halifax')
+      expect(kmOnScreen()[0]).toBeGreaterThan(400)
+      expect(document.querySelector('.beach-shell-row-distance')).toHaveTextContent(/^\d{3,4} km$/)
+    })
+
+    it('a filtered directory is headed "Your results" but stays closest-first with distances', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.type(screen.getByLabelText(/search by beach/i), 'lake')
+
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Your results')
+      const km = kmOnScreen()
+      expect(km.length).toBeGreaterThan(1)
+      expect(km).toEqual([...km].sort((a, b) => a - b))
+    })
+
+    it('every locate tap asks again and owes the map another flight', async () => {
+      const user = userEvent.setup()
+      const getCurrentPosition = vi.fn((ok: Parameters<GeolocationProvider['getCurrentPosition']>[0]) =>
+        ok({ coords: { latitude: DOWNTOWN.lat, longitude: DOWNTOWN.lon, accuracy: 25 } }),
+      )
+      render(<BeachApp {...makePageData({ geolocation: { getCurrentPosition } })} />)
+      await waitFor(() => expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '1'))
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+
+      await user.click(screen.getByRole('button', { name: /centre on my location/i }))
+      await waitFor(() => expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '2'))
+      expect(getCurrentPosition).toHaveBeenCalledTimes(2)
+    })
+
+    it('a page opened on a beach from a link keeps that beach\'s camera: the on-load position owes no flight', async () => {
+      render(<BeachApp {...makePageData({ geolocation: at(DOWNTOWN.lat, DOWNTOWN.lon), initialBeachId: 'ns-rissers' })} />)
+      await waitFor(() => expect(screen.getByTestId('user-marker')).toBeInTheDocument())
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+      expect(screen.getByRole('article')).toBeInTheDocument()
+    })
+
+    it('the locate button sits in the map section, so it goes away with a failed map', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      expect(container.querySelector('.beach-shell-map .beach-shell-locate')).not.toBeNull()
+      await user.click(screen.getByTestId('map-fail-button'))
+      await waitFor(() => expect(screen.getByText('The map could not load')).toBeInTheDocument())
+      expect(container.querySelector('.beach-shell-locate')).toBeNull()
+    })
+  })
+
+  describe('following a beach', () => {
+    const SUB = { endpoint: 'https://push.example.org/one', keys: { p256dh: 'p', auth: 'a' } }
+    const supported = (): PushPort => ({
+      support: () => 'supported',
+      requestPermission: async () => 'granted',
+      subscribe: async () => SUB,
+    })
+    const client = (): FollowClient & { follow: ReturnType<typeof vi.fn>; unfollow: ReturnType<typeof vi.fn> } => ({
+      follow: vi.fn(async () => {}),
+      unfollow: vi.fn(async () => {}),
+    })
+
+    it('in jsdom, with no Push API, the open detail carries the bell in its unsupported state and nothing else changes', async () => {
+      const user = userEvent.setup()
+      render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      expect(document.querySelector('.beach-detail-head .beach-detail-follow')).toHaveAttribute('data-state', 'unsupported')
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+      // Still exactly one back control, and the name still has focus.
+      expect(screen.getAllByRole('button', { name: /back/i })).toHaveLength(1)
+      expect(screen.getByRole('article').querySelector('h2')).toHaveFocus()
+    })
+
+    it('tapping the bell walks the subscribe path, posts the follow, and the bell reads "Following" for that beach only', async () => {
+      const user = userEvent.setup()
+      const push = { client: client(), push: supported(), storage: memoryFollowStorage(), publicKey: 'BKey' }
+      render(<BeachApp {...makePageData({ push })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      await user.click(screen.getByRole('button', { name: 'Follow' }))
+
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Following' })).toHaveAttribute('aria-pressed', 'true'))
+      expect(push.client.follow).toHaveBeenCalledWith(SUB, 'hrm-chocolate-lake')
+      expect(push.storage.read()).toEqual({ endpoint: SUB.endpoint, beachIds: ['hrm-chocolate-lake'] })
+
+      // Another beach is still off; coming back, Chocolate Lake is still on.
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await user.click(document.querySelector('[data-beach-id="ns-rissers"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Rissers Beach'))
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Following' })).toBeInTheDocument())
+
+      // And tapping again unfollows through the stored endpoint.
+      await user.click(screen.getByRole('button', { name: 'Following' }))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false'))
+      expect(push.client.unfollow).toHaveBeenCalledWith(SUB.endpoint, 'hrm-chocolate-lake')
+    })
+
+    it('on iPhone Safari in a tab the bell explains the two install steps and never calls the server', async () => {
+      const user = userEvent.setup()
+      const push = { client: client(), push: { ...supported(), support: () => 'needs-install' as const }, storage: memoryFollowStorage(), publicKey: 'BKey' }
+      render(<BeachApp {...makePageData({ push })} />)
+
+      await user.click(document.querySelector('[data-beach-id="hrm-chocolate-lake"]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      await user.click(screen.getByRole('button', { name: 'Follow' }))
+
+      expect(document.querySelector('.beach-detail-follow-hint')).toHaveTextContent(/Share, then Add to Home Screen/)
+      expect(push.client.follow).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: 'Follow' })).toHaveAttribute('aria-pressed', 'false')
+    })
+  })
+
+  describe('the sheet', () => {
+    beforeEach(() => setPhoneLayout(true))
+    afterEach(() => setPhoneLayout(false))
+
+    it('rests at half on load and tells the workspace how much it covers', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+      const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('58%')
+    })
+
+    it('the heading, the list and the footer are the sheet\'s children, in that order', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+      const sheet = sheetOf(container)
+      expect(sheet.querySelector('.beach-sheet-grab .beach-shell-panel-heading h2')).toHaveTextContent(
+        'Near Halifax',
+      )
+      expect(sheet.querySelector('.beach-sheet-body .beach-shell-list')).not.toBeNull()
+      expect(sheet.lastElementChild).toHaveClass('beach-shell-footer')
+    })
+
+    it('selecting a beach keeps the sheet at half', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+      const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('58%')
+    })
+
+    it('selecting from the full list brings the sheet back to half so the map shows the pin', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(container.querySelector('.beach-shell-panel-heading h2')!)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+      expect(container.querySelector<HTMLElement>('.beach-shell-workspace')!.style.getPropertyValue('--sheet-visible')).toBe('100%')
+
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
+    })
+
+    it('closing the detail keeps whatever snap the sheet is at', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      // Tapping the count (part of the heading row, not a control) cycles half → full.
+      await user.click(container.querySelector('.beach-shell-count')!)
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await waitFor(() => expect(screen.queryByRole('article')).not.toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'full')
+    })
+
+    it('the back control in the heading row closes the detail without cycling the sheet', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+      await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+      await user.click(screen.getByRole('button', { name: /back to beaches/i }))
+      await waitFor(() => expect(screen.queryByRole('article')).not.toBeInTheDocument())
+      expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
     })
   })
 })

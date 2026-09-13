@@ -130,27 +130,40 @@ describe('beach-filter', () => {
         expect(result.every((b) => b.community === 'Dartmouth')).toBe(true)
       })
 
-      it('supports multi-word search (all words must match)', () => {
-        const result = filterBeaches(input({ query: 'crystal crescent' }))
-        // No beach by exact name; should match if Crystal and Crescent appear.
-        // In the roster, no beach has both "crystal" and "crescent" in name, water, or community.
-        expect(result).toHaveLength(0)
+      it('"Grand Lake" finds Oakfield Park through its water body (the roster has no other Grand Lake)', () => {
+        // The PRD example also lists Dollar Lake, but no roster field of Dollar Lake
+        // says "Grand Lake" and the lake aliases are verbatim algae-feed names, so
+        // one is not invented for it: see lib/search.test.ts.
+        const result = filterBeaches(input({ query: 'Grand Lake' }))
+        expect(result.map((b) => b.id)).toEqual(['hrm-oakfield-park'])
       })
 
-      it('filters multi-word that does match', () => {
-        // "Lake" and "Echo" appear in Lake Echo Beach.
+      it('"Banook" finds Birch Cove through the lake alias field', () => {
+        expect(filterBeaches(input({ query: 'Banook' })).map((b) => b.id)).toEqual(['hrm-birch-cove'])
+      })
+
+      it('ranks name matches before water-body, community and lake-alias matches', () => {
+        const result = filterBeaches(input({ query: 'lake' }))
+        const rank = (b: (typeof result)[number]) =>
+          /lake/i.test(b.name) ? 0 : /lake/i.test(b.waterBody) ? 1 : /lake/i.test(b.community) ? 2 : 3
+        const ranks = result.map(rank)
+        expect(ranks).toEqual([...ranks].sort((a, b) => a - b))
+        expect(ranks[0]).toBe(0)
+        expect(ranks.at(-1)).toBeGreaterThan(0)
+      })
+
+      it('matches the whole phrase, not each word anywhere', () => {
+        // No supervised beach is "Crystal Crescent"; nothing carries the phrase.
+        expect(filterBeaches(input({ query: 'crystal crescent' }))).toHaveLength(0)
         const result = filterBeaches(input({ query: 'Lake Echo' }))
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('hrm-lake-echo')
       })
 
-      it('is accent-insensitive', () => {
-        // Try a diacritic: "St. Margarets" vs "St. Margaret's" — both should work.
-        const resultWithApostrophe = filterBeaches(input({ query: "Margarets" }))
-        const resultWithoutApostrophe = filterBeaches(input({ query: "Margarets" }))
-        // Both should find St. Margarets Bay beaches.
-        expect(resultWithApostrophe.length).toBeGreaterThan(0)
-        expect(resultWithoutApostrophe.length).toBeGreaterThan(0)
+      it("tolerates apostrophes, dots and accents: \"Risser's\", \"st. margarets\"", () => {
+        expect(filterBeaches(input({ query: "Risser's" })).map((b) => b.id)).toEqual(['ns-rissers'])
+        expect(filterBeaches(input({ query: 'st. margarets' })).length).toBeGreaterThan(0)
+        expect(filterBeaches(input({ query: 'Margarets' })).length).toBeGreaterThan(0)
       })
 
       it('returns empty array for no match', () => {
@@ -158,15 +171,19 @@ describe('beach-filter', () => {
         expect(result).toHaveLength(0)
       })
 
-      it('trims and splits on whitespace', () => {
+      it('trims and collapses whitespace', () => {
         const result = filterBeaches(input({ query: '  Lake   Echo  ' }))
         expect(result).toHaveLength(1)
         expect(result[0].id).toBe('hrm-lake-echo')
       })
+
+      it('a whitespace-only query is no query', () => {
+        expect(filterBeaches(input({ query: '   ' }))).toHaveLength(35)
+      })
     })
 
     describe('combined query + status filter', () => {
-      it('applies both query and status filter', () => {
+      it('applies the status filter on top of the ranked query hits', () => {
         const status: Record<string, 'open' | 'advisory' | 'closed' | 'offseason'> = {
           'hrm-albro-lake': 'open',
           'hrm-lake-echo': 'closed',
@@ -184,21 +201,15 @@ describe('beach-filter', () => {
     })
 
     it('does not mutate the input beaches array', () => {
-      const beaches = [...BEACHES]
-      const input_ = input({ beaches })
-      const result = filterBeaches(input_)
-      // The input array reference is the same.
-      expect(input_.beaches).toBe(beaches)
-      // The input array has not been sorted in place.
-      for (let i = 1; i < beaches.length; i++) {
-        // Input beaches is in original order, not sorted.
-        if (i < 2) continue
-        // Just verify we got a result and the input is unchanged.
-      }
+      const beaches = [...BEACHES].reverse()
+      const copy = [...beaches]
+      const result = filterBeaches(input({ beaches }))
+      expect(beaches).toEqual(copy)
       expect(result).toHaveLength(35)
+      expect(result[0].name).toBe('Albro Lake Beach')
     })
 
-    it('returns sorted output', () => {
+    it('returns name-sorted output with no query', () => {
       const result = filterBeaches(input())
       for (let i = 1; i < result.length; i++) {
         expect(result[i].name.localeCompare(result[i - 1].name)).toBeGreaterThanOrEqual(0)

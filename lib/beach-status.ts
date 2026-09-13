@@ -1,3 +1,4 @@
+import { offseasonLine } from '@/lib/copy'
 import type { Authority, BeachState } from '@/lib/seed/beaches'
 
 /** Render-only. The resolver never produces it; a missing status record reads as unknown. */
@@ -31,17 +32,16 @@ export interface StatusPresentation {
 }
 
 /**
- * Standardized explanations for each state.
- * Verbatim from the EXPLANATION map in beach-detail.tsx.
+ * Standardized explanations for each state. Off-season is the one that
+ * depends on the authority (when its lifeguards return), so it lives with the
+ * other wording in lib/copy.ts and is looked up below.
  */
-const EXPLANATIONS: Record<BeachState | 'unknown', string> = {
+const EXPLANATIONS: Record<Exclude<BeachState, 'offseason'> | 'unknown', string> = {
   open: 'The supplied status is open. Check the official page and signs at the beach before swimming; this is not a guarantee of current water quality or lifeguard coverage.',
   advisory:
     'Swimming is not recommended. Keep people and pets out of the water and check the official notice for the reason and instructions.',
   closed:
     'Closed to swimming. Keep people and pets out of the water. Check the official notice for the reason; a closure does not always mean blue-green algae.',
-  offseason:
-    'The supplied status is off-season. Do not assume water testing or lifeguard supervision is active. Check the published schedule and official page before visiting.',
   unknown:
     'We have not read an official status for this beach yet. Unknown does not mean open. Check the official source before deciding to swim.',
 }
@@ -86,7 +86,15 @@ export function statusPresentation(
     }
   }
 
-  // Advisory, closed, offseason: use generic labels, no caveat.
+  // Off-season: the one quiet line the detail shows, with when it changes.
+  if (state === 'offseason') {
+    return {
+      label: STATUS_LABEL.offseason,
+      explanation: offseasonLine(authority),
+    }
+  }
+
+  // Advisory, closed: generic labels, no caveat.
   return {
     label: STATUS_LABEL[state],
     explanation: EXPLANATIONS[state],

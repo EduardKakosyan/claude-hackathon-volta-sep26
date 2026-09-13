@@ -66,3 +66,21 @@ export function formatPosted(iso: string, now: Date = new Date()): string {
   const sameDay = halifaxToday(d) === halifaxToday(now)
   return sameDay ? `today, ${time}` : `${dayOf.format(d)}, ${time}`
 }
+
+/** '2 p.m.' on the hour, '4:15 p.m.' otherwise, in Halifax time. Empty for a malformed instant. */
+export function formatClock(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const minutes = Number(
+    new Intl.DateTimeFormat('en-CA', { timeZone: HALIFAX, minute: 'numeric' }).format(d),
+  )
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: HALIFAX,
+    hour: 'numeric',
+    ...(minutes === 0 ? {} : { minute: '2-digit' }),
+    hour12: true,
+  })
+    .format(d)
+    .replace(/\s?([ap])\.?m\.?$/i, ' $1.m.')
+    .toLowerCase()
+}

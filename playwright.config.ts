@@ -1,36 +1,50 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright configuration for beach UI smoke tests.
+ * The assertion layer of the verification rig: five engine/viewport projects,
+ * a screenshot for every test, and traces + video when a retry is needed.
  *
- * Web server strategy:
- * - Uses `pnpm dev` (Next.js dev server) rather than `pnpm build && pnpm start`
- *   because dev rebuilds are faster for local iteration and test reliability.
- * - `reuseExistingServer: !process.env.CI` allows local dev to reuse a running server,
- *   while CI always starts fresh.
+ * Projects
+ * - chromium-desktop     1440×900, mouse.
+ * - chromium-iphone      Playwright's iPhone 16 descriptor (393×659 layout viewport,
+ *                        DPR 3, touch, Mobile Safari UA) run under Chromium, so the
+ *                        phone layout is covered by both engines.
+ * - webkit-iphone        the same descriptor on WebKit: the closest thing to Mobile
+ *                        Safari that runs headless in CI.
+ * - webkit-iphone-land   iPhone 16 landscape (734×343): the `max-height: 600px`
+ *                        rule in beach-shell.css.
+ * - webkit-ipad          iPad Pro 11 portrait (834×1194): above the 760 px phone
+ *                        breakpoint, so it must keep the desktop layout.
  *
- * Browser coverage:
- * - Chromium only (desktop + mobile). Firefox and WebKit are intended CI additions.
- * - Desktop: 1440×900 (standard landscape breakpoint)
- * - Mobile: 390×844 (iPhone SE / smaller device)
+ * Data: with no SUPABASE_* variables the app serves the fixture day
+ * (lib/fixture/today.ts), so every assertion is deterministic and no test needs
+ * the network. Map tile hosts are blocked per test in e2e/helpers.ts.
  *
- * Tile mocking:
- * - External map tiles (tiles.maps.eox.at, s3.amazonaws.com) are intercepted and
- *   replaced with a 1×1 PNG stub so the map initializes without external dependencies.
- * - Real-tile checking is manual only — smoke tests verify the app is usable when
- *   tiles are unavailable, not that tiles render correctly.
+ * Web server: locally `pnpm dev`, and a dev server that is already running on
+ * :3000 is reused, so keep one open while iterating. CI builds and serves the
+ * production bundle instead: a cold dev server compiling chunks on demand under
+ * parallel workers can hand a script request an HTML page ("Unexpected token
+ * '<'"), and the production server is what nsbeaches.ca runs anyway.
+ * Screenshots land in test-results/e2e/<test>/ per project.
  */
 export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  // Locally cap at 2 workers (override with PW_WORKERS=n): the default of
+  // cores/2 spawns a browser per worker across five projects and pegs the CPU.
+  workers: process.env.CI ? 1 : Number(process.env.PW_WORKERS ?? 2),
+  // Playwright empties its output directory before every run. Keep it to its
+  // own subdirectory so `pnpm sim shot` (test-results/sim/) is not wiped.
+  outputDir: 'test-results/e2e',
+  reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'http://localhost:3000',
+    // PLAYWRIGHT_BASE_URL points the suite at a deployment (docs/deploy.md); no server is started then.
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
+    screenshot: 'on',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    video: 'on-first-retry',
   },
 
   projects: [
@@ -39,15 +53,29 @@ export default defineConfig({
       use: { ...devices['Desktop Chromium'], viewport: { width: 1440, height: 900 } },
     },
     {
-      name: 'chromium-mobile',
-      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } },
+      name: 'chromium-iphone',
+      use: { ...devices['iPhone 16'], browserName: 'chromium' },
+    },
+    {
+      name: 'webkit-iphone',
+      use: { ...devices['iPhone 16'] },
+    },
+    {
+      name: 'webkit-iphone-land',
+      use: { ...devices['iPhone 16 landscape'] },
+    },
+    {
+      name: 'webkit-ipad',
+      use: { ...devices['iPad Pro 11'] },
     },
   ],
 
-  webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: process.env.CI ? 'pnpm build && pnpm start' : 'pnpm dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 240_000,
+      },
 })

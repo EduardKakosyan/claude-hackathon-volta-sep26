@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
+import type { BuoyReading, ConditionsRow } from '@/lib/conditions'
 import type { Beach, BeachState } from '@/lib/seed/beaches'
 import type {
   DayBasis,
@@ -42,6 +43,25 @@ interface SourceHealthRow {
   last_attempt_at: string
   last_success_at: string | null
   last_error: string | null
+}
+
+interface BeachConditionsRow {
+  beach_id: string
+  wind_kmh: number | string
+  wind_dir_deg: number
+  air_temp_c: number | string | null
+  observed_at: string
+}
+
+interface BuoyReadingRow {
+  buoy: string
+  water_temp_c: number | string | null
+  observed_at: string
+}
+
+/** PostgREST serialises `numeric` as a string; the page wants numbers. */
+function num(value: number | string): number {
+  return typeof value === 'number' ? value : Number(value)
 }
 
 function fail(op: string, error: { message: string } | null): never {
@@ -108,6 +128,30 @@ export class SupabaseStore implements PageStore, StatusWriter {
     return [...days].sort().reverse()
   }
 
+  async conditions(): Promise<ConditionsRow[]> {
+    const { data, error } = await this.db.from('beach_conditions').select('*')
+    if (error) fail('beach_conditions select', error)
+    return ((data ?? []) as BeachConditionsRow[]).map((r) => ({
+      beachId: r.beach_id,
+      windKmh: num(r.wind_kmh),
+      windDirDeg: r.wind_dir_deg,
+      airTempC: r.air_temp_c === null ? null : num(r.air_temp_c),
+      observedAt: r.observed_at,
+    }))
+  }
+
+  async buoy(): Promise<BuoyReading | null> {
+    const { data, error } = await this.db.from('buoy_reading').select('*').limit(1).maybeSingle()
+    if (error) fail('buoy_reading select', error)
+    const r = data as BuoyReadingRow | null
+    if (!r) return null
+    return {
+      buoy: r.buoy,
+      waterTempC: r.water_temp_c === null ? null : num(r.water_temp_c),
+      observedAt: r.observed_at,
+    }
+  }
+
   async upsertBeaches(beaches: Beach[]): Promise<number> {
     const rows = beaches.map((b) => ({
       id: b.id,
@@ -162,6 +206,29 @@ export class SupabaseStore implements PageStore, StatusWriter {
     const { error } = await this.db.from('source_health').upsert(out, { onConflict: 'source' })
     if (error) fail('source_health upsert', error)
     return out.length
+  }
+
+  async upsertConditions(rows: ConditionsRow[]): Promise<number> {
+    const out: BeachConditionsRow[] = rows.map((r) => ({
+      beach_id: r.beachId,
+      wind_kmh: r.windKmh,
+      wind_dir_deg: r.windDirDeg,
+      air_temp_c: r.airTempC,
+      observed_at: r.observedAt,
+    }))
+    const { error } = await this.db.from('beach_conditions').upsert(out, { onConflict: 'beach_id' })
+    if (error) fail('beach_conditions upsert', error)
+    return out.length
+  }
+
+  async upsertBuoy(reading: BuoyReading): Promise<void> {
+    const row: BuoyReadingRow = {
+      buoy: reading.buoy,
+      water_temp_c: reading.waterTempC,
+      observed_at: reading.observedAt,
+    }
+    const { error } = await this.db.from('buoy_reading').upsert(row, { onConflict: 'buoy' })
+    if (error) fail('buoy_reading upsert', error)
   }
 }
 
