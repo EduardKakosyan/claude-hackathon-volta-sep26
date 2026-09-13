@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BeachApp, type BeachAppProps } from '@/components/beach-app'
+import { BeachApp, SUGGEST_URL, type BeachAppProps } from '@/components/beach-app'
 import { SHEET_MEDIA } from '@/components/bottom-sheet'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
 import type { GeolocationProvider } from '@/lib/geolocation'
@@ -285,8 +285,8 @@ describe('BeachApp', () => {
       expect(screen.queryByRole('article')).toBeInTheDocument()
     })
 
-    const backButton = screen.getByRole('button', { name: /back to the list/i })
-    backButton.focus()
+    // The detail put focus on its heading; Escape from anywhere inside closes it.
+    expect(screen.getByRole('article').querySelector('h2')).toHaveFocus()
     await user.keyboard('{Escape}')
 
     await waitFor(() => {
@@ -304,7 +304,9 @@ describe('BeachApp', () => {
     await waitFor(() => {
       expect(screen.queryByRole('article')).toBeInTheDocument()
     })
-    // The row is gone, so nothing inside <main> holds focus any more.
+    // The detail takes focus on open; drop it so nothing inside <main> holds focus,
+    // which is where a keydown listener on <main> would never hear the key.
+    ;(document.activeElement as HTMLElement | null)?.blur()
     expect(document.activeElement).toBe(document.body)
 
     await user.keyboard('{Escape}')
@@ -347,6 +349,32 @@ describe('BeachApp', () => {
     const footer = container.querySelector('.beach-shell-footer')
     expect(footer?.textContent).toContain('Showing a fixture day, not live status')
     expect(footer?.textContent).not.toContain('Not connected to a database')
+  })
+
+  it('the footer offers "Suggest one", a new issue on the public repository', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    const footer = container.querySelector('.beach-shell-footer')!
+    expect(footer.textContent).toContain('Ideas or problems?')
+    const link = screen.getByRole('link', { name: 'Suggest one' })
+    expect(link).toHaveAttribute('href', SUGGEST_URL)
+    expect(link.getAttribute('href')).toMatch(
+      /^https:\/\/github\.com\/EduardKakosyan\/claude-hackathon-volta-sep26\/issues\/new\?template=suggestion\.md$/,
+    )
+    expect(link).toHaveAttribute('target', '_blank')
+  })
+
+  it('the open detail carries the distance the directory measured', async () => {
+    const user = userEvent.setup()
+    render(<BeachApp {...makePageData()} />)
+
+    const firstKm = document.querySelector('.beach-shell-row-distance')!.textContent
+    await user.click(document.querySelector('[data-beach-id]') as HTMLButtonElement)
+    await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
+
+    expect(document.querySelector('.beach-detail-sub')?.textContent).toMatch(new RegExp(`^${firstKm} · `))
+    // One back control in the whole page: the heading row's.
+    expect(screen.getAllByRole('button', { name: /back/i })).toHaveLength(1)
   })
 
   it('in supabase mode with nothing read yet the footer says so instead', () => {
@@ -530,7 +558,7 @@ describe('BeachApp', () => {
       const { container } = render(<BeachApp {...makePageData()} />)
       expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
       const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
-      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('50%')
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('58%')
     })
 
     it('the heading, the list and the footer are the sheet\'s children, in that order', () => {
@@ -550,7 +578,7 @@ describe('BeachApp', () => {
       await waitFor(() => expect(screen.queryByRole('article')).toBeInTheDocument())
       expect(sheetOf(container)).toHaveAttribute('data-snap', 'half')
       const workspace = container.querySelector<HTMLElement>('.beach-shell-workspace')!
-      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('50%')
+      expect(workspace.style.getPropertyValue('--sheet-visible')).toBe('58%')
     })
 
     it('selecting from the full list brings the sheet back to half so the map shows the pin', async () => {

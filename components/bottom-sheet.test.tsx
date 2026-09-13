@@ -13,7 +13,7 @@ import {
   type Snap,
 } from '@/components/bottom-sheet'
 
-/** The sheet's height in every test: half rests at 400, peek at 800 - 96 = 704. */
+/** The sheet's height in every test: half rests at 336 (42%), peek at 800 - 96 = 704. */
 const HEIGHT = 800
 
 function setPhone(matches: boolean) {
@@ -85,8 +85,8 @@ describe('BottomSheet', () => {
 
   describe('geometry', () => {
     it('rests at 0 / half / height minus the peek', () => {
-      expect(restOffsets(800, PEEK_PX)).toEqual({ full: 0, half: 400, peek: 800 - PEEK_PX })
-      expect(restOffsets(800, PEEK_PX + 34)).toEqual({ full: 0, half: 400, peek: 800 - PEEK_PX - 34 })
+      expect(restOffsets(800, PEEK_PX)).toEqual({ full: 0, half: 336, peek: 800 - PEEK_PX })
+      expect(restOffsets(800, PEEK_PX + 34)).toEqual({ full: 0, half: 336, peek: 800 - PEEK_PX - 34 })
       expect(restOffsets(100, 200).peek).toBe(0)
     })
 
@@ -116,7 +116,7 @@ describe('BottomSheet', () => {
     })
 
     it('exposes how much of the workspace each snap covers', () => {
-      expect(SHEET_VISIBLE).toEqual({ peek: 'var(--sheet-peek)', half: '50%', full: '100%' })
+      expect(SHEET_VISIBLE).toEqual({ peek: 'var(--sheet-peek)', half: '58%', full: '100%' })
     })
   })
 
@@ -181,7 +181,8 @@ describe('BottomSheet', () => {
       fireEvent.pointerDown(grab, { clientY: 400, pointerId, pointerType: 'touch', button: 0 })
       fireEvent.pointerMove(grab, { clientY: 460, pointerId, pointerType: 'touch' })
       expect(aside).toHaveAttribute('data-dragging', 'true')
-      expect(aside.style.transform).toBe('translateY(460px)')
+      // The rest is 336; the finger moved 60 down.
+      expect(aside.style.transform).toBe('translateY(396px)')
       fireEvent.pointerUp(grab, { clientY: 460, pointerId, pointerType: 'touch' })
       expect(aside).toHaveAttribute('data-dragging', 'false')
       expect(aside.style.transform).toBe('')
@@ -214,7 +215,7 @@ describe('BottomSheet', () => {
       vi.advanceTimersByTime(16)
       fireEvent.pointerMove(grab, { clientY: 330, pointerId, pointerType: 'touch' })
       fireEvent.pointerUp(grab, { clientY: 330, pointerId, pointerType: 'touch' })
-      // 330 is nearer half (400) than full (0); the velocity is what carries it.
+      // 266 is nearer half (336) than full (0); the velocity is what carries it.
       expect(onSnapChange).toHaveBeenCalledWith('full')
     })
 
@@ -234,7 +235,7 @@ describe('BottomSheet', () => {
       // The first move after a press near the top edge lands on the map; the sheet must still see it.
       fireEvent.pointerMove(document.body, { clientY: 300, pointerId, pointerType: 'mouse' })
       expect(aside).toHaveAttribute('data-dragging', 'true')
-      expect(aside.style.transform).toBe('translateY(300px)')
+      expect(aside.style.transform).toBe('translateY(236px)')
       fireEvent.pointerUp(document.body, { clientY: 100, pointerId, pointerType: 'mouse' })
       expect(onSnapChange).toHaveBeenCalledWith('full')
 

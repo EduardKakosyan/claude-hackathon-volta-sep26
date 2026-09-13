@@ -23,13 +23,24 @@ import {
 export type Snap = 'peek' | 'half' | 'full'
 
 /**
+ * How far down the workspace the sheet rests at half, as a share of its height.
+ * "Half" is the mockup's proportion, not a literal 50%: on a real phone the
+ * masthead, search and filters take a third of the screen, and 50% of what is
+ * left holds a row and a half of directory, or a detail whose Directions and
+ * Share buttons fall below the fold. At 42% the map keeps its top two-fifths
+ * (the flown-to pin lands there) and the detail's first screenful fits.
+ * beach-shell.css mirrors this as `--sheet-offset` on `[data-snap='half']`.
+ */
+export const HALF_OFFSET = 0.42
+
+/**
  * How much of the workspace the sheet covers at each snap, as a CSS length the
  * map's floating controls add 12px to. `BeachApp` sets it as `--sheet-visible`
  * on the workspace; `--sheet-peek` is defined in beach-shell.css.
  */
 export const SHEET_VISIBLE: Record<Snap, string> = {
   peek: 'var(--sheet-peek)',
-  half: '50%',
+  half: `${Math.round((1 - HALF_OFFSET) * 100)}%`,
   full: '100%',
 }
 
@@ -67,7 +78,7 @@ export function isSheetLayout(): boolean {
 
 /** Resting translateY in px for each snap, given the sheet's height and how much of it shows at peek. */
 export function restOffsets(height: number, peek: number): Record<Snap, number> {
-  return { full: 0, half: height / 2, peek: Math.max(0, height - peek) }
+  return { full: 0, half: Math.round(height * HALF_OFFSET), peek: Math.max(0, height - peek) }
 }
 
 /**
@@ -279,8 +290,8 @@ export function BottomSheet({
     }
     const touch = event.touches[0]
     if (!touch) return
-    // "At the top" means nothing under the finger is scrolled, not just the body:
-    // until Phase 6 the detail still carries its own scroller inside the body.
+    // "At the top" means nothing under the finger is scrolled. The body is the
+    // only scroller today; the walk keeps that true even if a child ever grows one.
     pull.current = {
       startY: touch.clientY,
       atTop: scrolledToTop(event.target, innerBodyRef.current),

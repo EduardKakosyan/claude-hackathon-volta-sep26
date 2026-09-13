@@ -185,6 +185,74 @@
 .beach-shell-footer p { margin: 0; font-size: 10px; line-height: 1.6; color: var(--beach-muted); }
 .beach-shell-footer p + p { margin-top: 7px; }
 .beach-shell-footer strong { color: var(--beach-ink); font-weight: 500; }
+.beach-shell-footer a { color: var(--beach-accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* --- Detail: one field note ----------------------------------------------- */
+
+/*
+ * The detail is set like a field note in the same idiom as the directory:
+ * serif name, hairline rules between sections, and the status block as the one
+ * boxed element, with a 3px rule in the status colour down its left edge. It
+ * never scrolls on its own — the sheet body or the panel column does — and its
+ * only control is Directions / Share; the back control is the panel heading's.
+ */
+.beach-detail { padding: 0 var(--beach-gutter) 22px; }
+.beach-detail-head { padding: 2px 0 14px; border-bottom: 1px solid var(--beach-rule); }
+.beach-detail-name { margin: 0; font: 600 clamp(24px, 2.2vw, 30px)/1.1 var(--beach-serif); letter-spacing: -.03em; text-wrap: balance; }
+/* The name takes focus on open. The ring is for keyboards: iOS Safari counts that programmatic focus as visible after a tap, where it is only noise. */
+.beach-detail-name:focus { outline: none; }
+@media (hover: hover) { .beach-detail-name:focus-visible { outline: 2px solid var(--beach-accent); outline-offset: 2px; } }
+.beach-detail-sub { margin: 6px 0 0; font: italic 13px/1.4 var(--beach-serif); color: var(--beach-muted); }
+
+.beach-detail-status { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--beach-rule); border-left: 3px solid var(--status-unknown); border-radius: 0 4px 4px 0; background: var(--beach-bg); }
+.beach-detail-status[data-state='open'] { border-left-color: var(--status-open); }
+.beach-detail-status[data-state='advisory'] { border-left-color: var(--status-advisory); }
+.beach-detail-status[data-state='closed'] { border-left-color: var(--status-closed); }
+.beach-detail-status[data-state='offseason'] { border-left-color: var(--status-offseason); }
+/* A beach whose status has never been read: the dashed rule matches its pin. */
+.beach-detail-status[data-state='unknown'] { border-left-style: dashed; }
+.beach-detail-status-label { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-accent); }
+/* Colour repeats the pin, never replaces it: the label is always spelled out. */
+.beach-detail-status[data-state='advisory'] .beach-detail-status-label { color: #92580a; }
+.beach-detail-status[data-state='closed'] .beach-detail-status-label { color: #a81f1f; }
+.beach-detail-status[data-state='unknown'] .beach-detail-status-label, .beach-detail-status[data-state='offseason'] .beach-detail-status-label { color: var(--beach-muted); }
+.beach-detail-status-quote { display: block; margin: 5px 0 0; font: italic 16px/1.4 var(--beach-serif); color: var(--beach-ink); quotes: '\201C' '\201D'; }
+.beach-detail-status-source { margin: 5px 0 0; font-size: 11px; line-height: 1.5; color: var(--beach-muted); }
+
+.beach-detail-plain { margin: 12px 0 0; font-size: 13px; line-height: 1.6; }
+
+.beach-detail-actions { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; }
+.beach-detail-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 12px; border: 1px solid var(--beach-accent); border-radius: 4px; font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; transition: background-color var(--beach-duration) var(--beach-ease), border-color var(--beach-duration) var(--beach-ease); }
+.beach-detail-action[data-variant='primary'] { background: var(--beach-accent); color: var(--beach-panel); }
+.beach-detail-action[data-variant='secondary'] { background: var(--beach-panel); color: var(--beach-ink); border-color: var(--beach-rule); }
+/* Hover only where there is a pointer: iOS keeps :hover on whatever lands under the last tap, and the row tap lands on Directions. */
+@media (hover: hover) {
+  .beach-detail-action[data-variant='primary']:hover { background: var(--beach-deep); border-color: var(--beach-deep); }
+  .beach-detail-action[data-variant='secondary']:hover { background: var(--beach-accent-wash); border-color: var(--beach-accent); }
+}
+.beach-detail-share { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.beach-detail-share .beach-detail-action { width: 100%; }
+.beach-detail-share-url { width: 100%; min-height: 36px; padding: 0 8px; border: 1px solid var(--beach-rule); border-radius: 4px; background: var(--beach-bg); color: var(--beach-ink); font-size: 12px; }
+
+.beach-detail-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid var(--beach-rule); }
+.beach-detail-facts > div { min-width: 0; }
+.beach-detail-facts dt { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-detail-facts dd { margin: 3px 0 0; font-size: 13px; line-height: 1.4; font-weight: 500; }
+
+.beach-detail-history { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--beach-rule); }
+.beach-detail-history h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 8px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-detail-history h3 span { font-weight: 400; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+.beach-detail-history ol { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; margin: 0; padding: 0; list-style: none; }
+.beach-detail-history li { height: 14px; border-radius: 2px; background: var(--status-unknown); }
+.beach-detail-history li[data-state='open'] { background: var(--status-open); }
+.beach-detail-history li[data-state='advisory'] { background: var(--status-advisory); }
+.beach-detail-history li[data-state='closed'] { background: var(--status-closed); }
+.beach-detail-history li[data-state='offseason'] { background: var(--status-offseason); }
+.beach-detail-history li[data-state='none'] { background: transparent; border: 1px dashed var(--beach-rule); }
+
+.beach-detail-sources { display: flex; flex-wrap: wrap; gap: 2px 18px; margin: 14px 0 0; font-size: 12px; }
+.beach-detail-sources a { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; color: var(--beach-accent); text-decoration: underline; text-underline-offset: 3px; }
+.beach-detail-sources svg { flex: none; }
 
 @keyframes beach-shell-drift {
   0%, 100% { transform: translateY(0); }
@@ -220,12 +288,13 @@
 @media (max-width: 760px), (max-height: 600px) and (max-width: 1000px) {
   .beach-shell { --beach-gutter: 18px; }
   .beach-shell-header { padding: max(12px, env(safe-area-inset-top)) 16px 8px; }
-  .beach-shell-masthead { gap: 8px; padding-bottom: 12px; }
+  .beach-shell-masthead { gap: 8px; padding-bottom: 10px; }
   .beach-shell-brand { gap: 9px; }
   .beach-shell-brand-mark { width: 24px; }
   .beach-shell-brand h1 { font-size: clamp(23px, 5.5vw, 32px); }
-  .beach-shell-eyebrow { font-size: 8px; letter-spacing: .12em; }
-  .beach-shell-toolbar { display: block; margin-top: 10px; }
+  /* The masthead is the logo and the title alone: every line of header is a line the detail cannot have at half. */
+  .beach-shell-eyebrow { display: none; }
+  .beach-shell-toolbar { display: block; margin-top: 8px; }
   .beach-shell-search { min-height: 44px; }
   /* 16px keeps iOS from zooming the viewport on focus. */
   .beach-shell-search input { font-size: 16px; }
@@ -252,7 +321,8 @@
 
   .beach-sheet { position: absolute; inset: 0; z-index: 3; border: 0; border-radius: 16px 16px 0 0; box-shadow: 0 -6px 24px #0003; padding-bottom: env(safe-area-inset-bottom, 0px); transform: translateY(var(--sheet-offset)); transition: transform var(--sheet-duration) var(--beach-ease); will-change: transform; }
   .beach-sheet[data-snap='peek'] { --sheet-offset: calc(100% - var(--sheet-peek)); }
-  .beach-sheet[data-snap='half'] { --sheet-offset: 50%; }
+  /* "Half" is the mockup's share, not 50%: bottom-sheet.tsx explains and mirrors it as HALF_OFFSET. */
+  .beach-sheet[data-snap='half'] { --sheet-offset: 42%; }
   .beach-sheet[data-snap='full'] { --sheet-offset: 0px; }
   /* The finger-follow transform is inline; the transition would only lag behind it. */
   .beach-sheet[data-dragging='true'] { transition: none; }
@@ -260,15 +330,33 @@
   .beach-sheet:not([data-snap='full']), .beach-sheet-grab { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .beach-sheet-grab { cursor: grab; }
   .beach-sheet[data-dragging='true'] .beach-sheet-grab { cursor: grabbing; }
-  .beach-sheet-handle { display: block; width: 36px; height: 4px; margin: 10px auto 8px; border-radius: 2px; background: var(--beach-rule); }
+  .beach-sheet-handle { display: block; width: 36px; height: 4px; margin: 8px auto 6px; border-radius: 2px; background: var(--beach-rule); }
   /* The list scrolls only at full; at half a pull on it moves the sheet instead. */
   .beach-sheet-body[data-scroll='false'] { overflow: hidden; }
   .beach-sheet-body[data-scroll='true'] { touch-action: pan-y; }
-  .beach-shell-panel-heading { padding: 0 var(--beach-gutter) 10px; }
+  .beach-shell-panel-heading { padding: 0 var(--beach-gutter) 6px; }
   .beach-shell-panel-heading h2 { font-size: 22px; }
   .beach-shell-list-note { padding-bottom: 10px; }
   .beach-shell-row { padding: 14px var(--beach-gutter); }
   .beach-shell-row-arrow { opacity: 1; transform: none; }
+  /*
+   * At half the sheet shows roughly 250px, and the grab area takes ~60 of them.
+   * The detail's first screenful — name, status block, plain-English line, and
+   * the two actions — has to fit in what is left, so every gap tightens here.
+   */
+  .beach-detail { padding-bottom: 16px; }
+  .beach-detail-head { padding: 0 0 5px; }
+  .beach-detail-name { font-size: 22px; line-height: 1.05; }
+  .beach-detail-sub { margin-top: 2px; font-size: 12px; line-height: 1.3; }
+  .beach-detail-status { margin-top: 8px; padding: 6px 12px; }
+  .beach-detail-status-label { font-size: 11px; }
+  .beach-detail-status-quote { margin-top: 2px; font-size: 15px; line-height: 1.3; }
+  .beach-detail-status-source { margin-top: 2px; font-size: 10px; line-height: 1.4; }
+  .beach-detail-plain { margin-top: 6px; font-size: 12px; line-height: 1.4; }
+  .beach-detail-actions { margin-top: 8px; }
+  .beach-detail-action { min-height: 40px; }
+  .beach-detail-facts { margin-top: 14px; padding-top: 12px; }
+  .beach-detail-history { margin-top: 14px; padding-top: 12px; }
   /* The sheet already carries the home-indicator inset. */
   .beach-shell-footer { padding: 8px var(--beach-gutter); }
   .beach-shell-footer p { font-size: 9px; }
@@ -286,8 +374,9 @@
   .beach-shell-filters { margin: 0; flex: 1; }
   /* Three snaps still; the peek needs less because the heading row is shorter. */
   .beach-shell-workspace { --sheet-peek: calc(72px + env(safe-area-inset-bottom, 0px)); }
-  /* A short map: measured from the sheet edge the locate button would land on the replay control, so it hangs under it instead. */
-  .beach-shell-locate { top: 52px; bottom: auto; }
+  /* A short map: measured from the sheet edge the locate button would land on the replay control, so they share the top row instead — the native select's height varies by platform, so nothing may depend on it. */
+  .beach-shell-locate { top: 12px; bottom: auto; }
+  .beach-shell-replay { right: 64px; }
   .beach-sheet-handle { margin: 6px auto 4px; }
   .beach-shell-panel-heading { padding-bottom: 6px; }
   .beach-shell-panel-heading h2 { font-size: 18px; }

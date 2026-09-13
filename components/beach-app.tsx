@@ -52,6 +52,15 @@ type SelectionOrigin = 'list' | 'map'
 
 const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
 
+/**
+ * Where "Suggest one" in the footer goes: a new issue on the public repository,
+ * pre-filled from .github/ISSUE_TEMPLATE/suggestion.md. Nothing runs inside the
+ * app and nothing needs moderating; swap this one address for a hosted form if
+ * needing a GitHub account turns out to be a barrier.
+ */
+export const REPO_URL = 'https://github.com/EduardKakosyan/claude-hackathon-volta-sep26'
+export const SUGGEST_URL = `${REPO_URL}/issues/new?template=suggestion.md`
+
 /** What the directory is sorted from, as the heading says it. */
 const ORIGIN_HEADING = { user: 'Closest to you', halifax: 'Near Halifax' } as const
 
@@ -300,7 +309,7 @@ export function BeachApp(data: BeachAppProps) {
                 days={days}
                 replayDay={replayDay}
                 beachId={selectedId}
-                className="absolute top-3 right-3 z-10"
+                className="beach-shell-replay absolute top-3 right-3 z-10"
               />
             </>
           )}
@@ -334,6 +343,12 @@ export function BeachApp(data: BeachAppProps) {
               )}
               <p>{footer}</p>
               <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
+              <p>
+                Ideas or problems?{' '}
+                <a href={SUGGEST_URL} target="_blank" rel="noreferrer">
+                  Suggest one
+                </a>
+              </p>
             </footer>
           }
         >
@@ -346,7 +361,7 @@ export function BeachApp(data: BeachAppProps) {
               historyFrom={historyFrom}
               historyTo={historyTo}
               replayDay={replayDay}
-              onBack={closeDetail}
+              distanceKm={distances[selected.id]}
             />
           ) : (
             <>

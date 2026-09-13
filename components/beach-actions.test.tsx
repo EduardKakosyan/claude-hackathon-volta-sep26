@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
+import { BeachActions, DirectionsButton, ShareButton } from '@/components/beach-actions'
 import { BEACHES_BY_ID } from '@/lib/seed/beaches'
-import { BeachActions, DirectionsButton, ShareButton } from './beach-actions'
 
 const kinap = BEACHES_BY_ID['hrm-kinap']
 
@@ -15,11 +15,20 @@ describe('DirectionsButton', () => {
     expect(a.getAttribute('href')).toBe('https://maps.apple.com/?daddr=44.68002,-63.30658&q=Kinap%20Beach')
     expect(a.getAttribute('target')).toBe('_blank')
     expect(a.getAttribute('rel')).toContain('noopener')
+    expect(a).toHaveAttribute('data-platform', 'apple')
   })
+
   it('detects the platform from the user agent after mount', () => {
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Linux; Android 14) Chrome/120 Mobile')
     render(<DirectionsButton beach={kinap} />)
     expect(screen.getByRole('link').getAttribute('href')).toMatch(/^geo:44\.68002,-63\.30658/)
+  })
+
+  it('is the primary action, on shell classes rather than a component library', () => {
+    render(<DirectionsButton beach={kinap} platform="other" />)
+    const a = screen.getByRole('link')
+    expect(a).toHaveClass('beach-detail-action')
+    expect(a).toHaveAttribute('data-variant', 'primary')
   })
 })
 
@@ -34,6 +43,7 @@ describe('ShareButton', () => {
     expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://x.test/?day=2026-08-14&beach=hrm-kinap' }))
     expect(onOutcome).toHaveBeenCalledWith('shared', 'https://x.test/?day=2026-08-14&beach=hrm-kinap')
     expect(screen.getByRole('button').textContent).toContain('Shared')
+    expect(screen.getByRole('button')).toHaveAttribute('data-outcome', 'shared')
   })
 
   it('copies when only the clipboard exists and says so', async () => {
@@ -68,11 +78,19 @@ describe('ShareButton', () => {
     expect(url.searchParams.get('day')).toBe('2026-08-14')
     expect(url.searchParams.get('beach')).toBe('hrm-kinap')
   })
+
+  it('is the secondary action', () => {
+    render(<ShareButton beach={kinap} nav={{}} />)
+    const button = screen.getByRole('button')
+    expect(button).toHaveClass('beach-detail-action')
+    expect(button).toHaveAttribute('data-variant', 'secondary')
+  })
 })
 
 describe('BeachActions', () => {
-  it('renders both actions', () => {
-    render(<BeachActions beach={kinap} platform="other" nav={{}} />)
+  it('renders both actions side by side', () => {
+    const { container } = render(<BeachActions beach={kinap} platform="other" nav={{}} />)
+    expect(container.querySelector('.beach-detail-actions')).not.toBeNull()
     expect(screen.getByRole('link', { name: /Directions/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Share/ })).toBeTruthy()
   })

@@ -1,9 +1,8 @@
 'use client'
 
-import { NavigationIcon, Share2Icon } from 'lucide-react'
+import { Navigation, Share2 } from 'lucide-react'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
-import { Button } from '@/components/ui/button'
 import {
   buildBeachUrl,
   detectPlatform,
@@ -14,13 +13,18 @@ import {
   type ShareOutcome,
 } from '@/lib/navigation'
 import type { Beach } from '@/lib/seed/beaches'
-import { cn } from '@/lib/utils'
+
+/**
+ * Directions and Share: the two things a person standing in Halifax does next
+ * once the status has answered "is it open?". They sit above the fold of the
+ * detail on every layout and are styled on the shell's tokens
+ * (`.beach-detail-action` in beach-shell.css), never on a component library.
+ */
 
 export interface DirectionsButtonProps {
   beach: Pick<Beach, 'lat' | 'lon' | 'name'>
   /** Detected from the user agent after mount when omitted; SSR renders the universal Google Maps link. */
   platform?: Platform
-  className?: string
 }
 
 /** No live updates to subscribe to; the user agent does not change mid-session. */
@@ -46,16 +50,22 @@ function useDetectedPlatform(): Platform {
   return useSyncExternalStore(subscribeToNothing, readUserAgentPlatform, readServerPlatform)
 }
 
-export function DirectionsButton({ beach, platform, className }: DirectionsButtonProps) {
+/** Opens the phone's maps app on the beach: Apple Maps, `geo:` on Android, Google Maps elsewhere. */
+export function DirectionsButton({ beach, platform }: DirectionsButtonProps) {
   const detected = useDetectedPlatform()
-  const href = directionsUrl(beach, platform ?? detected)
+  const resolved = platform ?? detected
   return (
-    <Button asChild variant="default" className={cn('flex-1', className)}>
-      <a href={href} target="_blank" rel="noopener noreferrer" data-platform={platform ?? detected}>
-        <NavigationIcon data-icon="inline-start" />
-        Directions
-      </a>
-    </Button>
+    <a
+      className="beach-detail-action"
+      data-variant="primary"
+      data-platform={resolved}
+      href={directionsUrl(beach, resolved)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Navigation size={16} strokeWidth={1.8} aria-hidden="true" />
+      Directions
+    </a>
   )
 }
 
@@ -66,9 +76,9 @@ export interface ShareButtonProps {
   /** Defaults to `navigator`. */
   nav?: ShareNavigator
   onOutcome?: (outcome: ShareOutcome, url: string) => void
-  className?: string
 }
 
+/** What the button reads after a tap. Success and a dismissed sheet both settle back to "Share". */
 const FEEDBACK: Record<ShareOutcome, string> = {
   shared: 'Shared',
   copied: 'Link copied',
@@ -76,40 +86,62 @@ const FEEDBACK: Record<ShareOutcome, string> = {
   failed: 'Copy the link below',
 }
 
-export function ShareButton({ beach, getUrl, nav, onOutcome, className }: ShareButtonProps) {
+/** How long a success message stays before the button reads "Share" again. */
+const FEEDBACK_MS = 2000
+
+/**
+ * The system share sheet where there is one, the clipboard where there is not,
+ * and the bare URL in a field when neither works, so the link can always be
+ * handed on.
+ */
+export function ShareButton({ beach, getUrl, nav, onOutcome }: ShareButtonProps) {
   const [outcome, setOutcome] = useState<ShareOutcome | null>(null)
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
   const timer = useRef<number | null>(null)
-  useEffect(() => () => {
-    if (timer.current) window.clearTimeout(timer.current)
-  }, [])
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current)
+    },
+    [],
+  )
 
   async function onClick() {
     const url = getUrl ? getUrl() : buildBeachUrl(window.location.href, beach.id)
     const result = await shareUrl(
-      { title: `${beach.name} — Is the Beach Open`, text: `Today's status for ${beach.name} (${beach.waterBody})`, url },
+      {
+        title: `${beach.name} — Is the Beach Open`,
+        text: `Today's status for ${beach.name} (${beach.waterBody})`,
+        url,
+      },
       nav ?? (navigator as ShareNavigator),
     )
     setOutcome(result)
     setFailedUrl(result === 'failed' ? url : null)
     onOutcome?.(result, url)
     if (timer.current) window.clearTimeout(timer.current)
-    if (result !== 'failed') timer.current = window.setTimeout(() => setOutcome(null), 2000)
+    if (result !== 'failed') timer.current = window.setTimeout(() => setOutcome(null), FEEDBACK_MS)
   }
 
   return (
-    <div className={cn('flex flex-1 flex-col gap-1.5', className)}>
-      <Button type="button" variant="outline" onClick={onClick} aria-live="polite" data-outcome={outcome ?? undefined}>
-        <Share2Icon data-icon="inline-start" />
+    <div className="beach-detail-share">
+      <button
+        type="button"
+        className="beach-detail-action"
+        data-variant="secondary"
+        data-outcome={outcome ?? undefined}
+        aria-live="polite"
+        onClick={onClick}
+      >
+        <Share2 size={16} strokeWidth={1.8} aria-hidden="true" />
         {outcome ? FEEDBACK[outcome] : 'Share'}
-      </Button>
+      </button>
       {failedUrl ? (
         <input
           readOnly
+          className="beach-detail-share-url"
           value={failedUrl}
           aria-label="Link to this beach"
-          onFocus={(e) => e.currentTarget.select()}
-          className="h-8 w-full rounded-lg border border-neutral-200 px-2 text-xs text-neutral-700"
+          onFocus={(event) => event.currentTarget.select()}
         />
       ) : null}
     </div>
@@ -122,13 +154,12 @@ export interface BeachActionsProps {
   getUrl?: () => string
   nav?: ShareNavigator
   onShare?: (outcome: ShareOutcome, url: string) => void
-  className?: string
 }
 
-/** The two buttons at the bottom of the detail sheet (docs/mockup-beach-detail.html:100). */
-export function BeachActions({ beach, platform, getUrl, nav, onShare, className }: BeachActionsProps) {
+/** Directions on the left, Share on the right, each half the width. */
+export function BeachActions({ beach, platform, getUrl, nav, onShare }: BeachActionsProps) {
   return (
-    <div data-slot="beach-actions" className={cn('flex items-start gap-2', className)}>
+    <div className="beach-detail-actions" data-slot="beach-actions">
       <DirectionsButton beach={beach} platform={platform} />
       <ShareButton beach={beach} getUrl={getUrl} nav={nav} onOutcome={onShare} />
     </div>
