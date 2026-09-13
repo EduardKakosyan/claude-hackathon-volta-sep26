@@ -43,6 +43,13 @@ export const PROVINCE_VIEW = {
 export const BEACH_VIEW = { zoom: 13.5 } as const
 
 /**
+ * The camera the visitor's own position gets: their dot and the three nearest
+ * pins fitted in frame, but never closer than a neighbourhood — a person standing
+ * on a beach still sees where the next ones are.
+ */
+export const USER_VIEW = { maxZoom: 12, durationMs: 1200 } as const
+
+/**
  * How much of the map one screen shows, in three steps. Pins scale by band
  * (components/beach-shell.css) so the Halifax cluster stays legible at province
  * zoom without a clustering scheme; the rig asserts on `data-zoom-band`.

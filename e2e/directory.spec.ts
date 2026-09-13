@@ -18,6 +18,14 @@ test.describe('directory', () => {
     await expect(rows(page)).toHaveCount(35)
     await expect(page.locator('.beach-shell-count')).toContainText('35 of 35 beaches')
 
+    // No permission was granted, so the directory is measured from downtown
+    // Halifax: closest first, a distance on every row, and the heading says so.
+    await expect(page.locator('.beach-shell-panel-heading h2')).toHaveText('Near Halifax')
+    await expect(rows(page).first()).toContainText('Chocolate Lake Beach')
+    await expect(rows(page).first().locator('.beach-shell-row-distance')).toHaveText(/^\d+(\.\d)? km$/)
+    await expect(rows(page).last()).toContainText('Dominion Beach')
+    await expect(page.locator('.beach-shell-row-distance')).toHaveCount(35)
+
     // Give the map's workers time to start: a worker that dies parsing HTML shows up here.
     await expect(page.locator('.beach-map-pin').first()).toBeAttached({ timeout: 30_000 })
     // The page opens on the Halifax region, the middle of the three zoom bands.

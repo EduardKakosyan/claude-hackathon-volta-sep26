@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BeachList } from '@/components/beach-list'
+import { HALIFAX, sortByDistance } from '@/lib/geo'
 import { BEACHES } from '@/lib/seed/beaches'
 
 describe('BeachList', () => {
@@ -19,6 +20,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={BEACHES.slice(0, 5)}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -35,6 +37,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -52,6 +55,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -71,6 +75,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -89,6 +94,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={beaches[1].id}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -109,6 +115,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -124,6 +131,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={[]}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -140,6 +148,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={[]}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -158,6 +167,7 @@ describe('BeachList', () => {
       <BeachList
         beaches={beaches}
         status={status}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -180,6 +190,7 @@ describe('BeachList', () => {
           [provincialBeach.id]: 'open',
           [hrmBeach.id]: 'open',
         }}
+        distances={{}}
         selectedId={null}
         onSelect={mockOnSelect}
         onReset={mockOnReset}
@@ -189,5 +200,63 @@ describe('BeachList', () => {
     // Both should render (implementation details in StatusPin)
     expect(screen.getByText(provincialBeach.name)).toBeInTheDocument()
     expect(screen.getByText(hrmBeach.name)).toBeInTheDocument()
+  })
+
+  it('renders the distance beside the name when one is given, formatted in km', () => {
+    const beaches = BEACHES.slice(0, 2)
+    render(
+      <BeachList
+        beaches={beaches}
+        status={status}
+        distances={{ [beaches[0].id]: 7.824, [beaches[1].id]: 17.4 }}
+        selectedId={null}
+        onSelect={mockOnSelect}
+        onReset={mockOnReset}
+      />
+    )
+
+    const first = document.querySelector(`[data-beach-id="${beaches[0].id}"] .beach-shell-row-distance`)
+    const second = document.querySelector(`[data-beach-id="${beaches[1].id}"] .beach-shell-row-distance`)
+    expect(first).toHaveTextContent('7.8 km')
+    expect(second).toHaveTextContent('17 km')
+    // The distance sits in the title line with the name, not in the status line.
+    expect(first?.parentElement).toHaveClass('beach-shell-row-title')
+    expect(first?.parentElement?.querySelector('strong')).toHaveTextContent(beaches[0].name)
+  })
+
+  it('shows no distance for a beach that has none', () => {
+    const beaches = BEACHES.slice(0, 2)
+    render(
+      <BeachList
+        beaches={beaches}
+        status={status}
+        distances={{ [beaches[0].id]: 2 }}
+        selectedId={null}
+        onSelect={mockOnSelect}
+        onReset={mockOnReset}
+      />
+    )
+
+    expect(document.querySelectorAll('.beach-shell-row-distance')).toHaveLength(1)
+    expect(document.querySelector(`[data-beach-id="${beaches[1].id}"] .beach-shell-row-distance`)).toBeNull()
+  })
+
+  it('renders rows in the order given, not alphabetically', () => {
+    const sorted = sortByDistance(BEACHES, HALIFAX)
+    render(
+      <BeachList
+        beaches={sorted}
+        status={status}
+        distances={Object.fromEntries(sorted.map((b) => [b.id, b.km]))}
+        selectedId={null}
+        onSelect={mockOnSelect}
+        onReset={mockOnReset}
+      />
+    )
+
+    const ids = [...document.querySelectorAll('[data-beach-id]')].map((el) => el.getAttribute('data-beach-id'))
+    expect(ids).toEqual(sorted.map((b) => b.id))
+    expect(ids[0]).toBe('hrm-chocolate-lake')
+    expect(ids).not.toEqual([...ids].sort())
   })
 })

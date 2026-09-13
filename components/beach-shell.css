@@ -110,6 +110,19 @@
 .beach-shell-key-hollow { display: flex; align-items: flex-start; gap: 14px; padding-top: 12px; border-top: 1px solid var(--beach-rule); }
 .beach-shell-key-hollow > span:first-child { flex: none; margin-top: 2px; }
 
+/*
+ * The locate button floats bottom-right, above MapLibre's attribution "i" (24px
+ * plus its 10px margin) and, on a phone, above the sheet edge with the key.
+ */
+.beach-shell-locate { position: absolute; right: 12px; bottom: calc(var(--sheet-visible) + 44px); z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--beach-rule); border-radius: 4px; background: var(--beach-panel); color: var(--beach-ink); box-shadow: 0 4px 20px #0002; transition: bottom var(--sheet-duration, 0ms) var(--beach-ease), color var(--beach-duration) var(--beach-ease); }
+.beach-shell-locate:hover:not([disabled]) { background: var(--beach-accent-wash); }
+.beach-shell-locate[data-status='granted'] { color: var(--beach-accent); }
+.beach-shell-locate[data-status='requesting'] svg { animation: beach-shell-spin 1s linear infinite; }
+.beach-shell-locate[disabled] { cursor: default; color: var(--beach-muted); }
+
+/* The visitor: blue is the one colour neither the map nor the status vocabulary uses. */
+.beach-map-user { display: block; width: 16px; height: 16px; border-radius: 9999px; background: #2563eb; border: 3px solid #fff; box-shadow: 0 0 0 6px #2563eb33, 0 1px 6px #0006; }
+
 /* Keyboard-reachable map pins. The pin itself is the only visible chrome. */
 .beach-map-pin { display: block; padding: 0; border: 0; background: none; border-radius: 9999px; cursor: pointer; transition: transform var(--beach-duration) var(--beach-ease); }
 .beach-map-pin:focus-visible { outline: 2px solid var(--beach-accent); outline-offset: 3px; }
@@ -132,8 +145,15 @@
 .beach-shell-back { display: flex; align-items: center; gap: 9px; color: var(--beach-accent); min-height: 32px; font-size: 13px; background: none; border: 0; padding: 0; }
 .beach-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: var(--beach-rule) transparent; }
 
-.beach-shell-list-note { display: flex; justify-content: space-between; gap: 8px; margin: 0 var(--beach-gutter); padding-bottom: 13px; border-bottom: 1px solid var(--beach-rule); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
-.beach-shell-list-note span { font-family: var(--beach-serif); font-style: italic; text-transform: none; letter-spacing: 0; }
+/*
+ * Under the heading: the order on the left, and on the right the one line that
+ * explains the origin when it needs it ("Showing distances from downtown
+ * Halifax." / "The nearest monitored beach is far."). Nothing when the list is
+ * measured from the visitor. `data-origin` / `data-far` carry the variant.
+ */
+.beach-shell-list-note { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; margin: 0 var(--beach-gutter); padding-bottom: 13px; border-bottom: 1px solid var(--beach-rule); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-shell-list-note-origin { font-family: var(--beach-serif); font-style: italic; font-size: 12px; text-transform: none; letter-spacing: 0; }
+.beach-shell-list-note[data-far='true'] .beach-shell-list-note-origin { color: var(--beach-ink); }
 .beach-shell-list { list-style: none; margin: 0; padding: 0; }
 .beach-shell-row { width: 100%; display: flex; align-items: center; gap: var(--beach-row-gap); padding: 19px var(--beach-gutter); text-align: left; background: none; border: 0; border-bottom: 1px solid var(--beach-rule); transition: background-color var(--beach-duration) var(--beach-ease); }
 .beach-shell-row:hover { background: var(--beach-accent-wash); }
@@ -142,6 +162,10 @@
 .beach-shell-row-copy { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
 .beach-shell-row-copy strong { font: 600 var(--beach-row-title)/1.25 var(--beach-serif); letter-spacing: -.025em; }
 .beach-shell-row-copy > span { font-size: 11px; color: var(--beach-muted); line-height: 1.45; }
+/* Name on the left, distance on the right, on one baseline. */
+.beach-shell-row-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--beach-ink); }
+.beach-shell-row-title strong { min-width: 0; }
+.beach-shell-row-distance { flex: none; font-size: 11px; color: var(--beach-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .beach-shell-row-status { color: var(--beach-ink); }
 /* Colour repeats the pin, never replaces it: the label is always spelled out. */
 .beach-shell-row-status[data-state='advisory'] { color: #92580a; }
@@ -167,6 +191,10 @@
   50% { transform: translateY(-6px); }
 }
 
+@keyframes beach-shell-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* --- Responsive ----------------------------------------------------------- */
 
 @media (min-width: 1500px) {
@@ -180,7 +208,6 @@
   .beach-shell-toolbar { gap: 12px; }
   .beach-shell-search { flex-basis: 300px; }
   .beach-shell-workspace { grid-template-columns: 330px minmax(0, 1fr); }
-  .beach-shell-list-note span { display: none; }
 }
 
 /*
@@ -216,6 +243,7 @@
   .beach-shell-map { position: absolute; inset: 0; --sheet-visible: inherit; }
   /* The key and MapLibre's attribution both ride the sheet edge, key left and credit right; under the sheet the credit would never be seen. */
   .beach-shell-key { left: 12px; right: auto; top: auto; bottom: calc(var(--sheet-visible) + 12px); z-index: 2; max-width: min(270px, calc(100% - 24px)); transition: bottom var(--sheet-duration) var(--beach-ease); }
+  .beach-shell-locate { right: 12px; bottom: calc(var(--sheet-visible) + 44px); }
   .beach-shell-map .maplibregl-ctrl-bottom-right { bottom: var(--sheet-visible); transition: bottom var(--sheet-duration) var(--beach-ease); }
   .beach-shell-key-content { max-height: 28dvh; }
   .beach-shell-map-failed { padding: 18px; gap: 7px; }
@@ -258,6 +286,8 @@
   .beach-shell-filters { margin: 0; flex: 1; }
   /* Three snaps still; the peek needs less because the heading row is shorter. */
   .beach-shell-workspace { --sheet-peek: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  /* A short map: measured from the sheet edge the locate button would land on the replay control, so it hangs under it instead. */
+  .beach-shell-locate { top: 52px; bottom: auto; }
   .beach-sheet-handle { margin: 6px auto 4px; }
   .beach-shell-panel-heading { padding-bottom: 6px; }
   .beach-shell-panel-heading h2 { font-size: 18px; }

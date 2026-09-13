@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { BEACHES, BEACHES_BY_ID } from '@/lib/seed/beaches'
 import {
   HALIFAX,
-  REGION_ORDER,
   formatDistance,
-  groupByRegion,
   haversineKm,
   nearest,
   resolveOrigin,
@@ -75,38 +73,21 @@ describe('sortByDistance / nearest', () => {
   })
 })
 
-describe('groupByRegion', () => {
-  it('covers all 35 beaches in REGION_ORDER with the roster counts', () => {
-    const groups = groupByRegion(BEACHES, HALIFAX)
-    expect(groups.map((g) => g.region)).toEqual([...REGION_ORDER])
-    expect(groups.map((g) => g.beaches.length)).toEqual([19, 4, 3, 3, 4, 2])
-    expect(groups.flatMap((g) => g.beaches)).toHaveLength(35)
-  })
-  it('sorts each group by distance', () => {
-    for (const group of groupByRegion(BEACHES, HALIFAX)) {
-      const km = group.beaches.map((b) => b.km)
-      expect(km).toEqual([...km].sort((a, b) => a - b))
-    }
-  })
-  it('omits empty groups', () => {
-    const capeBretonOnly = BEACHES.filter((b) => b.region === 'Cape Breton')
-    expect(groupByRegion(capeBretonOnly, HALIFAX).map((g) => g.region)).toEqual(['Cape Breton'])
-  })
-})
-
 describe('resolveOrigin', () => {
   it('falls back to Halifax without a position', () => {
-    expect(resolveOrigin(null)).toEqual({ origin: HALIFAX, originKind: 'halifax', farFromNovaScotia: false })
+    expect(resolveOrigin(null)).toEqual({ kind: 'halifax', point: HALIFAX, far: false })
+    expect(resolveOrigin(undefined)).toEqual({ kind: 'halifax', point: HALIFAX, far: false })
   })
   it('uses a Dartmouth position', () => {
     const dartmouth = { lat: 44.6714, lon: -63.5772 }
-    expect(resolveOrigin(dartmouth)).toEqual({ origin: dartmouth, originKind: 'user', farFromNovaScotia: false })
+    expect(resolveOrigin(dartmouth)).toEqual({ kind: 'user', point: dartmouth, far: false })
   })
-  it('falls back for a Toronto position and says why', () => {
-    expect(resolveOrigin({ lat: 43.6532, lon: -79.3832 })).toEqual({
-      origin: HALIFAX,
-      originKind: 'halifax',
-      farFromNovaScotia: true,
-    })
+  it('keeps a Toronto position — honest distances — and flags it as far', () => {
+    const toronto = { lat: 43.6532, lon: -79.3832 }
+    expect(resolveOrigin(toronto)).toEqual({ kind: 'user', point: toronto, far: true })
+  })
+  it('a position just inside the province is not far', () => {
+    // Yarmouth: about 210 km from Halifax as the crow flies.
+    expect(resolveOrigin({ lat: 43.8374, lon: -66.1174 }).far).toBe(false)
   })
 })

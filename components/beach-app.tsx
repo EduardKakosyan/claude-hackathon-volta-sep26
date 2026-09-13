@@ -9,6 +9,7 @@ import { BeachDetail } from '@/components/beach-detail'
 import { BeachList } from '@/components/beach-list'
 import { BeachToolbar } from '@/components/beach-toolbar'
 import { BottomSheet, SHEET_VISIBLE, type Snap } from '@/components/bottom-sheet'
+import { LocateButton } from '@/components/locate-button'
 import { MapKey } from '@/components/map-key'
 import { MapUnavailable } from '@/components/map-unavailable'
 import { ReplayBanner } from '@/components/replay-banner'
@@ -21,6 +22,9 @@ import {
 import { UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import { formatPosted } from '@/lib/dates'
 import type { PageData } from '@/lib/db/queries'
+import { resolveOrigin, sortByDistance } from '@/lib/geo'
+import type { GeolocationProvider } from '@/lib/geolocation'
+import { LATE_ARRIVAL_MS, useGeolocation } from '@/hooks/use-geolocation'
 import { HALIFAX_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
 import { buildHref } from '@/lib/url-state'
 
@@ -36,14 +40,31 @@ const BeachMap = dynamic(() => import('@/components/beach-map'), {
   ),
 })
 
-export type BeachAppProps = PageData
+export type BeachAppProps = PageData & {
+  /**
+   * Injected by tests. `undefined` is `navigator.geolocation`; `null` is a
+   * browser with none (the list sorts from downtown Halifax).
+   */
+  geolocation?: GeolocationProvider | null
+}
 
 type SelectionOrigin = 'list' | 'map'
 
 const LABEL = { hrm: 'HRM', parks: 'Province', algae: 'Algae feed' } as const
 
+/** What the directory is sorted from, as the heading says it. */
+const ORIGIN_HEADING = { user: 'Closest to you', halifax: 'Near Halifax' } as const
+
+/** The one quiet line under the heading when the origin needs explaining. */
+const ORIGIN_NOTE = {
+  far: 'The nearest monitored beach is far.',
+  halifax: 'Showing distances from downtown Halifax.',
+} as const
+
 interface PanelHeadingProps {
   selected: boolean
+  /** "Closest to you" or "Near Halifax"; a filtered directory says "Your results" instead. */
+  heading: string
   isFiltered: boolean
   visibleCount: number
   total: number
@@ -55,7 +76,7 @@ interface PanelHeadingProps {
  * open, the directory title otherwise, and the count. On a phone it lives in
  * the sheet's grab area, so tapping it cycles the snap.
  */
-function PanelHeading({ selected, isFiltered, visibleCount, total, onBack }: PanelHeadingProps) {
+function PanelHeading({ selected, heading, isFiltered, visibleCount, total, onBack }: PanelHeadingProps) {
   return (
     <div className="beach-shell-panel-heading">
       {selected ? (
@@ -63,7 +84,7 @@ function PanelHeading({ selected, isFiltered, visibleCount, total, onBack }: Pan
           <ArrowLeft size={16} aria-hidden="true" /> Back to beaches
         </button>
       ) : (
-        <h2>{isFiltered ? 'Your results' : 'Find your next shore'}</h2>
+        <h2>{isFiltered ? 'Your results' : heading}</h2>
       )}
       <p className="beach-shell-count" role="status">
         {selected ? `1 of ${total} beaches` : `${visibleCount} of ${total} beaches`}
@@ -94,6 +115,13 @@ export function BeachApp(data: BeachAppProps) {
   const [band, setBand] = useState<ZoomBand>(() => zoomBand(HALIFAX_VIEW.zoom))
   const [mapError, setMapError] = useState<string | null>(null)
   const [mapAttempt, setMapAttempt] = useState(0)
+  /** Every locate tap owes the camera one more flight to the user. */
+  const [locateTaps, setLocateTaps] = useState(0)
+
+  // The page asks the moment it mounts and is useful either way: sorted from
+  // downtown Halifax at once, re-sorted and flown to the visitor if a position
+  // arrives in time. A late position re-sorts silently and leaves the camera alone.
+  const geo = useGeolocation({ provider: data.geolocation, auto: true, timeoutMs: LATE_ARRIVAL_MS })
 
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -111,6 +139,22 @@ export function BeachApp(data: BeachAppProps) {
     () => filterBeaches({ beaches, status: pinState, query, filter }),
     [beaches, pinState, query, filter],
   )
+  const origin = useMemo(() => resolveOrigin(geo.position), [geo.position])
+  /** The directory order: closest-first from the origin, with a distance on every row. */
+  const sorted = useMemo(() => sortByDistance(visible, origin.point), [visible, origin.point])
+  const distances = useMemo(
+    () => Object.fromEntries(sorted.map((beach) => [beach.id, beach.km])) as Record<string, number>,
+    [sorted],
+  )
+  const heading = ORIGIN_HEADING[origin.kind]
+  const note = origin.far ? ORIGIN_NOTE.far : origin.kind === 'halifax' ? ORIGIN_NOTE.halifax : null
+  /**
+   * The on-load position is one flight if it came in time and the page did not
+   * open on a beach from a link (that beach's camera wins); every locate tap is
+   * another. The map flies once per value and never for 0.
+   */
+  const autoFlight = geo.status === 'granted' && !geo.lateArrival && !data.initialBeachId ? 1 : 0
+  const flyToUser = autoFlight + locateTaps
   const selected = useMemo(
     () => beaches.find((b) => b.id === selectedId) ?? null,
     [beaches, selectedId],
@@ -189,6 +233,11 @@ export function BeachApp(data: BeachAppProps) {
     setMapAttempt((attempt) => attempt + 1)
   }
 
+  function locate() {
+    setLocateTaps((taps) => taps + 1)
+    geo.request()
+  }
+
   const footer = replayDay
     ? `Replayed: ${formatPosted(replayDay)}`
     : storeKind === 'fixture'
@@ -233,8 +282,11 @@ export function BeachApp(data: BeachAppProps) {
                 onSelect={(id) => selectBeach(id, 'map')}
                 onFatalError={setMapError}
                 onZoomBandChange={setBand}
+                userPosition={geo.position}
+                flyToUser={flyToUser}
               />
               <MapKey />
+              <LocateButton status={geo.status} onRequest={locate} />
 
               {replayDay ? (
                 <ReplayBanner
@@ -262,6 +314,7 @@ export function BeachApp(data: BeachAppProps) {
           heading={
             <PanelHeading
               selected={selected !== null}
+              heading={heading}
               isFiltered={isFiltered}
               visibleCount={visible.length}
               total={beaches.length}
@@ -297,12 +350,14 @@ export function BeachApp(data: BeachAppProps) {
             />
           ) : (
             <>
-              <p className="beach-shell-list-note">
-                Alphabetical directory <span>Choose a beach to explore</span>
+              <p className="beach-shell-list-note" data-origin={origin.kind} data-far={origin.far}>
+                <span className="beach-shell-list-note-order">Closest first</span>
+                {note ? <span className="beach-shell-list-note-origin">{note}</span> : null}
               </p>
               <BeachList
-                beaches={visible}
+                beaches={sorted}
                 status={pinState}
+                distances={distances}
                 selectedId={selectedId}
                 onSelect={(id) => selectBeach(id, 'list')}
                 onReset={resetSearch}

@@ -5,22 +5,27 @@ import { ArrowUpRight, Waves } from 'lucide-react'
 import { StatusPin } from '@/components/status-pin'
 import { resolveState } from '@/lib/beach-filter'
 import { statusPresentation, type PinState } from '@/lib/beach-status'
+import { formatDistance } from '@/lib/geo'
 import type { Beach } from '@/lib/seed/beaches'
 
 export interface BeachListProps {
+  /** Rendered in this order: the shell has already sorted them closest-first. */
   beaches: Beach[]
   status: Record<string, PinState | undefined>
+  /** Kilometres from the origin per beach id; a beach with no entry shows no distance. */
+  distances: Record<string, number | undefined>
   selectedId: string | null
   onSelect: (id: string) => void
   onReset: () => void
 }
 
 /**
- * The alphabetical directory. Every row is a button so a beach can be reached
- * without touching the map, and `data-beach-id` lets the shell put focus back on
- * the row the visitor left from when the detail view closes.
+ * The directory. Every row is a button so a beach can be reached without
+ * touching the map, and `data-beach-id` lets the shell put focus back on the
+ * row the visitor left from when the detail view closes. Order is the caller's:
+ * closest-first from the user or from downtown Halifax.
  */
-export function BeachList({ beaches, status, selectedId, onSelect, onReset }: BeachListProps) {
+export function BeachList({ beaches, status, distances, selectedId, onSelect, onReset }: BeachListProps) {
   if (beaches.length === 0) {
     return (
       <div className="beach-shell-empty">
@@ -39,6 +44,8 @@ export function BeachList({ beaches, status, selectedId, onSelect, onReset }: Be
       {beaches.map((beach) => {
         const state = resolveState(status, beach.id)
         const { label } = statusPresentation(state, beach.authority)
+        const km = distances[beach.id]
+        const distance = km === undefined ? '' : formatDistance(km)
         return (
           <li key={beach.id}>
             <button
@@ -52,7 +59,12 @@ export function BeachList({ beaches, status, selectedId, onSelect, onReset }: Be
                 <StatusPin state={state} hollow={beach.authority === 'province'} />
               </span>
               <span className="beach-shell-row-copy">
-                <strong>{beach.name}</strong>
+                <span className="beach-shell-row-title">
+                  <strong>{beach.name}</strong>
+                  {distance ? (
+                    <span className="beach-shell-row-distance">{distance}</span>
+                  ) : null}
+                </span>
                 <span>
                   {beach.waterBody} · {beach.region}
                 </span>

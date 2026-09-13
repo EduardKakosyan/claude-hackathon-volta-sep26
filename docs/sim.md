@@ -117,9 +117,9 @@ pnpm sim describe | grep -o '{[^}]*"type":"SearchField"[^}]*}'
 pnpm sim tap 210 158
 ```
 
-A beach row reads as one button whose label is the name, water body, region
-and status joined together, for example
-`"AXLabel":"Taylor Head Beach Atlantic Ocean · Eastern Shore Open"`.
+A beach row reads as one button whose label is the name, distance, water body,
+region and status joined together, for example
+`"AXLabel":"Taylor Head Beach 82 km Atlantic Ocean · Eastern Shore Open"`.
 
 ## The geolocation alert
 
@@ -139,6 +139,13 @@ Safari remembers the answer per site. To be asked again:
 ```bash
 xcrun simctl privacy booted reset location
 ```
+
+The reset also clears Safari's own app-level permission the first time, so the
+next request raises two alerts in a row: the system one ("Allow 'Safari' to use
+your location?", answer `Allow While Using App`), then the site one
+("'localhost' Would Like to Use Your Location", `Allow` / `Don't Allow`).
+`describe` reports both with frames; tap the first, describe again, tap the
+second. A later reset re-prompts only the site alert.
 
 ## What the Simulator cannot do
 

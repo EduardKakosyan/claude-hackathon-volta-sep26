@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BeachApp } from '@/components/beach-app'
+import { BeachApp, type BeachAppProps } from '@/components/beach-app'
 import { SHEET_MEDIA } from '@/components/bottom-sheet'
 import { BEACHES, type BeachState } from '@/lib/seed/beaches'
-import type { PageData } from '@/lib/db/queries'
+import type { GeolocationProvider } from '@/lib/geolocation'
 import type { LiveStatus, StatusView } from '@/lib/status'
 
 interface MockBeachMapProps {
@@ -12,6 +12,8 @@ interface MockBeachMapProps {
   onSelect: (id: string) => void
   onFatalError: (error: string) => void
   onZoomBandChange?: (band: 'province' | 'region' | 'beach') => void
+  userPosition?: { lat: number; lon: number } | null
+  flyToUser?: number
 }
 
 vi.mock('next/navigation', () => ({
@@ -28,8 +30,11 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/components/beach-map', () => ({
-  default: vi.fn(({ beaches, onSelect, onFatalError, onZoomBandChange }: MockBeachMapProps) => (
-    <div data-testid="fake-beach-map">
+  default: vi.fn(({ beaches, onSelect, onFatalError, onZoomBandChange, userPosition, flyToUser }: MockBeachMapProps) => (
+    <div data-testid="fake-beach-map" data-fly-to-user={flyToUser ?? 0}>
+      {userPosition ? (
+        <span data-testid="user-marker" data-lat={userPosition.lat} data-lon={userPosition.lon} />
+      ) : null}
       <button data-testid="map-zoom-out-button" onClick={() => onZoomBandChange?.('province')}>
         Zoom out
       </button>
@@ -86,7 +91,23 @@ function makeLiveStatus(beachId: string, state: BeachState): LiveStatus {
   }
 }
 
-function makePageData(overrides: Partial<PageData> = {}): PageData {
+/** A provider that never answers: the page stays sorted from Halifax, and no update lands outside `act`. */
+const silent: GeolocationProvider = { getCurrentPosition: () => {} }
+
+/** Answers at once with the given position. */
+const at = (lat: number, lon: number): GeolocationProvider => ({
+  getCurrentPosition: (ok) => ok({ coords: { latitude: lat, longitude: lon, accuracy: 25 } }),
+})
+
+const denied: GeolocationProvider = {
+  getCurrentPosition: (_ok, err) => err?.({ code: 1, message: 'User denied Geolocation' }),
+}
+
+/** Halifax, by the Armdale Rotary: Chocolate Lake is the nearest monitored beach, under 3 km away. */
+const DOWNTOWN = { lat: 44.645, lon: -63.59 }
+const TORONTO = { lat: 43.6532, lon: -79.3832 }
+
+function makePageData(overrides: Partial<BeachAppProps> = {}): BeachAppProps {
   return {
     beaches: BEACHES,
     status: {},
@@ -96,8 +117,18 @@ function makePageData(overrides: Partial<PageData> = {}): PageData {
     historyFrom: '2026-09-01',
     historyTo: '2026-09-14',
     storeKind: 'fixture',
+    geolocation: silent,
     ...overrides,
   }
+}
+
+function rowIds(): string[] {
+  return [...document.querySelectorAll('[data-beach-id]')].map((el) => el.getAttribute('data-beach-id')!)
+}
+
+/** The distances on screen, in the order rendered, read back from their text ("7.8 km" → 7.8). */
+function kmOnScreen(): number[] {
+  return [...document.querySelectorAll('.beach-shell-row-distance')].map((el) => parseFloat(el.textContent ?? ''))
 }
 
 describe('BeachApp', () => {
@@ -379,6 +410,118 @@ describe('BeachApp', () => {
     await waitFor(() => expect(section).toHaveAttribute('data-zoom-band', 'province'))
   })
 
+  describe('location and the closest-first directory', () => {
+    it('before any answer the directory is sorted from downtown Halifax under "Near Halifax", with the note and distances', () => {
+      const { container } = render(<BeachApp {...makePageData()} />)
+
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-origin', 'halifax')
+      expect(note).toHaveTextContent('Showing distances from downtown Halifax.')
+
+      const ids = rowIds()
+      expect(ids.slice(0, 2)).toEqual(['hrm-chocolate-lake', 'hrm-cunard-pond'])
+      expect(ids.at(-1)).toBe('ns-dominion')
+      const km = kmOnScreen()
+      expect(km).toHaveLength(35)
+      expect(km).toEqual([...km].sort((a, b) => a - b))
+      expect(document.querySelector('.beach-shell-row-distance')).toHaveTextContent(/^\d+(\.\d)? km$/)
+
+      // Nothing has flown: the camera owes the visitor no flight without a position.
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+      expect(screen.queryByTestId('user-marker')).toBeNull()
+    })
+
+    it('a granted position re-sorts under "Closest to you", drops the note, shows the dot and owes the map one flight', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: at(DOWNTOWN.lat, DOWNTOWN.lon) })} />)
+
+      await waitFor(() => expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Closest to you'))
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-origin', 'user')
+      expect(note).toHaveAttribute('data-far', 'false')
+      expect(note.querySelector('.beach-shell-list-note-origin')).toBeNull()
+
+      expect(rowIds()[0]).toBe('hrm-chocolate-lake')
+      expect(kmOnScreen()[0]).toBeLessThan(5)
+
+      expect(screen.getByTestId('user-marker')).toHaveAttribute('data-lat', String(DOWNTOWN.lat))
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '1')
+      expect(screen.getByRole('button', { name: /centre on my location/i })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('a denied request keeps "Near Halifax" and the downtown note, and disables the locate button', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: denied })} />)
+
+      const locate = screen.getByRole('button', { name: /finding your location/i })
+      await waitFor(() => expect(container.querySelector('.beach-shell-locate')).toHaveAttribute('data-status', 'denied'))
+      expect(locate).toBeDisabled()
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+      expect(container.querySelector('.beach-shell-list-note')).toHaveTextContent('Showing distances from downtown Halifax.')
+      expect(screen.queryByTestId('user-marker')).toBeNull()
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+    })
+
+    it('a browser with no geolocation at all reads as unavailable, and the button stays pressable', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: null })} />)
+      await waitFor(() => expect(container.querySelector('.beach-shell-locate')).toHaveAttribute('data-status', 'unavailable'))
+      expect(screen.getByRole('button', { name: /location unavailable/i })).toBeEnabled()
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Near Halifax')
+    })
+
+    it('a far position still sorts from the visitor with honest distances, and the note says the nearest beach is far', async () => {
+      const { container } = render(<BeachApp {...makePageData({ geolocation: at(TORONTO.lat, TORONTO.lon) })} />)
+
+      await waitFor(() => expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Closest to you'))
+      const note = container.querySelector('.beach-shell-list-note')!
+      expect(note).toHaveAttribute('data-far', 'true')
+      expect(note).toHaveTextContent('The nearest monitored beach is far.')
+      expect(note).not.toHaveTextContent('downtown Halifax')
+      expect(kmOnScreen()[0]).toBeGreaterThan(400)
+      expect(document.querySelector('.beach-shell-row-distance')).toHaveTextContent(/^\d{3,4} km$/)
+    })
+
+    it('a filtered directory is headed "Your results" but stays closest-first with distances', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      await user.type(screen.getByLabelText(/search by beach/i), 'lake')
+
+      expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Your results')
+      const km = kmOnScreen()
+      expect(km.length).toBeGreaterThan(1)
+      expect(km).toEqual([...km].sort((a, b) => a - b))
+    })
+
+    it('every locate tap asks again and owes the map another flight', async () => {
+      const user = userEvent.setup()
+      const getCurrentPosition = vi.fn((ok: Parameters<GeolocationProvider['getCurrentPosition']>[0]) =>
+        ok({ coords: { latitude: DOWNTOWN.lat, longitude: DOWNTOWN.lon, accuracy: 25 } }),
+      )
+      render(<BeachApp {...makePageData({ geolocation: { getCurrentPosition } })} />)
+      await waitFor(() => expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '1'))
+      expect(getCurrentPosition).toHaveBeenCalledTimes(1)
+
+      await user.click(screen.getByRole('button', { name: /centre on my location/i }))
+      await waitFor(() => expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '2'))
+      expect(getCurrentPosition).toHaveBeenCalledTimes(2)
+    })
+
+    it('a page opened on a beach from a link keeps that beach\'s camera: the on-load position owes no flight', async () => {
+      render(<BeachApp {...makePageData({ geolocation: at(DOWNTOWN.lat, DOWNTOWN.lon), initialBeachId: 'ns-rissers' })} />)
+      await waitFor(() => expect(screen.getByTestId('user-marker')).toBeInTheDocument())
+      expect(screen.getByTestId('fake-beach-map')).toHaveAttribute('data-fly-to-user', '0')
+      expect(screen.getByRole('article')).toBeInTheDocument()
+    })
+
+    it('the locate button sits in the map section, so it goes away with a failed map', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<BeachApp {...makePageData()} />)
+      expect(container.querySelector('.beach-shell-map .beach-shell-locate')).not.toBeNull()
+      await user.click(screen.getByTestId('map-fail-button'))
+      await waitFor(() => expect(screen.getByText('The map could not load')).toBeInTheDocument())
+      expect(container.querySelector('.beach-shell-locate')).toBeNull()
+    })
+  })
+
   describe('the sheet', () => {
     beforeEach(() => setPhoneLayout(true))
     afterEach(() => setPhoneLayout(false))
@@ -394,7 +537,7 @@ describe('BeachApp', () => {
       const { container } = render(<BeachApp {...makePageData()} />)
       const sheet = sheetOf(container)
       expect(sheet.querySelector('.beach-sheet-grab .beach-shell-panel-heading h2')).toHaveTextContent(
-        'Find your next shore',
+        'Near Halifax',
       )
       expect(sheet.querySelector('.beach-sheet-body .beach-shell-list')).not.toBeNull()
       expect(sheet.lastElementChild).toHaveClass('beach-shell-footer')

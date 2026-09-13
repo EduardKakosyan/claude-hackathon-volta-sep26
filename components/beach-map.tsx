@@ -6,10 +6,12 @@ import Map, { Marker, type MapRef, type ViewStateChangeEvent } from 'react-map-g
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { StatusPin } from '@/components/status-pin'
+import { UserMarker } from '@/components/user-marker'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { statusAccessibleName, type PinState } from '@/lib/beach-status'
 import { resolveState } from '@/lib/beach-filter'
-import { BEACH_VIEW, HALIFAX_VIEW, PAPER_STYLE, zoomBand, type ZoomBand } from '@/lib/map-style'
+import { nearest, type LatLon } from '@/lib/geo'
+import { BEACH_VIEW, HALIFAX_VIEW, PAPER_STYLE, USER_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
 import { MAPLIBRE_WORKER_URL } from '@/lib/maplibre-worker'
 import type { Beach } from '@/lib/seed/beaches'
 
@@ -27,7 +29,19 @@ export interface BeachMapProps {
   onFatalError: (message: string) => void
   /** Fires as the camera moves between the three zoom bands; the shell scales the pins by it. */
   onZoomBandChange?: (band: ZoomBand) => void
+  /** Where the visitor is, when known: the blue dot. */
+  userPosition?: LatLon | null
+  /**
+   * Which flight to the user the camera owes. 0 means none; each higher value is
+   * one flight (the on-load position, then every locate tap), flown once when a
+   * position exists. A late on-load position never bumps it, so it can never
+   * yank the map away from wherever the visitor has panned to.
+   */
+  flyToUser?: number
 }
+
+/** Breathing room around the user and the nearest pins when the camera fits them. */
+const FIT_PADDING_PX = 48
 
 /**
  * A tile, glyph or sprite that fails to load is normal when the network is slow
@@ -47,6 +61,24 @@ function insetOf(probe: HTMLElement | null): number {
   return Math.max(0, Math.min(probe.offsetHeight, Math.floor(container.clientHeight * 0.8)))
 }
 
+/** The smallest box around every point, as the two corners `fitBounds` takes. */
+function boundsOf(points: LatLon[]): [[number, number], [number, number]] {
+  let west = Infinity
+  let south = Infinity
+  let east = -Infinity
+  let north = -Infinity
+  for (const p of points) {
+    west = Math.min(west, p.lon)
+    east = Math.max(east, p.lon)
+    south = Math.min(south, p.lat)
+    north = Math.max(north, p.lat)
+  }
+  return [
+    [west, south],
+    [east, north],
+  ]
+}
+
 /**
  * MapLibre needs `window`, so this module is only ever reached through
  * `dynamic(..., { ssr: false })` in `beach-app.tsx`.
@@ -63,6 +95,8 @@ export default function BeachMap({
   onSelect,
   onFatalError,
   onZoomBandChange,
+  userPosition = null,
+  flyToUser = 0,
 }: BeachMapProps) {
   const mapRef = useRef<MapRef | null>(null)
   const isReady = useRef(false)
@@ -71,6 +105,9 @@ export default function BeachMap({
   /** The camera only moves for a *new* selection, so searching never re-flies the map. */
   const flownToId = useRef<string | null>(null)
   const hasReportedFatal = useRef(false)
+  /** The last `flyToUser` the camera honoured; a flight owed before the map loads waits in `pendingUserFlight`. */
+  const flownUserFlight = useRef(0)
+  const pendingUserFlight = useRef(false)
   /** A zero-width element whose height is `--sheet-visible`, so the phone sheet's cover resolves to pixels. */
   const probeRef = useRef<HTMLDivElement | null>(null)
   /**
@@ -105,12 +142,58 @@ export default function BeachMap({
     [beaches, reducedMotion, sheetPadding],
   )
 
+  /**
+   * Centre on the visitor with the three nearest beaches in frame: close enough
+   * to read the neighbourhood, never closer than USER_VIEW.maxZoom. With no
+   * beaches in the visible roster (a search with no hits), just go to the dot.
+   */
+  const flyToUserNow = useCallback(() => {
+    const map = mapRef.current
+    if (!map || !userPosition) return
+    flownUserFlight.current = flyToUser
+    const container = probeRef.current?.parentElement
+    const sheet = sheetPadding()
+    // Padding beyond the map's own height makes the camera maths impossible; keep the sum well under it.
+    const room = container ? Math.max(0, container.clientHeight * 0.9 - sheet) : FIT_PADDING_PX * 2
+    const vertical = Math.min(FIT_PADDING_PX, room / 2)
+    /** The frame the camera should leave clear, in total: the sheet plus breathing room. */
+    const wanted = { top: vertical, right: FIT_PADDING_PX, left: FIT_PADDING_PX, bottom: sheet + vertical }
+    const points: LatLon[] = [userPosition, ...nearest(beaches, userPosition, 3)]
+    if (points.length === 1) {
+      const center: [number, number] = [userPosition.lon, userPosition.lat]
+      if (reducedMotion) map.jumpTo({ center, padding: wanted, zoom: USER_VIEW.maxZoom })
+      else map.flyTo({ center, padding: wanted, zoom: USER_VIEW.maxZoom, speed: 0.9, curve: 1.4, essential: true })
+      return
+    }
+    // MapLibre fits inside the transform's own padding (the sheet inset every
+    // fly-to leaves behind) plus whatever is passed here, and keeps the former
+    // afterwards; passing the whole frame again would count the sheet twice.
+    const carried = map.getPadding()
+    const padding = {
+      top: Math.max(0, wanted.top - (carried.top ?? 0)),
+      right: Math.max(0, wanted.right - (carried.right ?? 0)),
+      left: Math.max(0, wanted.left - (carried.left ?? 0)),
+      bottom: Math.max(0, wanted.bottom - (carried.bottom ?? 0)),
+    }
+    map.fitBounds(boundsOf(points), {
+      padding,
+      maxZoom: USER_VIEW.maxZoom,
+      duration: reducedMotion ? 0 : USER_VIEW.durationMs,
+      essential: true,
+    })
+  }, [beaches, flyToUser, reducedMotion, sheetPadding, userPosition])
+
   const handleLoad = useCallback(() => {
     isReady.current = true
+    // The visitor's own position first; a beach opened from a link lands last, so it wins.
+    if (pendingUserFlight.current) {
+      pendingUserFlight.current = false
+      flyToUserNow()
+    }
     const pending = pendingId.current
     pendingId.current = null
     if (pending) flyToBeach(pending)
-  }, [flyToBeach])
+  }, [flyToBeach, flyToUserNow])
 
   const handleMove = useCallback(
     (event: ViewStateChangeEvent) => {
@@ -132,6 +215,15 @@ export default function BeachMap({
     }
     flyToBeach(selectedId)
   }, [selectedId, flyToBeach])
+
+  useEffect(() => {
+    if (!userPosition || flyToUser === 0 || flyToUser === flownUserFlight.current) return
+    if (!isReady.current) {
+      pendingUserFlight.current = true
+      return
+    }
+    flyToUserNow()
+  }, [userPosition, flyToUser, flyToUserNow])
 
   const handleError = useCallback(
     (event: { error?: Error; sourceId?: string }) => {
@@ -162,6 +254,7 @@ export default function BeachMap({
           onError={handleError}
           style={{ position: 'absolute', inset: 0 }}
         >
+          {userPosition ? <UserMarker position={userPosition} /> : null}
           {beaches.map((beach) => {
             const state = resolveState(status, beach.id)
             return (
