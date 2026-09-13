@@ -28,6 +28,16 @@ describe('fetchText', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1)
   })
 
+  it('returns the body of a status the caller accepts, and still throws on the rest', async () => {
+    const fetchImpl = vi.fn(async () => textResponse(404, 'Error { message="no matching results" }'))
+
+    const body = await fetchText('https://example.com', { fetchImpl: fetchImpl as unknown as typeof fetch, acceptStatus: [404] })
+    expect(body).toContain('no matching results')
+    await expect(
+      fetchText('https://example.com', { fetchImpl: fetchImpl as unknown as typeof fetch, acceptStatus: [410] }),
+    ).rejects.toMatchObject({ name: 'SourceFetchError', status: 404 })
+  })
+
   it('retries once on a 503 then returns the body on 200', async () => {
     let call = 0
     const fetchImpl = vi.fn(async () => {

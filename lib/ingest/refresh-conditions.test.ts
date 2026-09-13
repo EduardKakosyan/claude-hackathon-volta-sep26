@@ -93,6 +93,22 @@ describe('refreshConditions', () => {
     expect(health.find((h) => h.source === 'hrm')?.lastAttemptAt).toBe('2026-09-13T18:30:00.000Z')
   })
 
+  it('an empty buoy window is a healthy read that writes nothing and leaves the previous reading', async () => {
+    const writer = new MemoryStore()
+    const previous = { ...READING, waterTempC: 15.0, observedAt: '2026-09-13T12:00:00.000Z' }
+    await writer.upsertBuoy(previous)
+    const empty: BuoyFetcher = { fetch: async () => 'raw', parse: () => null }
+
+    const result = await refreshConditions({ writer, now: NOW, fetchers: { wind: wind(), buoy: empty } })
+
+    expect(result.sources.find((s) => s.source === 'buoy')).toEqual({ source: 'buoy', ok: true, error: null })
+    expect(result.written.buoy).toBe(false)
+    expect(await writer.buoy()).toEqual(previous)
+    const health = (await writer.health()).find((h) => h.source === 'buoy')!
+    expect(health.lastSuccessAt).toBe('2026-09-13T19:30:00.000Z')
+    expect(health.lastError).toBeNull()
+  })
+
   it('a parse failure counts as a failed source too, and writes nothing for it', async () => {
     const writer = new MemoryStore()
     const result = await refreshConditions({

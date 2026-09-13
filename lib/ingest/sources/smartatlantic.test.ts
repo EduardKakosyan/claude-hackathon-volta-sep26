@@ -53,7 +53,7 @@ describe('parseErddap — hand-written tables', () => {
       ['2026-09-13T12:23:01Z', 16.4, 1.3, 72],
       ['2026-09-13T10:53:01Z', 15.9, 1.5, 71.7],
     ])
-    expect(parseErddap(raw).waterTempC).toBe(16.4)
+    expect(parseErddap(raw)?.waterTempC).toBe(16.4)
   })
 
   it('reads columns by name, whatever their order', () => {
@@ -67,11 +67,18 @@ describe('parseErddap — hand-written tables', () => {
       ['2026-09-13T12:23:01Z', 'warm', 1, 1],
       ['2026-09-13T11:53:01Z', 15.2, 1, 1],
     ])
-    expect(parseErddap(raw).waterTempC).toBe(15.2)
+    expect(parseErddap(raw)?.waterTempC).toBe(15.2)
   })
 
-  it('throws on an empty window, a missing table, a missing column, or non-JSON', () => {
-    expect(() => parseErddap(table([]))).toThrow(SourceParseError)
+  it('an empty window is null, whether ERDDAP says so with its 404 body or hands back a table with no rows', () => {
+    // Verbatim from the first production refresh, 2026-09-13 21:24Z: the buoy's newest row was 12:23Z.
+    const noMatch =
+      'Error {\n    code=404;\n    message="Not Found: Your query produced no matching results. (No data matches time>=\\"1.789313525E9\\" because the String variable\'s source min=\\"2013-11-07T16:23:01Z\\", max=\\"2026-09-13T12:23:01Z\\", and hasNaN=false.)";\n}\n'
+    expect(parseErddap(noMatch)).toBeNull()
+    expect(parseErddap(table([]))).toBeNull()
+  })
+
+  it('throws on a missing table, a missing column, or non-JSON', () => {
     expect(() => parseErddap('{"error":{"code":404}}')).toThrow(SourceParseError)
     expect(() => parseErddap(table([['2026-09-13T12:23:01Z', 1]], ['time', 'wind_spd_avg']))).toThrow(SourceParseError)
     expect(() => parseErddap('Error {')).toThrow(SourceParseError)

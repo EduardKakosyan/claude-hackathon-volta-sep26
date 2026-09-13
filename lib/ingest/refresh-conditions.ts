@@ -13,10 +13,10 @@ export interface WindFetcher {
   parse(raw: string, roster: Roster): ConditionsRow[]
 }
 
-/** The buoy feed: one call, one reading. */
+/** The buoy feed: one call, one reading — or null when the window held none. */
 export interface BuoyFetcher {
   fetch(now: Date): Promise<string>
-  parse(raw: string): BuoyReading
+  parse(raw: string): BuoyReading | null
 }
 
 export interface ConditionsFetchers {
@@ -46,7 +46,7 @@ export interface ConditionsOutcome {
 export interface ConditionsResult {
   attemptedAt: string
   sources: ConditionsOutcome[]
-  /** Wind rows written, and whether a buoy reading was. */
+  /** Wind rows written, and whether a buoy reading was (a healthy read of an empty window writes none). */
   written: { conditions: number; buoy: boolean }
 }
 
@@ -86,6 +86,7 @@ export async function refreshConditions(deps: RefreshConditionsDeps): Promise<Co
     attempt('buoy', async () => {
       const raw = await fetchers.buoy.fetch(now)
       const reading = fetchers.buoy.parse(raw)
+      if (reading === null) return
       await writer.upsertBuoy(reading)
       written.buoy = true
     }),

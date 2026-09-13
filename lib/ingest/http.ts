@@ -8,6 +8,8 @@ export interface FetchTextOptions {
   retries?: number // default 1; retried on network error, timeout, or 5xx — never on 4xx
   headers?: Record<string, string>
   fetchImpl?: typeof fetch // default globalThis.fetch
+  /** Non-2xx statuses whose body is an answer, not a failure (ERDDAP says "no rows" with a 404). */
+  acceptStatus?: readonly number[]
 }
 
 const DEFAULT_TIMEOUT_MS = 15_000
@@ -35,7 +37,7 @@ export async function fetchText(url: string, opts?: FetchTextOptions): Promise<s
         signal: AbortSignal.timeout(timeoutMs),
       })
 
-      if (!response.ok) {
+      if (!response.ok && !opts?.acceptStatus?.includes(response.status)) {
         const error = new SourceFetchError(
           url,
           response.status,
