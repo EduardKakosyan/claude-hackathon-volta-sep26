@@ -93,13 +93,15 @@ test.describe('directory', () => {
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/')
 
-    // The footer is the unknown count, the freshness line and one closed line; the rest is folded.
+    // The footer is the unknown count, the freshness line and one closed line; the rest is
+    // folded. Structure, not pixels: the runner's fonts wrap the caveat where a Mac's do not.
     const footer = page.locator('.beach-shell-footer')
     const more = footer.locator('details.beach-shell-footer-more')
+    await expect(footer.locator(':scope > p')).toHaveCount(2)
+    await expect(more).toHaveCount(1)
     await expect(more).not.toHaveAttribute('open', '')
     await expect(footer.locator('.beach-shell-credits')).toBeHidden()
     const footerBox = (await footer.boundingBox())!
-    expect(footerBox.height).toBeLessThan(100)
 
     // Three rows end above the footer's top edge without scrolling.
     for (let i = 0; i < 3; i += 1) {

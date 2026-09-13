@@ -38,7 +38,7 @@ vercel env ls        # names and environments only; values are never printed
 
 ## The database
 
-The five migrations in `supabase/migrations/` were applied in order through
+The six migrations in `supabase/migrations/` were applied in order through
 the Supabase connector's `apply_migration` (the local CLI is logged in to a
 different account, so `supabase link` was not an option). To apply a new one
 the same way, or with the CLI against the direct connection string:
@@ -50,6 +50,12 @@ supabase migration list --db-url "$POSTGRES_URL_NON_POOLING"
 
 `supabase_migrations.schema_migrations` on the project lists what has been
 applied. The app never reads that table; it only matters for the next push.
+
+Every table is service-role only. `20260914000200_rls.sql` turns row level
+security on with no policies for the eight tables the earlier migrations left
+open (the reports migration already did this for its own), so the anon and
+authenticated roles Supabase's client libraries use see nothing; the server's
+service role bypasses RLS. Nothing in the app holds the anon key.
 
 ## First run, and the checks
 
