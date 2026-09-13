@@ -6,12 +6,17 @@ import { fetchText } from '@/lib/ingest/http'
  * SmartAtlantic's "Halifax (Herring Cove)" buoy through its ERDDAP tabledap
  * endpoint: the last six hours of `surface_temp_avg`, newest non-null wins.
  *
- * Two things the feed does that the obvious query does not expect:
+ * Three things the feed does that the obvious query does not expect:
  *  - `time>=now-6hours` is refused with a 404: ERDDAP types this dataset's
  *    `time` column as a String, so the bound must be an explicit ISO instant;
  *  - `surface_temp_avg` is null for stretches (every row was null when the
  *    fixture was captured). A null reading is stored as null and the water
- *    figure simply disappears; nothing is interpolated.
+ *    figure simply disappears; nothing is interpolated;
+ *  - a window with no rows at all is also a 404, "Your query produced no
+ *    matching results" (the buoy was nine hours behind the clock on the first
+ *    production refresh). That is the feed answering, not failing: the read
+ *    counts as healthy, nothing is written, and the previous reading ages
+ *    out of the page on its own (BUOY_STALE_AFTER_MS in lib/conditions).
  *
  * CC BY 4.0: credited in the footer.
  */
@@ -33,8 +38,12 @@ export async function fetchBuoy(opts?: { now?: Date; fetchImpl?: typeof fetch })
   return fetchText(buoyUrl(opts?.now), {
     fetchImpl: opts?.fetchImpl,
     headers: { accept: 'application/json' },
+    acceptStatus: [404],
   })
 }
+
+/** ERDDAP's body for a constraint that matches nothing. Any other 404 body is still a failure. */
+const NO_MATCHING_RESULTS = /Your query produced no matching results/
 
 interface ErddapTable {
   table?: { columnNames?: unknown; rows?: unknown }
@@ -42,10 +51,12 @@ interface ErddapTable {
 
 /**
  * The newest row with a water temperature, or the newest row at all with a
- * null temperature when the sensor reported gaps throughout. Zero rows is a
- * parse failure: the previous reading stays.
+ * null temperature when the sensor reported gaps throughout. An empty window
+ * (ERDDAP's "no matching results", or a table with no rows) is null: the
+ * feed answered and there is nothing to write.
  */
-export function parseErddap(raw: string): BuoyReading {
+export function parseErddap(raw: string): BuoyReading | null {
+  if (NO_MATCHING_RESULTS.test(raw)) return null
   let payload: ErddapTable
   try {
     payload = JSON.parse(raw)
@@ -73,7 +84,7 @@ export function parseErddap(raw: string): BuoyReading {
       )
     })
     .sort((a, b) => a.time.localeCompare(b.time))
-  if (readings.length === 0) throw new SourceParseError('SmartAtlantic: no readings in the window')
+  if (readings.length === 0) return null
 
   const newestValue = [...readings].reverse().find((r) => r.temp !== null)
   const pick = newestValue ?? readings[readings.length - 1]
