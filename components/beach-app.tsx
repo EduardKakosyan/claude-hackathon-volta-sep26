@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 
 import { BeachDetail } from '@/components/beach-detail'
@@ -346,24 +346,37 @@ export function BeachApp(data: BeachAppProps) {
                 </p>
               )}
               <p>{footer}</p>
-              <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
-              <p className="beach-shell-credits">
-                Wind from{' '}
-                <a href={OPEN_METEO_CREDIT_URL} target="_blank" rel="noreferrer">
-                  Open-Meteo
-                </a>
-                ; water temperature from the{' '}
-                <a href={SMARTATLANTIC_CREDIT_URL} target="_blank" rel="noreferrer">
-                  SmartAtlantic
-                </a>{' '}
-                Halifax buoy. Both CC BY 4.0.
-              </p>
-              <p>
-                Ideas or problems?{' '}
-                <a href={SUGGEST_URL} target="_blank" rel="noreferrer">
-                  Suggest one
-                </a>
-              </p>
+              {/*
+                The rest is one collapsed line: on a laptop-height window a
+                six-line footer pinned under the list hid all but two rows.
+                What stays open is what changes hour to hour (the freshness
+                line) or day to day (the unknown count); the disclaimer, the
+                credits and the suggestion link are a tap away.
+              */}
+              <details className="beach-shell-footer-more">
+                <summary>
+                  Not an official government service · Sources and credits
+                  <ChevronDown size={12} aria-hidden="true" />
+                </summary>
+                <p>Not an official government service. Follow posted signs and lifeguard instructions.</p>
+                <p className="beach-shell-credits">
+                  Wind from{' '}
+                  <a href={OPEN_METEO_CREDIT_URL} target="_blank" rel="noreferrer">
+                    Open-Meteo
+                  </a>
+                  ; water temperature from the{' '}
+                  <a href={SMARTATLANTIC_CREDIT_URL} target="_blank" rel="noreferrer">
+                    SmartAtlantic
+                  </a>{' '}
+                  Halifax buoy. Both CC BY 4.0.
+                </p>
+                <p>
+                  Ideas or problems?{' '}
+                  <a href={SUGGEST_URL} target="_blank" rel="noreferrer">
+                    Suggest one
+                  </a>
+                </p>
+              </details>
             </footer>
           }
         >

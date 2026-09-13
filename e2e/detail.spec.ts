@@ -196,6 +196,11 @@ test.describe('detail', () => {
   test('the footer offers "Suggest one", pointing at a new issue on the repository', async ({ page }, testInfo) => {
     await page.goto('/')
     // A landscape phone hides the footer for room, so read the link off the DOM rather than the role tree.
+    // The link is folded behind the footer's one closed line; open it on the DOM,
+    // since at half the footer sits below the fold and a landscape phone hides it.
+    await page.locator('.beach-shell-footer-more').evaluate((el) => {
+      ;(el as HTMLDetailsElement).open = true
+    })
     const link = page.locator('.beach-shell-footer a', { hasText: 'Suggest one' })
     await expect(link).toHaveCount(1)
     if (!testInfo.project.name.includes('land')) await expect(link).toBeVisible()

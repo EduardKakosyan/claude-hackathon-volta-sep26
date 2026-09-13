@@ -185,9 +185,14 @@
 
 .beach-shell-footer { padding: 14px var(--beach-gutter); border-top: 1px solid var(--beach-rule); background: var(--beach-bg); flex: none; }
 .beach-shell-footer p { margin: 0; font-size: 10px; line-height: 1.6; color: var(--beach-muted); }
-.beach-shell-footer p + p { margin-top: 7px; }
+.beach-shell-footer > * + *, .beach-shell-footer-more > * + * { margin-top: 7px; }
 .beach-shell-footer strong { color: var(--beach-ink); font-weight: 500; }
 .beach-shell-footer a { color: var(--beach-accent); text-decoration: underline; text-underline-offset: 2px; }
+/* Disclaimer, credits and the suggestion link behind one line, so the pinned footer never costs the list more than three. */
+.beach-shell-footer-more summary { display: flex; align-items: center; gap: 5px; cursor: pointer; list-style: none; font-size: 10px; line-height: 1.6; color: var(--beach-muted); }
+.beach-shell-footer-more summary::-webkit-details-marker { display: none; }
+.beach-shell-footer-more summary svg { flex: none; transition: transform var(--beach-duration) var(--beach-ease); }
+.beach-shell-footer-more[open] summary svg { transform: rotate(180deg); }
 
 /* --- Detail: one field note ----------------------------------------------- */
 
@@ -385,8 +390,8 @@
   .beach-detail-history { margin-top: 14px; padding-top: 12px; }
   /* The sheet already carries the home-indicator inset. */
   .beach-shell-footer { padding: 8px var(--beach-gutter); }
-  .beach-shell-footer p { font-size: 9px; }
-  .beach-shell-footer p + p { margin-top: 3px; }
+  .beach-shell-footer p, .beach-shell-footer-more summary { font-size: 9px; }
+  .beach-shell-footer > * + *, .beach-shell-footer-more > * + * { margin-top: 3px; }
 }
 
 /* A landscape phone has no room for the masthead furniture. */

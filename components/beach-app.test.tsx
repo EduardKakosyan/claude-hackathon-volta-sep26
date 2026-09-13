@@ -357,9 +357,28 @@ describe('BeachApp', () => {
     expect(footer?.textContent).not.toContain('Not connected to a database')
   })
 
+  it('the footer folds the disclaimer, the credits and the suggestion link behind one closed line', () => {
+    const { container } = render(<BeachApp {...makePageData()} />)
+
+    const footer = container.querySelector('.beach-shell-footer')!
+    const more = footer.querySelector<HTMLDetailsElement>('details.beach-shell-footer-more')!
+    expect(more.open).toBe(false)
+    expect(more.querySelector('summary')?.textContent).toContain('Not an official government service')
+    expect(more.textContent).toContain('Follow posted signs and lifeguard instructions')
+    expect(more.querySelector('.beach-shell-credits')).not.toBeNull()
+    expect(more.querySelector('a[href="' + SUGGEST_URL + '"]')).not.toBeNull()
+    // Above the fold: the unknown count and the freshness line, nothing else.
+    const open = Array.from(footer.children).filter((el) => el.tagName === 'P')
+    expect(open.map((el) => el.textContent)).toEqual([
+      '35 beaches have no status available. Unknown does not mean open.',
+      'Showing a fixture day, not live status',
+    ])
+  })
+
   it('the footer credits Open-Meteo for wind and SmartAtlantic for the buoy', () => {
     const { container } = render(<BeachApp {...makePageData()} />)
 
+    container.querySelector<HTMLDetailsElement>('.beach-shell-footer-more')!.open = true
     const credits = container.querySelector('.beach-shell-credits')!
     expect(credits.textContent).toMatch(/Wind from Open-Meteo; water temperature from the SmartAtlantic Halifax buoy/)
     expect(screen.getByRole('link', { name: 'Open-Meteo' })).toHaveAttribute('href', 'https://open-meteo.com/')
@@ -388,6 +407,7 @@ describe('BeachApp', () => {
     const { container } = render(<BeachApp {...makePageData()} />)
 
     const footer = container.querySelector('.beach-shell-footer')!
+    footer.querySelector<HTMLDetailsElement>('.beach-shell-footer-more')!.open = true
     expect(footer.textContent).toContain('Ideas or problems?')
     const link = screen.getByRole('link', { name: 'Suggest one' })
     expect(link).toHaveAttribute('href', SUGGEST_URL)

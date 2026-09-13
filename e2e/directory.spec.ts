@@ -87,4 +87,30 @@ test.describe('directory', () => {
     }
     await expect(status('unknown')).toHaveCount(2)
   })
+
+  test('on a laptop-height window the pinned footer leaves the first rows in view', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'the pinned panel footer is a desktop layout')
+    await page.setViewportSize({ width: 1280, height: 720 })
+    await page.goto('/')
+
+    // The footer is the unknown count, the freshness line and one closed line; the rest is folded.
+    const footer = page.locator('.beach-shell-footer')
+    const more = footer.locator('details.beach-shell-footer-more')
+    await expect(more).not.toHaveAttribute('open', '')
+    await expect(footer.locator('.beach-shell-credits')).toBeHidden()
+    const footerBox = (await footer.boundingBox())!
+    expect(footerBox.height).toBeLessThan(100)
+
+    // Three rows end above the footer's top edge without scrolling.
+    for (let i = 0; i < 3; i += 1) {
+      const row = (await rows(page).nth(i).boundingBox())!
+      expect(row.y + row.height, `row ${i} above the footer`).toBeLessThanOrEqual(footerBox.y + 1)
+    }
+
+    // Opening the line reveals the disclaimer, the credits and the suggestion link.
+    await more.locator('summary').click()
+    await expect(more).toHaveAttribute('open', '')
+    await expect(footer.locator('a', { hasText: 'Open-Meteo' })).toBeVisible()
+    await expect(footer.locator('a', { hasText: 'Suggest one' })).toBeVisible()
+  })
 })
