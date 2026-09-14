@@ -29,12 +29,6 @@ describe('loadPage', () => {
       offseason: 0,
     })
     expect(data.today).toBe('2026-09-12')
-    expect(data.historyTo).toBe('2026-08-14')
-    expect(data.historyFrom).toBe('2026-08-01')
-    const kinap = data.history['hrm-kinap']?.map((r) => r.day)
-    expect(kinap).toHaveLength(14)
-    expect(kinap?.[0]).toBe('2026-08-01')
-    expect(kinap?.at(-1)).toBe('2026-08-14')
   })
 
   it('fixture mode: live rows for every beach but the omitted two, and three healthy sources', async () => {
@@ -47,7 +41,6 @@ describe('loadPage', () => {
     expect(data.status['ns-rainbow-haven']).toMatchObject({ kind: 'live', state: 'advisory', source: 'parks' })
     expect(data.health.map((h) => h.source).sort()).toEqual(['algae', 'buoy', 'hrm', 'parks', 'wind'])
     expect(data.health.every((h) => h.lastError === null)).toBe(true)
-    expect(data.historyTo).toBe('2026-09-12')
   })
 
   it('fixture mode: every beach carries wind stamped at the clock; only the nine salt beaches near the buoy carry water', async () => {

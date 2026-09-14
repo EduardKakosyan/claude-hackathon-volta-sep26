@@ -265,16 +265,44 @@
 .beach-detail-facts dt { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
 .beach-detail-facts dd { margin: 3px 0 0; font-size: 13px; line-height: 1.4; font-weight: 500; }
 
-.beach-detail-history { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--beach-rule); }
-.beach-detail-history h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 8px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
-.beach-detail-history h3 span { font-weight: 400; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
-.beach-detail-history ol { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; margin: 0; padding: 0; list-style: none; }
-.beach-detail-history li { height: 14px; border-radius: 2px; background: var(--status-unknown); }
-.beach-detail-history li[data-state='open'] { background: var(--status-open); }
-.beach-detail-history li[data-state='advisory'] { background: var(--status-advisory); }
-.beach-detail-history li[data-state='closed'] { background: var(--status-closed); }
-.beach-detail-history li[data-state='offseason'] { background: var(--status-offseason); }
-.beach-detail-history li[data-state='none'] { background: transparent; border: 1px dashed var(--beach-rule); }
+/* --- The season timeline ------------------------------------------------- */
+
+/*
+ * One band across the recorded year on a grid the month axis shares: a column
+ * per in-season day, a narrow stub per off-season run. The readout sits under
+ * it so the band never moves while the note grows.
+ */
+.beach-detail-timeline { --beach-timeline-stub: 28px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--beach-rule); }
+.beach-detail-timeline h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 8px; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-detail-timeline h3 span { font-weight: 400; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+.beach-timeline-note { margin: 0; font-size: 12px; line-height: 1.5; color: var(--beach-muted); }
+.beach-timeline-band { position: relative; display: grid; grid-auto-rows: 18px; column-gap: 1px; padding: 6px 0; border-radius: 4px; cursor: crosshair; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.beach-timeline-band:focus { outline: none; }
+@media (hover: hover) { .beach-timeline-band:focus-visible { outline: 2px solid var(--beach-accent); outline-offset: 2px; } }
+.beach-timeline-band > i { grid-row: 1; display: block; min-width: 0; border-radius: 2px; background: var(--status-unknown); }
+.beach-timeline-band > i[data-state='open'] { background: var(--status-open); }
+.beach-timeline-band > i[data-state='advisory'] { background: var(--status-advisory); }
+.beach-timeline-band > i[data-state='closed'] { background: var(--status-closed); }
+.beach-timeline-band > i[data-state='offseason'] { background: var(--status-offseason); opacity: .35; }
+.beach-timeline-band > i[data-state='none'] { background: transparent; border: 1px dashed var(--beach-rule); }
+.beach-timeline-band > i[data-collapsed] { background-image: repeating-linear-gradient(135deg, transparent 0 3px, #0000001a 3px 4px); }
+/* Today: a tick down the column; the picked day: an ink outline around it. Both sit over the segments. */
+.beach-timeline-today { grid-row: 1; z-index: 1; width: 2px; margin: -4px auto; background: var(--beach-ink); border-radius: 0 !important; opacity: .6; }
+.beach-timeline-cursor { grid-row: 1; z-index: 2; margin: -3px -1px; border: 2px solid var(--beach-ink); border-radius: 3px !important; background: transparent !important; }
+.beach-timeline-axis { display: grid; grid-auto-rows: auto; column-gap: 1px; margin: 0; padding: 0; list-style: none; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--beach-muted); }
+.beach-timeline-axis li { white-space: nowrap; }
+/* The last label may sit on a one-day column at the band's end: it overflows inward, never past the edge. */
+.beach-timeline-axis li:last-child { justify-self: end; }
+.beach-timeline-readout { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: var(--beach-muted); }
+.beach-timeline-readout strong { font-size: 13px; color: var(--beach-ink); }
+.beach-timeline-state { font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; color: var(--beach-accent); }
+.beach-timeline-state[data-state='advisory'] { color: #92580a; }
+.beach-timeline-state[data-state='closed'] { color: #a81f1f; }
+.beach-timeline-state[data-state='offseason'], .beach-timeline-state[data-state='none'] { color: var(--beach-muted); }
+.beach-timeline-evidence { color: var(--beach-ink); }
+.beach-timeline-summary { color: var(--beach-ink); }
+.beach-timeline-hint { font-style: italic; }
+.beach-timeline-replay { align-self: flex-start; min-height: 32px; display: inline-flex; align-items: center; color: var(--beach-accent); text-decoration: underline; text-underline-offset: 3px; }
 
 .beach-detail-sources { display: flex; flex-wrap: wrap; gap: 2px 18px; margin: 14px 0 0; font-size: 12px; }
 .beach-detail-sources a { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; color: var(--beach-accent); text-decoration: underline; text-underline-offset: 3px; }
@@ -330,13 +358,15 @@
 .beach-scrubber-weekday { font-size: 9px; line-height: 1; text-transform: uppercase; color: var(--beach-muted); }
 .beach-scrubber-day[aria-current='date'] .beach-scrubber-weekday { color: #d8e7e6; }
 .beach-scrubber-num { font-size: 13px; line-height: 1.1; font-weight: 500; }
-.beach-scrubber-dot { width: 5px; height: 5px; border-radius: 9999px; background: var(--status-unknown); }
-.beach-scrubber-day[data-tone='open'] .beach-scrubber-dot { background: var(--status-open); }
-.beach-scrubber-day[data-tone='advisory'] .beach-scrubber-dot { background: var(--status-advisory); }
-.beach-scrubber-day[data-tone='closed'] .beach-scrubber-dot { background: var(--status-closed); }
-.beach-scrubber-day[data-tone='offseason'] .beach-scrubber-dot { background: var(--status-offseason); }
-.beach-scrubber-day[data-tone='live'] .beach-scrubber-dot { visibility: hidden; }
-.beach-scrubber-day[aria-current='date'] .beach-scrubber-dot { box-shadow: 0 0 0 1px #fff8; }
+/* The bar: each part's basis is its 2px floor; the rest of the width is shared by count. */
+.beach-scrubber-bar { display: flex; width: 22px; height: 4px; border-radius: 2px; overflow: hidden; background: transparent; }
+.beach-scrubber-bar > i { flex: 0 0 2px; min-width: 0; }
+.beach-scrubber-bar > i[data-state='open'] { background: var(--status-open); }
+.beach-scrubber-bar > i[data-state='advisory'] { background: var(--status-advisory); }
+.beach-scrubber-bar > i[data-state='closed'] { background: var(--status-closed); }
+.beach-scrubber-bar > i[data-state='offseason'] { background: var(--status-offseason); }
+.beach-scrubber-bar[data-tone='live'] { visibility: hidden; }
+.beach-scrubber-day[aria-current='date'] .beach-scrubber-bar { box-shadow: 0 0 0 1px #fff8; }
 
 @media (min-width: 1500px) {
   .beach-shell-workspace { grid-template-columns: 420px minmax(0, 1fr); }
@@ -394,6 +424,8 @@
   .beach-scrubber-arrow { display: none; }
   .beach-scrubber-days { gap: 10px; padding: 5px 8px; }
   .beach-scrubber-day { width: 34px; height: 40px; }
+  .beach-detail-timeline { --beach-timeline-stub: 20px; }
+  .beach-timeline-band { grid-auto-rows: 24px; }
   .beach-shell-map-failed { padding: 18px; gap: 7px; }
   .beach-shell-map-failed h2 { font-size: 19px; }
   .beach-shell-map-failed p { font-size: 12px; }

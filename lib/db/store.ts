@@ -29,8 +29,8 @@ export interface PageStore {
   fixtureVariant?(variant: FixtureVariant): PageStore
   liveStatus(): Promise<LiveStatus[]>
   dayStatus(day: string): Promise<StatusDayView[]>
-  /** Every status_day row with fromDay <= day <= toDay, any beach. */
-  history(fromDay: string, toDay: string): Promise<StatusDayView[]>
+  /** Every status_day row of one beach, any order: the detail's timeline. */
+  beachHistory(beachId: string): Promise<StatusDayView[]>
   health(): Promise<SourceHealthView[]>
   /** Every recorded day with its state counts, newest first. */
   days(): Promise<DaySummary[]>
@@ -95,8 +95,8 @@ export class MemoryStore implements PageStore, StatusWriter {
   async dayStatus(day: string) {
     return [...this.daysByKey.values()].filter((r) => r.day === day)
   }
-  async history(fromDay: string, toDay: string) {
-    return [...this.daysByKey.values()].filter((r) => r.day >= fromDay && r.day <= toDay)
+  async beachHistory(beachId: string) {
+    return [...this.daysByKey.values()].filter((r) => r.beachId === beachId)
   }
   async health() {
     return [...this.healthBySource.values()]

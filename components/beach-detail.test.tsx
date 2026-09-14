@@ -52,9 +52,6 @@ describe('BeachDetail', () => {
   })
 
   const baseProps: Omit<BeachDetailProps, 'beach' | 'status'> = {
-    history: [],
-    historyFrom: '2026-07-01',
-    historyTo: '2026-07-14',
     distanceKm: 3.6,
   }
 
@@ -407,26 +404,34 @@ describe('BeachDetail', () => {
     expect(link).toHaveAttribute('target', '_blank')
   })
 
-  it('history strip renders one cell per day in the window, coloured by state', () => {
-    render(
+  it('renders the season timeline when given one, and nothing in its place when not', () => {
+    const { rerender } = render(<BeachDetail beach={createBeach()} status={undefined} {...baseProps} />)
+    expect(screen.queryByRole('region', { name: 'Season timeline' })).not.toBeInTheDocument()
+
+    rerender(
       <BeachDetail
         beach={createBeach()}
         status={undefined}
         {...baseProps}
-        history={[
-          { beachId: 'test-beach', day: '2026-07-03', state: 'advisory', basis: 'scraped', note: null },
-          { beachId: 'test-beach', day: '2026-07-04', state: 'open', basis: 'scraped', note: null },
-        ]}
-        historyFrom="2026-07-01"
-        historyTo="2026-07-14"
+        timeline={{
+          today: '2026-07-04',
+          status: 'ready',
+          error: null,
+          history: {
+            beachId: 'test-beach',
+            from: '2026-07-01',
+            to: '2026-07-04',
+            spans: [
+              { from: '2026-07-01', to: '2026-07-02', state: 'open', basis: 'inferred', note: null },
+              { from: '2026-07-03', to: '2026-07-04', state: 'advisory', basis: 'verified', note: 'a notice' },
+            ],
+          },
+        }}
       />,
     )
-
-    const cells = document.querySelectorAll('.beach-detail-history ol li')
-    expect(cells).toHaveLength(14)
-    expect(cells[0]).toHaveAttribute('data-state', 'none')
-    expect(cells[2]).toHaveAttribute('data-state', 'advisory')
-    expect(cells[3]).toHaveAttribute('data-state', 'open')
-    expect(cells[3]).toHaveAttribute('title', 'Jul 4: open')
+    const timeline = screen.getByRole('region', { name: 'Season timeline' })
+    expect(timeline).toHaveTextContent('2026 season')
+    expect(timeline).toHaveTextContent('Jul 1 – Jul 4')
+    expect(timeline.querySelectorAll('.beach-timeline-band [data-segment]')).toHaveLength(2)
   })
 })
