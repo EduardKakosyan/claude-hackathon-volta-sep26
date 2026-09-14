@@ -136,6 +136,13 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
   /** The person's own pick; until there is one, a replayed day stands picked so the band and the map agree. */
   const [picked, setPicked] = useState<string | null>(null)
   const dragging = useRef(false)
+  /**
+   * Where the mouse last was over the band. WebKit sends a mouse move again
+   * whenever layout changes under a resting pointer (the readout growing as a
+   * key picks a day is enough), and a pointer that has not moved must not take
+   * the readout back from the keyboard.
+   */
+  const lastMouse = useRef<{ x: number; y: number } | null>(null)
   const selected = picked ?? (replayDay && band.days.includes(replayDay) ? replayDay : null)
 
   const current = hover ?? selected
@@ -163,7 +170,16 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
     if (!listRef.current) return
     const day = dayAt(listRef.current, band, event.clientX)
     if (dragging.current) pick(day)
-    else if (event.pointerType === 'mouse') setHover(day)
+    else if (event.pointerType === 'mouse') {
+      const last = lastMouse.current
+      lastMouse.current = { x: event.clientX, y: event.clientY }
+      if (last && last.x === event.clientX && last.y === event.clientY) return
+      setHover(day)
+    }
+  }
+  const onPointerLeave = () => {
+    lastMouse.current = null
+    setHover(null)
   }
   const onPointerEnd = (event: PointerEvent<HTMLDivElement>) => {
     dragging.current = false
@@ -240,7 +256,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
             onPointerMove={onPointerMove}
             onPointerUp={onPointerEnd}
             onPointerCancel={onPointerEnd}
-            onPointerLeave={() => setHover(null)}
+            onPointerLeave={onPointerLeave}
             onKeyDown={onKeyDown}
           >
             {band.segments.map((seg) => (

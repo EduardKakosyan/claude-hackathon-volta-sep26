@@ -138,6 +138,32 @@ describe('BeachTimeline', () => {
     expect(screen.getByRole('link', { name: 'Replay Jul 27 on the map' })).toBeInTheDocument()
   })
 
+  it('a mouse that has not moved does not take the readout back from the keyboard; one that has does', async () => {
+    const user = userEvent.setup()
+    render(<BeachTimeline beach={OAKFIELD} today={TODAY} {...ready()} />)
+    const band = screen.getByRole('slider')
+    const segments = band.querySelectorAll<HTMLElement>('[data-segment]')
+    segments[1].getBoundingClientRect = () => ({ left: 100, right: 370, width: 270, top: 0, bottom: 18, height: 18, x: 100, y: 0, toJSON: () => ({}) })
+    // The band appears under a resting mouse: WebKit reports a move, and the day under it shows.
+    fireEvent.pointerMove(band, { clientX: 125, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 3, 2026: Open')
+
+    band.focus()
+    await user.keyboard('{Home}')
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+    // The readout changed shape under the same pointer: WebKit's repeated move at the same spot changes nothing.
+    fireEvent.pointerMove(band, { clientX: 125, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+    expect(screen.getByRole('link', { name: 'Replay Jun 28 on the map' })).toBeInTheDocument()
+    // A real move previews again.
+    fireEvent.pointerMove(band, { clientX: 135, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 4, 2026: Open')
+    // Leaving and returning to the same pixel counts as a move.
+    fireEvent.pointerLeave(band)
+    fireEvent.pointerMove(band, { clientX: 135, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 4, 2026: Open')
+  })
+
   it('says so while loading, when the load failed, and when nothing is recorded', () => {
     const { rerender } = render(<BeachTimeline beach={OAKFIELD} today={TODAY} status="loading" history={null} error={null} />)
     expect(screen.getByRole('status')).toHaveTextContent('Loading beach history…')
