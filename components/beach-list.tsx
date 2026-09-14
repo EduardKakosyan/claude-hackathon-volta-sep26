@@ -39,7 +39,7 @@ export function BeachList({ beaches, status, distances, conditions = {}, selecte
       <div className="beach-shell-empty">
         <Waves size={30} strokeWidth={1.2} aria-hidden="true" />
         <h3>No beaches found</h3>
-        <p>Try another beach, water body or community, or choose a different status.</p>
+        <p>Try a different beach, lake or community, or change the status filter.</p>
         <button type="button" onClick={onReset}>
           Show all beaches
         </button>

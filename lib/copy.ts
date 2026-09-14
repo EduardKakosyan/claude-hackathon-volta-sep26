@@ -15,13 +15,13 @@ import type { DayBasis, IngestSource, LiveStatus, SourceHealthView, StatusSource
  * and HRM's own closures.
  */
 export const PLAIN_ENGLISH: Record<`${BeachState}:${StatusSource}`, string> = {
-  'open:hrm': 'Tested and under the safe limit. Lifeguards on duty during posted hours.',
-  'open:parks': 'No advisory posted by the province. Water is tested here but results are not published.',
-  'open:algae': 'No advisory posted by the province. Water is tested here but results are not published.',
-  'open:season': 'No advisory posted by the province. Water is tested here but results are not published.',
+  'open:hrm': 'Water tests are within the swimming guidelines. Lifeguards are on duty during posted hours.',
+  'open:parks': 'The province has no advisory posted here. It tests the water but doesn’t publish the results, so this isn’t confirmation of a passed test.',
+  'open:algae': 'The province has no advisory posted here. It tests the water but doesn’t publish the results, so this isn’t confirmation of a passed test.',
+  'open:season': 'The province has no advisory posted here. It tests the water but doesn’t publish the results, so this isn’t confirmation of a passed test.',
 
   'advisory:hrm':
-    'Bacteria above the safe limit. Lifeguards are on site but not supervising swimming. Swimming is not recommended; keep dogs out of the water.',
+    'Bacteria levels are above the swimming guidelines. Swimming is not recommended, and dogs should stay out too. Lifeguards are on site during posted hours but aren’t supervising swimming.',
   'advisory:parks': 'The province has posted a notice for this park. Read it below before you go.',
   'advisory:algae': 'The province has posted a notice for this park. Read it below before you go.',
   'advisory:season': 'The province has posted a notice for this park. Read it below before you go.',
@@ -33,16 +33,16 @@ export const PLAIN_ENGLISH: Record<`${BeachState}:${StatusSource}`, string> = {
   'closed:parks': 'The province has closed this park. The reason is in the notice below.',
   'closed:season': 'The province has closed this park. The reason is in the notice below.',
 
-  'offseason:hrm': 'No one is testing this beach right now. Last in-season status shown below.',
-  'offseason:parks': 'No one is testing this beach right now. Last in-season status shown below.',
-  'offseason:algae': 'No one is testing this beach right now. Last in-season status shown below.',
-  'offseason:season': 'No one is testing this beach right now. Last in-season status shown below.',
+  'offseason:hrm': 'Water testing and lifeguard supervision have ended for the season.',
+  'offseason:parks': 'Water testing and lifeguard supervision have ended for the season.',
+  'offseason:algae': 'Water testing and lifeguard supervision have ended for the season.',
+  'offseason:season': 'Water testing and lifeguard supervision have ended for the season.',
 }
 
 /** Replay rows have no source, so the line can only describe the state. */
 const REPLAY_LINE: Record<BeachState, string> = {
   open: 'No advisory or closure was recorded for this beach that day.',
-  advisory: 'An advisory was in effect: swimming was not recommended.',
+  advisory: 'Swimming was not recommended that day because of an advisory.',
   closed: 'The beach was closed to swimming that day.',
   offseason: 'Supervision had ended for the season.',
 }
@@ -122,7 +122,7 @@ export interface PushPayload {
  * The one notification a follower gets when a beach changes state, in the
  * app's own words and the source's:
  *
- *   Chocolate Lake Beach is now Advisory
+ *   Chocolate Lake Beach: advisory
  *   halifax.ca: "Risk advisory in effect." Posted today, 8:02 a.m.
  *
  * The title uses the same authority-aware label as the detail, so a provincial
@@ -132,9 +132,7 @@ export interface PushPayload {
  */
 export function pushPayload(beach: Pick<Beach, 'id' | 'name' | 'authority'>, status: LiveStatus, now: Date = new Date()): PushPayload {
   const { label } = statusPresentation(status.state, beach.authority)
-  const title = /^No /.test(label)
-    ? `${beach.name}: ${label.charAt(0).toLowerCase()}${label.slice(1)}`
-    : `${beach.name} is now ${label}`
+  const title = `${beach.name}: ${label.charAt(0).toLowerCase()}${label.slice(1)}`
 
   const when = status.postedAt
     ? `Posted ${formatPosted(status.postedAt, now)}`
@@ -180,8 +178,8 @@ function checkedCleanly(h: SourceHealthView): boolean {
 function healthLine(h: SourceHealthView, now: Date): string {
   const label = SOURCE_LABEL[h.source]
   if (checkedCleanly(h)) return `${label} checked ${formatPosted(h.lastAttemptAt, now)}`
-  if (h.lastSuccessAt) return `${label} last confirmed ${formatPosted(h.lastSuccessAt, now)}; could not reach it since`
-  return `${label} never read`
+  if (h.lastSuccessAt) return `${label} last checked ${formatPosted(h.lastSuccessAt, now)}; updates unavailable since then`
+  return `${label} updates unavailable`
 }
 
 /**
@@ -222,13 +220,13 @@ export function formatFreshness(
     if (h) parts.push(healthLine(h, now))
   }
 
-  return parts.length > 0 ? parts.join(' · ') : 'No source has been read yet'
+  return parts.length > 0 ? parts.join(' · ') : 'No official updates available yet'
 }
 
 /** How a replayed day's row came to exist: the line under a replayed status, and the timeline's evidence. */
 export const BASIS_LINE: Record<DayBasis, string> = {
-  scraped: 'Recorded by this app on the day.',
-  verified: 'Reconstructed from a dated notice or an archived status table.',
-  inferred: 'Reconstruction: no notice was found for this beach that day.',
-  calendar: 'Outside the published supervision season: nothing was read that day.',
+  scraped: 'We checked the official status that day.',
+  verified: 'Based on a dated notice or a saved copy of the official status page.',
+  inferred: 'Estimated from the records available, not checked on the day.',
+  calendar: 'Outside the published lifeguard season. We didn’t check the status that day.',
 }

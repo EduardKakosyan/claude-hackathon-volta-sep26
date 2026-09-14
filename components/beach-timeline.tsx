@@ -136,6 +136,16 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
   /** The person's own pick; until there is one, a replayed day stands picked so the band and the map agree. */
   const [picked, setPicked] = useState<string | null>(null)
   const dragging = useRef(false)
+  /**
+   * Once the keyboard has picked a day, the mouse must actually move before it
+   * previews again. WebKit sends a mouse move whenever layout changes under a
+   * resting pointer (the readout growing as a key picks a day is enough), and
+   * a pointer that has not moved must not take the readout back. `lastMouse` is
+   * where the band last saw it; a move that matches, or the first one while
+   * held, is the resting pointer.
+   */
+  const mouseHeld = useRef(false)
+  const lastMouse = useRef<{ x: number; y: number } | null>(null)
   const selected = picked ?? (replayDay && band.days.includes(replayDay) ? replayDay : null)
 
   const current = hover ?? selected
@@ -163,7 +173,19 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
     if (!listRef.current) return
     const day = dayAt(listRef.current, band, event.clientX)
     if (dragging.current) pick(day)
-    else if (event.pointerType === 'mouse') setHover(day)
+    else if (event.pointerType === 'mouse') {
+      const last = lastMouse.current
+      lastMouse.current = { x: event.clientX, y: event.clientY }
+      if (mouseHeld.current) {
+        if (!last || (last.x === event.clientX && last.y === event.clientY)) return
+        mouseHeld.current = false
+      }
+      setHover(day)
+    }
+  }
+  const onPointerLeave = () => {
+    lastMouse.current = null
+    setHover(null)
   }
   const onPointerEnd = (event: PointerEvent<HTMLDivElement>) => {
     dragging.current = false
@@ -188,6 +210,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
     if (next === null) return
     event.preventDefault()
     setPicked(band.days[Math.min(band.days.length - 1, Math.max(0, next))])
+    mouseHeld.current = true
     setHover(null)
   }
 
@@ -200,7 +223,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
       ]
         .filter(Boolean)
         .join(' · ')
-    : 'Off-season every recorded day so far.'
+    : 'All recorded dates are outside the swimming season.'
 
   const gridStyle: CSSProperties = { gridTemplateColumns: band.template }
   const replayHref = selected && selected !== today && selected !== replayDay ? buildHref({ day: selected, beach: beach.id }) : null
@@ -215,14 +238,14 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
 
       {status === 'loading' || status === 'idle' ? (
         <p className="beach-timeline-note" role="status">
-          Loading this beach’s year…
+          Loading beach history…
         </p>
       ) : status === 'error' ? (
         <p className="beach-timeline-note" role="alert">
-          Could not load this beach’s year just now.{error ? ` ${error}` : ''}
+          We couldn’t load the beach history. Try refreshing the page.{error ? ` ${error}` : ''}
         </p>
       ) : band.days.length === 0 ? (
-        <p className="beach-timeline-note">No days recorded yet for this beach.</p>
+        <p className="beach-timeline-note">We don’t have any history for this beach yet.</p>
       ) : (
         <>
           <div
@@ -240,7 +263,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
             onPointerMove={onPointerMove}
             onPointerUp={onPointerEnd}
             onPointerCancel={onPointerEnd}
-            onPointerLeave={() => setHover(null)}
+            onPointerLeave={onPointerLeave}
             onKeyDown={onKeyDown}
           >
             {band.segments.map((seg) => (
@@ -288,7 +311,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
             ) : (
               <>
                 <span className="beach-timeline-summary">{summary}</span>
-                <span className="beach-timeline-hint">Drag along the band, or use the arrow keys, for any day.</span>
+                <span className="beach-timeline-hint">Drag across the timeline or use the arrow keys to check a day.</span>
               </>
             )}
           </p>

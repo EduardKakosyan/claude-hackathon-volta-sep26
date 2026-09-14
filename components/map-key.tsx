@@ -13,7 +13,7 @@ import { PIN_STATES, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
  */
 const KEY_LABEL: Record<PinState, string> = {
   ...FILTER_LABEL,
-  offseason: 'Off-season: not tested or supervised; rows show conditions instead',
+  offseason: 'Off-season: no water testing or lifeguards',
 }
 
 /**
@@ -39,11 +39,10 @@ export function MapKey() {
         <p className="beach-shell-key-hollow">
           <StatusPin state="open" hollow />
           <span>
-            A hollow pin is a provincial beach. No advisory posted is not a confirmed clean
-            sample.
+            Hollow pins mark provincial beaches. No advisory posted doesn&apos;t mean the water has passed a test.
           </span>
         </p>
-        <p>No status available means we have not read an official status. {UNKNOWN_CAVEAT}</p>
+        <p>No status available means we don&apos;t have an official update yet. {UNKNOWN_CAVEAT}</p>
       </div>
     </details>
   )

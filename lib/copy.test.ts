@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ConditionsView } from './conditions'
-import { formatConditions, formatFreshness, offseasonLabel, offseasonLine, PLAIN_ENGLISH, plainEnglish, pushPayload } from './copy'
+import { BASIS_LINE, formatConditions, formatFreshness, offseasonLabel, offseasonLine, PLAIN_ENGLISH, plainEnglish, pushPayload } from './copy'
 import { formatClock } from './dates'
 import { BEACHES_BY_ID } from './seed/beaches'
 import type { LiveStatus, SourceHealthView } from './status'
@@ -70,7 +70,7 @@ describe('formatConditions', () => {
   })
 
   it('never asserts the water is safe: neither the conditions line nor any plain-English line', () => {
-    // HRM's own words ("under the safe limit") are quoted; the app never adds a claim of its own.
+    // A status or a temperature reading is not a promise that swimming is safe.
     for (const line of Object.values(PLAIN_ENGLISH)) expect(line).not.toMatch(/water is safe|safe to swim/i)
     expect(formatConditions(view({ waterTempC: 30 }))).not.toMatch(/\bsafe\b/i)
     expect(formatConditions(view({ waterTempC: 30 }), { short: true, daylight: true })).not.toMatch(/\bsafe\b/i)
@@ -88,6 +88,34 @@ describe('formatConditions', () => {
         confirmedAt: TWO_PM,
       }),
     ).not.toMatch(/water is safe|safe to swim/i)
+  })
+})
+
+describe('status copy', () => {
+  it('distinguishes an absent provincial advisory from a passed water test', () => {
+    for (const source of ['parks', 'algae', 'season'] as const) {
+      expect(PLAIN_ENGLISH[`open:${source}`]).toContain('isn’t confirmation of a passed test')
+    }
+  })
+
+  it('keeps the swimming and dog warnings in an HRM advisory', () => {
+    expect(PLAIN_ENGLISH['advisory:hrm']).toContain('Swimming is not recommended')
+    expect(PLAIN_ENGLISH['advisory:hrm']).toContain('dogs should stay out')
+    expect(PLAIN_ENGLISH['advisory:hrm']).toContain('aren’t supervising swimming')
+  })
+
+  it('labels inferred closures as estimates without claiming no notice was found', () => {
+    const line = plainEnglish({
+      kind: 'replay',
+      beachId: 'hrm-oakfield-park',
+      day: '2026-08-01',
+      state: 'closed',
+      basis: 'inferred',
+      note: null,
+    })
+    expect(line).toBe('The beach was closed to swimming that day.')
+    expect(BASIS_LINE.inferred).toBe('Estimated from the records available, not checked on the day.')
+    expect(BASIS_LINE.inferred).not.toContain('no notice was found')
   })
 })
 
@@ -111,7 +139,7 @@ describe('pushPayload', () => {
 
   it('names the beach and its new state in the title, and quotes the source with when it said so', () => {
     expect(pushPayload(chocolate, status({ postedAt: POSTED }), NOW)).toEqual({
-      title: 'Chocolate Lake Beach is now Advisory',
+      title: 'Chocolate Lake Beach: advisory',
       body: 'halifax.ca: “Risk advisory in effect” Posted today, 8:02 a.m.',
       beachId: 'hrm-chocolate-lake',
     })
@@ -122,7 +150,7 @@ describe('pushPayload', () => {
   })
 
   it('a change back to Open is sent like any other: it is the one people wait for', () => {
-    expect(pushPayload(chocolate, status({ state: 'open', verbatim: 'Open' }), NOW).title).toBe('Chocolate Lake Beach is now Open')
+    expect(pushPayload(chocolate, status({ state: 'open', verbatim: 'Open' }), NOW).title).toBe('Chocolate Lake Beach: open')
   })
 
   it('a provincial beach is never called Open: the title carries the same label as the detail', () => {
@@ -133,7 +161,7 @@ describe('pushPayload', () => {
 
   it('a parks card and an algae notice name their sites', () => {
     expect(pushPayload(rissers, status({ beachId: rissers.id, state: 'closed', source: 'parks', verbatim: 'Beach closed — high surf', postedAt: POSTED }), NOW)).toEqual({
-      title: 'Rissers Beach is now Closed',
+      title: 'Rissers Beach: closed',
       body: 'parks.novascotia.ca: “Beach closed — high surf” Posted today, 8:02 a.m.',
       beachId: 'ns-rissers',
     })
@@ -144,7 +172,7 @@ describe('pushPayload', () => {
 
   it('the calendar closing the season says when the lifeguards return', () => {
     expect(pushPayload(chocolate, status({ state: 'offseason', source: 'season', verbatim: 'Off-season' }), NOW)).toEqual({
-      title: 'Chocolate Lake Beach is now Off-season',
+      title: 'Chocolate Lake Beach: off-season',
       body: 'Off-season. Lifeguards return late June.',
       beachId: 'hrm-chocolate-lake',
     })
@@ -216,14 +244,14 @@ describe('formatFreshness', () => {
   it('a conditions feed that failed is named on its own, with its last good read', () => {
     const buoy: SourceHealthView = { source: 'buoy', lastAttemptAt: AT, lastSuccessAt: AUGUST, lastError: 'HTTP 503' }
     expect(formatFreshness([clean('wind'), buoy], ['hrm', 'province'], NOW)).toBe(
-      'HRM off-season · Province off-season · Wind checked today, 8:02 a.m. · Buoy last confirmed Aug 31, 5:02 p.m.; could not reach it since',
+      'HRM off-season · Province off-season · Wind checked today, 8:02 a.m. · Buoy last checked Aug 31, 5:02 p.m.; updates unavailable since then',
     )
     const never: SourceHealthView = { source: 'wind', lastAttemptAt: AT, lastSuccessAt: null, lastError: 'boom' }
-    expect(formatFreshness([never], [], NOW)).toBe('Wind never read')
+    expect(formatFreshness([never], [], NOW)).toBe('Wind updates unavailable')
   })
 
   it('says so when nothing has been read in season', () => {
-    expect(formatFreshness([], [], NOW)).toBe('No source has been read yet')
+    expect(formatFreshness([], [], NOW)).toBe('No official updates available yet')
   })
 
   it('the labels the footer uses out of season', () => {

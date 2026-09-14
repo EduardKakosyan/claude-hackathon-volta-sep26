@@ -37,15 +37,15 @@ describe('beach-status', () => {
 
       it('explains that open means no advisory found, not tested today', () => {
         const result = statusPresentation('open', 'province')
-        expect(result.explanation).toContain('no matching park advisory')
-        expect(result.explanation).toContain('does not mean a water sample passed today')
+        expect(result.explanation).toContain('no park advisory or algae notice')
+        expect(result.explanation).toContain('doesn’t mean the water was tested or passed a test today')
       })
 
       it('includes provincial caveat about advisory-based evidence', () => {
         const result = statusPresentation('open', 'province')
         expect(result.caveat).toBeDefined()
-        expect(result.caveat).toContain('hollow pin')
-        expect(result.caveat).toContain('advisory-based')
+        expect(result.caveat).toContain('Hollow pins')
+        expect(result.caveat).toContain('doesn’t publish individual water test results')
       })
     })
 
@@ -57,7 +57,8 @@ describe('beach-status', () => {
 
       it('explains that status is open with caveats about current conditions', () => {
         const result = statusPresentation('open', 'hrm')
-        expect(result.explanation).toContain('supplied status is open')
+        expect(result.explanation).toContain('Listed as open')
+        expect(result.explanation).toContain('Conditions can change')
         expect(result.explanation).not.toContain('advisory')
       })
 
@@ -75,7 +76,7 @@ describe('beach-status', () => {
 
       it('explains that we have not read official status yet', () => {
         const result = statusPresentation('unknown', 'hrm')
-        expect(result.explanation).toContain('have not read an official status')
+        expect(result.explanation).toContain('don’t have an official update')
       })
 
       it('includes caveat that unknown does not mean open', () => {

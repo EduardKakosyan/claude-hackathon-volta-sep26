@@ -52,7 +52,7 @@ test.describe('detail', () => {
     await expect(article.getByRole('link', { name: 'Directions' })).toHaveAttribute('href', /maps\.apple\.com|google\.com\/maps|^geo:/)
     await expect(article.getByRole('button', { name: 'Share' })).toBeVisible()
 
-    const sourceLink = article.getByRole('link', { name: /open the source page/i })
+    const sourceLink = article.getByRole('link', { name: /read the official update/i })
     await expect(sourceLink).toHaveAttribute('target', '_blank')
   })
 
@@ -192,7 +192,7 @@ test.describe('detail', () => {
     expect(errors()).toEqual([])
   })
 
-  test('the footer offers "Suggest one", pointing at a new issue on the repository', async ({ page }, testInfo) => {
+  test('the footer labels the GitHub feedback link and points at a new issue', async ({ page }, testInfo) => {
     await page.goto('/')
     // A landscape phone hides the footer for room, so read the link off the DOM rather than the role tree.
     // The link is folded behind the footer's one closed line; open it on the DOM,
@@ -200,7 +200,7 @@ test.describe('detail', () => {
     await page.locator('.beach-shell-footer-more').evaluate((el) => {
       ;(el as HTMLDetailsElement).open = true
     })
-    const link = page.locator('.beach-shell-footer a', { hasText: 'Suggest one' })
+    const link = page.locator('.beach-shell-footer a', { hasText: 'Let us know on GitHub' })
     await expect(link).toHaveCount(1)
     if (!testInfo.project.name.includes('land')) await expect(link).toBeVisible()
     await expect(link).toHaveAttribute(

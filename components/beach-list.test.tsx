@@ -140,7 +140,7 @@ describe('BeachList', () => {
     )
 
     expect(screen.getByText('No beaches found')).toBeInTheDocument()
-    expect(screen.getByText(/Try another beach/)).toBeInTheDocument()
+    expect(screen.getByText(/Try a different beach/)).toBeInTheDocument()
   })
 
   it('empty state has a "Show all beaches" button that calls onReset', async () => {

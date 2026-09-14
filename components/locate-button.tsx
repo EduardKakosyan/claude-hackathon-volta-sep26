@@ -10,12 +10,12 @@ export interface LocateButtonProps {
 }
 
 const COPY: Record<GeolocationStatus, { label: string; title: string }> = {
-  idle: { label: 'Use my location', title: 'Centre the map on you and sort the list by distance' },
+  idle: { label: 'Use my location', title: 'Find beaches near you' },
   requesting: { label: 'Finding your location…', title: 'Finding your location…' },
-  granted: { label: 'Centre on my location', title: 'Sorted by distance from you. Press to centre the map on you again.' },
+  granted: { label: 'Centre on my location', title: 'Move the map back to your location' },
   denied: {
     label: 'Location declined',
-    title: 'Location was declined — distances are from downtown Halifax. Allow location for this site in your browser settings to change this.',
+    title: 'Location access is off, so distances are from downtown Halifax. Turn it on for this site in your browser settings to see distances from you.',
   },
   unavailable: {
     label: 'Location unavailable',

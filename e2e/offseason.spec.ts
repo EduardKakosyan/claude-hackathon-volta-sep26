@@ -89,7 +89,7 @@ test.describe('off-season', () => {
 
   test('the footer says both authorities are off-season, and still that this is the fixture', async ({ page }) => {
     const footer = page.locator('.beach-shell-footer')
-    await expect(footer).toContainText('Showing a fixture day, not live status · HRM off-season · Province off-season')
+    await expect(footer).toContainText('Demo data, not current beach conditions · HRM off-season · Province off-season')
   })
 
   test('the map key explains the calm ring', async ({ page }, testInfo) => {
@@ -97,7 +97,7 @@ test.describe('off-season', () => {
     const key = page.locator('.beach-shell-key')
     await key.locator('summary').click()
     const entry = key.locator('li', { hasText: 'Off-season' })
-    await expect(entry).toContainText('Off-season: not tested or supervised; rows show conditions instead')
+    await expect(entry).toContainText('Off-season: no water testing or lifeguards')
     await expect(entry.locator('[data-slot="status-pin"]')).toHaveAttribute('data-state', 'offseason')
     if (!testInfo.project.name.includes('land')) await expect(entry).toBeVisible()
   })

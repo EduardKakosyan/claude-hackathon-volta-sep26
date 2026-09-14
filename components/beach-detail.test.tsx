@@ -157,7 +157,7 @@ describe('BeachDetail', () => {
     render(<BeachDetail beach={createBeach()} status={status} {...baseProps} />)
 
     expect(screen.getByText(/Water quality advisory in effect/i)).toBeInTheDocument()
-    const sourceLink = screen.getByRole('link', { name: /open the source page/i })
+    const sourceLink = screen.getByRole('link', { name: /read the official update/i })
     expect(sourceLink).toHaveAttribute('href', 'https://hrm.example.com/beach')
     expect(sourceLink).toHaveAttribute('target', '_blank')
   })
@@ -186,26 +186,26 @@ describe('BeachDetail', () => {
   it('replay status shows the replay explanation and no live source link', () => {
     render(<BeachDetail beach={createBeach()} status={makeReplayStatus('advisory')} {...baseProps} replayDay="2026-07-10" />)
 
-    expect(screen.getByText(/Replayed status for/)).toBeInTheDocument()
+    expect(screen.getByText(/Status on July 10, 2026/)).toBeInTheDocument()
     expect(statusBox()).toHaveAttribute('data-state', 'advisory')
-    expect(screen.queryByRole('link', { name: /open the source page/i })).toBeNull()
-    expect(document.querySelector('.beach-detail-plain')).toHaveTextContent(/An advisory was in effect/)
+    expect(screen.queryByRole('link', { name: /read the official update/i })).toBeNull()
+    expect(document.querySelector('.beach-detail-plain')).toHaveTextContent(/Swimming was not recommended that day because of an advisory/)
   })
 
   it('replay status with verified basis shows the reconstruction note', () => {
     const status: ReplayStatus = { ...makeReplayStatus('closed'), basis: 'verified', note: 'Per CBC coverage.' }
     render(<BeachDetail beach={createBeach()} status={status} {...baseProps} replayDay="2026-07-10" />)
 
-    expect(screen.getByText(/Reconstructed from a dated notice or an archived status table\. Per CBC coverage\./)).toBeInTheDocument()
+    expect(screen.getByText(/Based on a dated notice or a saved copy of the official status page\. Per CBC coverage\./)).toBeInTheDocument()
   })
 
-  it('no status shows "No status read yet" in live mode, reads unknown, and repeats the caveat', () => {
+  it('no status explains the missing official update and repeats the caveat', () => {
     render(<BeachDetail beach={createBeach()} status={undefined} {...baseProps} />)
 
-    expect(screen.getByText('No status read yet')).toBeInTheDocument()
+    expect(screen.getByText('No official status available yet')).toBeInTheDocument()
     expect(statusBox()).toHaveAttribute('data-state', 'unknown')
     expect(document.querySelector('.beach-detail-status-label')).toHaveTextContent('No status available')
-    expect(document.querySelector('.beach-detail-plain')).toHaveTextContent(/No government source has been read/)
+    expect(document.querySelector('.beach-detail-plain')).toHaveTextContent(/We don't have an official update/)
     expect(document.querySelector('.beach-detail-plain')).toHaveTextContent('Unknown does not mean open.')
   })
 
@@ -312,14 +312,14 @@ describe('BeachDetail', () => {
 
       expect(statusBox()).toHaveTextContent('Off-season. Lifeguards return late June.')
       expect(document.querySelector('.beach-detail-conditions')).toHaveAttribute('data-lead', 'true')
-      expect(screen.getByRole('link', { name: /open the source page/i })).toHaveAttribute('href', 'https://hrm.example.com/beach')
+      expect(screen.getByRole('link', { name: /read the official update/i })).toHaveAttribute('href', 'https://hrm.example.com/beach')
     })
 
     it('a replayed off-season day keeps the replay layout: its status is a record, not the calendar', () => {
       render(<BeachDetail beach={createBeach()} status={makeReplayStatus('offseason')} {...baseProps} replayDay="2026-07-10" />)
 
       expect(document.querySelector('article')).toHaveAttribute('data-offseason', 'false')
-      expect(screen.getByText(/Replayed status for/)).toBeInTheDocument()
+      expect(screen.getByText(/Status on July 10, 2026/)).toBeInTheDocument()
       expect(document.querySelector('.beach-detail-plain')).toHaveTextContent('Supervision had ended for the season.')
     })
   })

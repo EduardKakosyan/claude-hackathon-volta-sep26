@@ -82,7 +82,7 @@ describe('BeachTimeline', () => {
     expect(region).toHaveTextContent('2026 season')
     expect(region).toHaveTextContent('Jul 1 – Aug 31')
     expect(region).toHaveTextContent('35 days open · 27 closed')
-    expect(region).toHaveTextContent('Drag along the band, or use the arrow keys')
+    expect(region).toHaveTextContent('Drag across the timeline or use the arrow keys')
     const band = screen.getByRole('slider', { name: 'Oakfield Park Beach, day by day' })
     expect(band).toHaveAttribute('aria-valuemax', '77')
     expect(band).toHaveAttribute('aria-valuetext', '35 days open · 27 closed')
@@ -104,7 +104,7 @@ describe('BeachTimeline', () => {
     expect(band).toHaveAttribute('aria-valuetext', 'July 28, 2026: Closed')
     const readout = screen.getByText('July 28, 2026').closest('.beach-timeline-readout')!
     expect(readout).toHaveTextContent('Closed')
-    expect(readout).toHaveTextContent('Reconstructed from a dated notice or an archived status table. halifax.ca, "Oakfield Beach closed to swimming".')
+    expect(readout).toHaveTextContent('Based on a dated notice or a saved copy of the official status page. halifax.ca, "Oakfield Beach closed to swimming".')
     expect(screen.getByRole('link', { name: 'Replay Jul 28 on the map' })).toHaveAttribute('href', '/?day=2026-07-28&beach=hrm-oakfield-park')
     expect(band.querySelector('.beach-timeline-cursor')).toHaveStyle({ gridColumn: '29' })
 
@@ -138,13 +138,47 @@ describe('BeachTimeline', () => {
     expect(screen.getByRole('link', { name: 'Replay Jul 27 on the map' })).toBeInTheDocument()
   })
 
+  it('after the keyboard picks a day, a mouse that has not moved does not take the readout back; one that has does', async () => {
+    const user = userEvent.setup()
+    render(<BeachTimeline beach={OAKFIELD} today={TODAY} {...ready()} />)
+    const band = screen.getByRole('slider')
+    const segments = band.querySelectorAll<HTMLElement>('[data-segment]')
+    segments[1].getBoundingClientRect = () => ({ left: 100, right: 370, width: 270, top: 0, bottom: 18, height: 18, x: 100, y: 0, toJSON: () => ({}) })
+    band.focus()
+    await user.keyboard('{Home}')
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+
+    // The readout grew under a mouse resting on the band: WebKit reports a move, though nothing moved.
+    fireEvent.pointerMove(band, { clientX: 125, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+    fireEvent.pointerMove(band, { clientX: 125, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+    expect(screen.getByRole('link', { name: 'Replay Jun 28 on the map' })).toBeInTheDocument()
+
+    // A real move previews again, and keeps previewing.
+    fireEvent.pointerMove(band, { clientX: 135, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 4, 2026: Open')
+    fireEvent.pointerMove(band, { clientX: 135, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 4, 2026: Open')
+    fireEvent.pointerLeave(band)
+    expect(band).toHaveAttribute('aria-valuetext', 'June 28, 2026: Off-season')
+
+    // The next key holds the mouse again until it moves.
+    await user.keyboard('{ArrowRight}')
+    expect(band).toHaveAttribute('aria-valuetext', 'June 29, 2026: Off-season')
+    fireEvent.pointerMove(band, { clientX: 135, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'June 29, 2026: Off-season')
+    fireEvent.pointerMove(band, { clientX: 145, clientY: 9, pointerType: 'mouse' })
+    expect(band).toHaveAttribute('aria-valuetext', 'July 5, 2026: Open')
+  })
+
   it('says so while loading, when the load failed, and when nothing is recorded', () => {
     const { rerender } = render(<BeachTimeline beach={OAKFIELD} today={TODAY} status="loading" history={null} error={null} />)
-    expect(screen.getByRole('status')).toHaveTextContent('Loading this beach’s year…')
+    expect(screen.getByRole('status')).toHaveTextContent('Loading beach history…')
     rerender(<BeachTimeline beach={OAKFIELD} today={TODAY} status="error" history={null} error="history: answered 503" />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Could not load this beach’s year just now. history: answered 503')
+    expect(screen.getByRole('alert')).toHaveTextContent('We couldn’t load the beach history. Try refreshing the page. history: answered 503')
     rerender(<BeachTimeline beach={OAKFIELD} today={TODAY} {...ready([])} />)
-    expect(screen.getByRole('region', { name: 'Season timeline' })).toHaveTextContent('No days recorded yet for this beach.')
+    expect(screen.getByRole('region', { name: 'Season timeline' })).toHaveTextContent('We don’t have any history for this beach yet.')
     expect(screen.queryByRole('slider')).not.toBeInTheDocument()
   })
 })

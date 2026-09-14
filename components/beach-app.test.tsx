@@ -353,7 +353,7 @@ describe('BeachApp', () => {
     const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture' })} />)
 
     const footer = container.querySelector('.beach-shell-footer')
-    expect(footer?.textContent).toContain('Showing a fixture day, not live status')
+    expect(footer?.textContent).toContain('Demo data, not current beach conditions')
     expect(footer?.textContent).not.toContain('Not connected to a database')
   })
 
@@ -371,7 +371,7 @@ describe('BeachApp', () => {
     const open = Array.from(footer.children).filter((el) => el.tagName === 'P')
     expect(open.map((el) => el.textContent)).toEqual([
       '35 beaches have no status available. Unknown does not mean open.',
-      'Showing a fixture day, not live status',
+      'Demo data, not current beach conditions',
     ])
   })
 
@@ -403,13 +403,13 @@ describe('BeachApp', () => {
     expect(document.querySelector('.beach-detail-conditions')).toHaveTextContent('Wind 19 km/h SW · 2 p.m.')
   })
 
-  it('the footer offers "Suggest one", a new issue on the public repository', () => {
+  it('the footer offers a clearly labelled GitHub feedback link', () => {
     const { container } = render(<BeachApp {...makePageData()} />)
 
     const footer = container.querySelector('.beach-shell-footer')!
     footer.querySelector<HTMLDetailsElement>('.beach-shell-footer-more')!.open = true
-    expect(footer.textContent).toContain('Ideas or problems?')
-    const link = screen.getByRole('link', { name: 'Suggest one' })
+    expect(footer.textContent).toContain('Something missing or not working?')
+    const link = screen.getByRole('link', { name: 'Let us know on GitHub' })
     expect(link).toHaveAttribute('href', SUGGEST_URL)
     expect(link.getAttribute('href')).toMatch(
       /^https:\/\/github\.com\/EduardKakosyan\/claude-hackathon-volta-sep26\/issues\/new\?template=suggestion\.md$/,
@@ -434,7 +434,7 @@ describe('BeachApp', () => {
     const { container } = render(<BeachApp {...makePageData({ storeKind: 'supabase' })} />)
 
     const footer = container.querySelector('.beach-shell-footer')
-    expect(footer?.textContent).toContain('No source has been read yet')
+    expect(footer?.textContent).toContain('No official updates available yet')
     expect(footer?.textContent).not.toContain('fixture')
   })
 
@@ -510,7 +510,7 @@ describe('BeachApp', () => {
       const { container } = render(<BeachApp {...makePageData({ storeKind: 'fixture', status: allOffseason(), conditions: allConditions() })} />)
 
       expect(container.querySelector('.beach-shell-footer')?.textContent).toContain(
-        'Showing a fixture day, not live status · HRM off-season · Province off-season',
+        'Demo data, not current beach conditions · HRM off-season · Province off-season',
       )
     })
 
@@ -550,7 +550,7 @@ describe('BeachApp', () => {
 
     await waitFor(() => {
       expect(screen.getByText('The map could not load')).toBeInTheDocument()
-      expect(screen.getByText(/This is a problem with the map, not with any beach/)).toBeInTheDocument()
+      expect(screen.getByText(/The map problem doesn't affect those listings/)).toBeInTheDocument()
     })
 
     const beachRows = document.querySelectorAll('[data-beach-id]')
@@ -646,7 +646,7 @@ describe('BeachApp', () => {
       await waitFor(() => expect(container.querySelector('.beach-shell-panel-heading h2')).toHaveTextContent('Closest to you'))
       const note = container.querySelector('.beach-shell-list-note')!
       expect(note).toHaveAttribute('data-far', 'true')
-      expect(note).toHaveTextContent('The nearest monitored beach is far.')
+      expect(note).toHaveTextContent('There are no monitored beaches nearby.')
       expect(note).not.toHaveTextContent('downtown Halifax')
       expect(kmOnScreen()[0]).toBeGreaterThan(400)
       expect(document.querySelector('.beach-shell-row-distance')).toHaveTextContent(/^\d{3,4} km$/)

@@ -37,13 +37,13 @@ export interface StatusPresentation {
  * other wording in lib/copy.ts and is looked up below.
  */
 const EXPLANATIONS: Record<Exclude<BeachState, 'offseason'> | 'unknown', string> = {
-  open: 'The supplied status is open. Check the official page and signs at the beach before swimming; this is not a guarantee of current water quality or lifeguard coverage.',
+  open: 'Listed as open. Conditions can change, so check the official page and signs at the beach before swimming. Lifeguards are only on duty during posted hours.',
   advisory:
-    'Swimming is not recommended. Keep people and pets out of the water and check the official notice for the reason and instructions.',
+    'Swimming is not recommended. Keep people and pets out of the water. Read the official notice for details.',
   closed:
-    'Closed to swimming. Keep people and pets out of the water. Check the official notice for the reason; a closure does not always mean blue-green algae.',
+    'Closed to swimming. Keep people and pets out of the water. Read the official notice to find out why; not every closure is due to blue-green algae.',
   unknown:
-    'We have not read an official status for this beach yet. Unknown does not mean open. Check the official source before deciding to swim.',
+    'We don’t have an official update for this beach yet. Unknown does not mean open. Check the government page before swimming.',
 }
 
 /** Repeated verbatim wherever an unknown count is surfaced. */
@@ -52,7 +52,7 @@ export const UNKNOWN_CAVEAT =
 
 /** Caveat for provincial beaches: provincial evidence is advisory-based. */
 const PROVINCIAL_CAVEAT =
-  'A hollow pin identifies a provincial beach. Provincial evidence is advisory-based; the province does not publish individual sample results here. No advisory is weaker evidence than a published test result.'
+  'Hollow pins mark provincial beaches. The province posts advisories but doesn’t publish individual water test results here. No advisory posted doesn’t mean the water has passed a test.'
 
 /** The single owner of status wording across pins, list rows, detail, filters and the map key. */
 export function statusPresentation(
@@ -64,7 +64,7 @@ export function statusPresentation(
     return {
       label: 'No advisory posted',
       explanation:
-        'For a provincial beach, open means no matching park advisory or algae notice was found in the supplied status. It does not mean a water sample passed today.',
+        'We found no park advisory or algae notice for this provincial beach. That doesn’t mean the water was tested or passed a test today.',
       caveat: PROVINCIAL_CAVEAT,
     }
   }

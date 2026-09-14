@@ -15,25 +15,9 @@ describe('BeachToolbar', () => {
     searchRef.current = null
   })
 
-  it('displays beach count', () => {
-    render(
-      <BeachToolbar
-        beachCount={35}
-        query=""
-        onQueryChange={mockOnQueryChange}
-        filter="all"
-        onFilterChange={mockOnFilterChange}
-        searchRef={searchRef}
-      />
-    )
-
-    expect(screen.getByText('35 monitored beaches. One coastline.')).toBeInTheDocument()
-  })
-
   it('displays the page title "Is the beach open?"', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -48,7 +32,6 @@ describe('BeachToolbar', () => {
   it('renders search input with placeholder', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -65,7 +48,6 @@ describe('BeachToolbar', () => {
     const user = userEvent.setup()
     render(
       <BeachToolbar
-        beachCount={35}
         query="test"
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -89,7 +71,6 @@ describe('BeachToolbar', () => {
   it('shows clear button when query is not empty', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query="test"
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -106,7 +87,6 @@ describe('BeachToolbar', () => {
     const user = userEvent.setup()
     render(
       <BeachToolbar
-        beachCount={35}
         query="test"
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -124,7 +104,6 @@ describe('BeachToolbar', () => {
   it('hides clear button when query is empty', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -140,7 +119,6 @@ describe('BeachToolbar', () => {
   it('renders all five filter buttons', () => {
     const { container } = render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -158,7 +136,6 @@ describe('BeachToolbar', () => {
   it('marks the current filter with aria-pressed="true"', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="open"
@@ -178,7 +155,6 @@ describe('BeachToolbar', () => {
     const user = userEvent.setup()
     const { container } = render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -199,7 +175,6 @@ describe('BeachToolbar', () => {
   it('filter buttons group has proper aria-label', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"
@@ -215,7 +190,6 @@ describe('BeachToolbar', () => {
   it('search input has accessible label', () => {
     render(
       <BeachToolbar
-        beachCount={35}
         query=""
         onQueryChange={mockOnQueryChange}
         filter="all"

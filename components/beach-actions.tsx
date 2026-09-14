@@ -110,7 +110,7 @@ export function ShareButton({ beach, getUrl, nav, onOutcome }: ShareButtonProps)
     const result = await shareUrl(
       {
         title: `${beach.name} — Is the Beach Open`,
-        text: `Today's status for ${beach.name} (${beach.waterBody})`,
+        text: `Check the status of ${beach.name} (${beach.waterBody})`,
         url,
       },
       nav ?? (navigator as ShareNavigator),
