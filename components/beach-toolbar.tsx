@@ -7,7 +7,6 @@ import { memo, type RefObject } from 'react'
 import { FILTER_LABEL, STATUS_FILTERS, type StatusFilter } from '@/lib/beach-filter'
 
 export interface BeachToolbarProps {
-  beachCount: number
   query: string
   onQueryChange: (query: string) => void
   filter: StatusFilter
@@ -28,7 +27,6 @@ export interface BeachToolbarProps {
  * was listening. Left alone, the typed text survives until its own event lands.
  */
 export const BeachToolbar = memo(function BeachToolbar({
-  beachCount,
   query,
   onQueryChange,
   filter,
@@ -45,7 +43,6 @@ export const BeachToolbar = memo(function BeachToolbar({
             <h1>Is the beach open?</h1>
           </div>
         </div>
-        <p className="beach-shell-edition">{beachCount} monitored beaches. One coastline.</p>
       </div>
 
       <div className="beach-shell-toolbar">

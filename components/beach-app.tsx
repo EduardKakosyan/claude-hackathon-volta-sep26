@@ -272,7 +272,6 @@ export function BeachApp(data: BeachAppProps) {
   return (
     <main className="beach-shell">
       <BeachToolbar
-        beachCount={beaches.length}
         query={query}
         onQueryChange={changeQuery}
         filter={filter}
