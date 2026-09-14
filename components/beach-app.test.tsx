@@ -122,6 +122,7 @@ function makePageData(overrides: Partial<BeachAppProps> = {}): BeachAppProps {
     days: [],
     historyFrom: '2026-09-01',
     historyTo: '2026-09-14',
+    today: '2026-09-14',
     storeKind: 'fixture',
     geolocation: silent,
     ...overrides,

@@ -6,6 +6,7 @@ import type { BuoyReading, ConditionsRow } from '@/lib/conditions'
 import type { Beach, BeachState } from '@/lib/seed/beaches'
 import type {
   DayBasis,
+  DaySummary,
   IngestSource,
   LiveStatus,
   SourceHealthView,
@@ -13,6 +14,7 @@ import type {
   StatusSource,
 } from '@/lib/status'
 
+import { withRetry } from './retry'
 import type { PageStore, StatusWriter } from './store'
 
 /**
@@ -59,16 +61,26 @@ interface BuoyReadingRow {
   observed_at: string
 }
 
+/** status_day_summary: PostgREST serialises the bigint counts as strings. */
+interface DaySummaryRow {
+  day: string
+  open: number | string
+  advisory: number | string
+  closed: number | string
+  offseason: number | string
+}
+
 /** PostgREST serialises `numeric` as a string; the page wants numbers. */
 function num(value: number | string): number {
   return typeof value === 'number' ? value : Number(value)
 }
 
-function fail(op: string, error: { message: string } | null): never {
-  throw new Error(`supabase ${op}: ${error?.message ?? 'unknown error'}`)
-}
-
-/** The only Supabase client in the app. Server-only; the browser never holds a key. */
+/**
+ * The only Supabase client in the app. Server-only; the browser never holds a
+ * key. Every call goes through `withRetry` (lib/db/retry.ts): the gateway was
+ * seen refusing one call at the top of the hour, and each write here is an
+ * upsert on a natural key, so a repeat costs nothing.
+ */
 export class SupabaseStore implements PageStore, StatusWriter {
   readonly kind = 'supabase' as const
   private readonly db: SupabaseClient
@@ -80,9 +92,8 @@ export class SupabaseStore implements PageStore, StatusWriter {
   }
 
   async liveStatus(): Promise<LiveStatus[]> {
-    const { data, error } = await this.db.from('beach_status').select('*')
-    if (error) fail('beach_status select', error)
-    return ((data ?? []) as BeachStatusRow[]).map((r) => ({
+    const data = await withRetry<BeachStatusRow[]>('beach_status select', () => this.db.from('beach_status').select('*'))
+    return (data ?? []).map((r) => ({
       kind: 'live',
       beachId: r.beach_id,
       state: r.state,
@@ -95,25 +106,22 @@ export class SupabaseStore implements PageStore, StatusWriter {
   }
 
   async dayStatus(day: string): Promise<StatusDayView[]> {
-    const { data, error } = await this.db.from('status_day').select('*').eq('day', day)
-    if (error) fail('status_day select', error)
-    return ((data ?? []) as StatusDayRow[]).map(fromDayRow)
+    const data = await withRetry<StatusDayRow[]>('status_day select', () =>
+      this.db.from('status_day').select('*').eq('day', day),
+    )
+    return (data ?? []).map(fromDayRow)
   }
 
   async history(fromDay: string, toDay: string): Promise<StatusDayView[]> {
-    const { data, error } = await this.db
-      .from('status_day')
-      .select('*')
-      .gte('day', fromDay)
-      .lte('day', toDay)
-    if (error) fail('status_day range', error)
-    return ((data ?? []) as StatusDayRow[]).map(fromDayRow)
+    const data = await withRetry<StatusDayRow[]>('status_day range', () =>
+      this.db.from('status_day').select('*').gte('day', fromDay).lte('day', toDay),
+    )
+    return (data ?? []).map(fromDayRow)
   }
 
   async health(): Promise<SourceHealthView[]> {
-    const { data, error } = await this.db.from('source_health').select('*')
-    if (error) fail('source_health select', error)
-    return ((data ?? []) as SourceHealthRow[]).map((r) => ({
+    const data = await withRetry<SourceHealthRow[]>('source_health select', () => this.db.from('source_health').select('*'))
+    return (data ?? []).map((r) => ({
       source: r.source,
       lastAttemptAt: r.last_attempt_at,
       lastSuccessAt: r.last_success_at,
@@ -121,17 +129,24 @@ export class SupabaseStore implements PageStore, StatusWriter {
     }))
   }
 
-  async days(): Promise<string[]> {
-    const { data, error } = await this.db.from('status_day').select('day')
-    if (error) fail('status_day days', error)
-    const days = new Set(((data ?? []) as { day: string }[]).map((r) => r.day))
-    return [...days].sort().reverse()
+  async days(): Promise<DaySummary[]> {
+    const data = await withRetry<DaySummaryRow[]>('status_day_summary select', () =>
+      this.db.from('status_day_summary').select('*').order('day', { ascending: false }),
+    )
+    return (data ?? []).map((r) => ({
+      day: r.day,
+      open: num(r.open),
+      advisory: num(r.advisory),
+      closed: num(r.closed),
+      offseason: num(r.offseason),
+    }))
   }
 
   async conditions(): Promise<ConditionsRow[]> {
-    const { data, error } = await this.db.from('beach_conditions').select('*')
-    if (error) fail('beach_conditions select', error)
-    return ((data ?? []) as BeachConditionsRow[]).map((r) => ({
+    const data = await withRetry<BeachConditionsRow[]>('beach_conditions select', () =>
+      this.db.from('beach_conditions').select('*'),
+    )
+    return (data ?? []).map((r) => ({
       beachId: r.beach_id,
       windKmh: num(r.wind_kmh),
       windDirDeg: r.wind_dir_deg,
@@ -141,9 +156,9 @@ export class SupabaseStore implements PageStore, StatusWriter {
   }
 
   async buoy(): Promise<BuoyReading | null> {
-    const { data, error } = await this.db.from('buoy_reading').select('*').limit(1).maybeSingle()
-    if (error) fail('buoy_reading select', error)
-    const r = data as BuoyReadingRow | null
+    const r = await withRetry<BuoyReadingRow>('buoy_reading select', () =>
+      this.db.from('buoy_reading').select('*').limit(1).maybeSingle(),
+    )
     if (!r) return null
     return {
       buoy: r.buoy,
@@ -163,8 +178,7 @@ export class SupabaseStore implements PageStore, StatusWriter {
       region: b.region,
       source_url: b.sourceUrl,
     }))
-    const { error } = await this.db.from('beaches').upsert(rows, { onConflict: 'id' })
-    if (error) fail('beaches upsert', error)
+    await withRetry('beaches upsert', () => this.db.from('beaches').upsert(rows, { onConflict: 'id' }))
     return rows.length
   }
 
@@ -176,8 +190,7 @@ export class SupabaseStore implements PageStore, StatusWriter {
       basis: r.basis,
       note: r.note,
     }))
-    const { error } = await this.db.from('status_day').upsert(out, { onConflict: 'beach_id,day' })
-    if (error) fail('status_day upsert', error)
+    await withRetry('status_day upsert', () => this.db.from('status_day').upsert(out, { onConflict: 'beach_id,day' }))
     return out.length
   }
 
@@ -191,8 +204,7 @@ export class SupabaseStore implements PageStore, StatusWriter {
       source_posted_at: r.postedAt,
       last_confirmed_at: r.confirmedAt,
     }))
-    const { error } = await this.db.from('beach_status').upsert(out, { onConflict: 'beach_id' })
-    if (error) fail('beach_status upsert', error)
+    await withRetry('beach_status upsert', () => this.db.from('beach_status').upsert(out, { onConflict: 'beach_id' }))
     return out.length
   }
 
@@ -203,8 +215,7 @@ export class SupabaseStore implements PageStore, StatusWriter {
       last_success_at: r.lastSuccessAt,
       last_error: r.lastError,
     }))
-    const { error } = await this.db.from('source_health').upsert(out, { onConflict: 'source' })
-    if (error) fail('source_health upsert', error)
+    await withRetry('source_health upsert', () => this.db.from('source_health').upsert(out, { onConflict: 'source' }))
     return out.length
   }
 
@@ -216,8 +227,9 @@ export class SupabaseStore implements PageStore, StatusWriter {
       air_temp_c: r.airTempC,
       observed_at: r.observedAt,
     }))
-    const { error } = await this.db.from('beach_conditions').upsert(out, { onConflict: 'beach_id' })
-    if (error) fail('beach_conditions upsert', error)
+    await withRetry('beach_conditions upsert', () =>
+      this.db.from('beach_conditions').upsert(out, { onConflict: 'beach_id' }),
+    )
     return out.length
   }
 
@@ -227,8 +239,7 @@ export class SupabaseStore implements PageStore, StatusWriter {
       water_temp_c: reading.waterTempC,
       observed_at: reading.observedAt,
     }
-    const { error } = await this.db.from('buoy_reading').upsert(row, { onConflict: 'buoy' })
-    if (error) fail('buoy_reading upsert', error)
+    await withRetry('buoy_reading upsert', () => this.db.from('buoy_reading').upsert(row, { onConflict: 'buoy' }))
   }
 }
 

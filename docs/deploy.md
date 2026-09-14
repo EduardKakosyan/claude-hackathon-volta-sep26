@@ -3,8 +3,16 @@
 The site is one Vercel project (`claude-hackathon-volta-sep26`, production
 domain `www.nsbeaches.ca`) reading and writing one Supabase project
 (`nsbeaches`, ref `rggtdnxmttkelupnudcj`, `ca-central-1`, free tier, in the
-Promptly org). Vercel Cron calls `/api/refresh` at the top of every hour;
+Promptly org). Vercel Cron calls `/api/refresh` at seven past every hour;
 that route is the only thing that writes to the database.
+
+Seven past, not on the hour: on 2026-09-13 the first two cron runs (22:00:12
+and 23:00:13 UTC) both failed with a 500 while every hand-fired refresh in
+between succeeded. Supabase's API logs showed the cause — its gateway answered
+one PostgREST call in each run with a 504, inside the first second of the hour,
+and nothing else all evening. The schedule now avoids that second, the store
+retries every call three times (`lib/db/retry.ts`), and the route logs the
+error it used to only return, so a failed run reads in `vercel logs`.
 
 With no database credentials the app serves the fixture day (see
 `.env.example`), and refuses to do so in production: a production deployment
@@ -39,7 +47,7 @@ vercel env ls        # names and environments only; values are never printed
 ## The database
 
 The CLI is linked to the project (`supabase link --project-ref rggtdnxmttkelupnudcj`;
-the link lives in the ignored `supabase/.temp/`). The six migrations in
+the link lives in the ignored `supabase/.temp/`). The seven migrations in
 `supabase/migrations/` were applied with it. To apply a new one:
 
 ```bash
@@ -70,10 +78,13 @@ service role bypasses RLS. Nothing in the app holds the anon key.
    curl -s -H "Authorization: Bearer $CRON_SECRET" https://www.nsbeaches.ca/api/refresh | jq .
    ```
 
-   Expected in September: `seeded.beaches` 35, `live.sources` empty (both
-   authorities off-season, no fetch made), 35 `offseason` rows,
-   `conditions.sources` with `wind` and `buoy` ok, and `pushed` with nothing
-   sent. In season, `live.sources` names `hrm`, `parks` and `algae`.
+   Expected in September: `seeded.beaches` 35 and `seeded.days` 255 — with
+   `seeded.rows` 8925 the first time a server instance runs and 0 after, since
+   the replay days (every day of 2026 to September 12, `lib/seed/days/2026.ts`)
+   are written once per instance — `live.sources` empty (both authorities
+   off-season, no fetch made), 35 `offseason` rows, `conditions.sources` with
+   `wind` and `buoy` ok, and `pushed` with nothing sent. In season,
+   `live.sources` names `hrm`, `parks` and `algae`.
 4. `curl -s https://www.nsbeaches.ca | grep -o 'checked [0-9:]* [ap].m.'` —
    the footer carries a real timestamp, not "fixture".
 5. `pnpm dev` with the pulled `.env.local`: the local footer shows the same
