@@ -78,6 +78,13 @@ describe('DayScrubber', () => {
     expect(aug14).toHaveAttribute('href', '/?day=2026-08-14&beach=hrm-kinap')
     expect(aug14).toHaveAttribute('aria-current', 'date')
     expect(aug14).toHaveAttribute('data-tone', 'closed')
+    // The bar: closed, then advisory, then open, each part grown by its count.
+    const parts = [...aug14.querySelectorAll<HTMLElement>('.beach-scrubber-bar > i')]
+    expect(parts.map((p) => [p.getAttribute('data-state'), p.style.flexGrow])).toEqual([
+      ['closed', '1'],
+      ['advisory', '2'],
+      ['open', '32'],
+    ])
     const today = within(strip).getByRole('link', { name: /^Today, September 13, 2026/ })
     expect(today).toHaveAttribute('href', '/?beach=hrm-kinap')
     expect(today).not.toHaveAttribute('aria-current')

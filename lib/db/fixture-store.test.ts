@@ -71,8 +71,11 @@ describe('FixtureStore', () => {
     expect(days.find((d) => d.day === '2026-08-14')).toEqual({ day: '2026-08-14', open: 32, advisory: 2, closed: 1, offseason: 0 })
     expect(await store.dayStatus('2026-08-14')).toHaveLength(35)
     expect(await store.dayStatus('2025-07-01')).toEqual([])
-    expect(await store.history('2026-08-01', '2026-08-14')).toHaveLength(14 * 35)
-    expect(await store.history('2025-08-15', '2025-08-28')).toEqual([])
+    const oakfield = await store.beachHistory('hrm-oakfield-park')
+    expect(oakfield).toHaveLength(255)
+    expect(oakfield.every((r) => r.beachId === 'hrm-oakfield-park')).toBe(true)
+    expect(oakfield.find((r) => r.day === '2026-07-28')).toMatchObject({ state: 'closed', basis: 'verified' })
+    expect(await store.beachHistory('not-a-beach')).toEqual([])
   })
 
   it('serves a wind row for every beach and one buoy reading, both stamped just before the clock', async () => {

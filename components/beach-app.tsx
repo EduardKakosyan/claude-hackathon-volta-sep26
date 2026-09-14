@@ -26,6 +26,7 @@ import { OPEN_METEO_CREDIT_URL } from '@/lib/ingest/sources/open-meteo'
 import { SMARTATLANTIC_CREDIT_URL } from '@/lib/ingest/sources/smartatlantic'
 import { resolveOrigin, sortByDistance } from '@/lib/geo'
 import type { GeolocationProvider } from '@/lib/geolocation'
+import { useBeachHistory, type UseBeachHistoryDeps } from '@/hooks/use-beach-history'
 import { useFollow, type UseFollowDeps } from '@/hooks/use-follow'
 import { LATE_ARRIVAL_MS, useGeolocation } from '@/hooks/use-geolocation'
 import { HALIFAX_VIEW, zoomBand, type ZoomBand } from '@/lib/map-style'
@@ -52,6 +53,8 @@ export type BeachAppProps = PageData & {
   geolocation?: GeolocationProvider | null
   /** Injected by tests: the push port, the follow client and the storage behind the bell. */
   push?: UseFollowDeps
+  /** Injected by tests: the client and cache behind the detail's timeline. */
+  history?: UseBeachHistoryDeps
 }
 
 type SelectionOrigin = 'list' | 'map'
@@ -111,11 +114,8 @@ export function BeachApp(data: BeachAppProps) {
     beaches,
     status,
     health,
-    history,
     conditions,
     days,
-    historyFrom,
-    historyTo,
     today,
     replayDay,
     storeKind,
@@ -139,6 +139,8 @@ export function BeachApp(data: BeachAppProps) {
   const geo = useGeolocation({ provider: data.geolocation, auto: true, timeoutMs: LATE_ARRIVAL_MS })
   // Nothing happens on load: the service worker and the permission prompt wait for the first bell tap.
   const follow = useFollow(data.push)
+  // The open beach's year, fetched the moment it opens; nothing for the directory.
+  const beachHistory = useBeachHistory(selectedId, data.history)
 
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -378,9 +380,6 @@ export function BeachApp(data: BeachAppProps) {
               key={selected.id}
               beach={selected}
               status={status[selected.id]}
-              history={history[selected.id] ?? []}
-              historyFrom={historyFrom}
-              historyTo={historyTo}
               replayDay={replayDay}
               distanceKm={distances[selected.id]}
               conditions={conditions[selected.id]}
@@ -390,6 +389,7 @@ export function BeachApp(data: BeachAppProps) {
                 error: follow.error,
                 onToggle: () => void follow.toggle(selected.id),
               }}
+              timeline={{ ...beachHistory, today }}
             />
           ) : (
             <>

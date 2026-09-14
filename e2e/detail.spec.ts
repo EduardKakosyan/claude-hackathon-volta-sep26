@@ -54,7 +54,6 @@ test.describe('detail', () => {
 
     const sourceLink = article.getByRole('link', { name: /open the source page/i })
     await expect(sourceLink).toHaveAttribute('target', '_blank')
-    await expect(article.locator('.beach-detail-history ol li')).toHaveCount(14)
   })
 
   test('an ocean beach near the buoy leads its conditions line with the water temperature', async ({ page }) => {

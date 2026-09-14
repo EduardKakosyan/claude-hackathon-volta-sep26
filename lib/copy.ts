@@ -6,7 +6,7 @@ import type { ConditionsView } from '@/lib/conditions'
 import { formatClock, formatPosted } from '@/lib/dates'
 import { SEASON } from '@/lib/season'
 import type { Authority, Beach, BeachState } from '@/lib/seed/beaches'
-import type { IngestSource, LiveStatus, SourceHealthView, StatusSource, StatusView } from '@/lib/status'
+import type { DayBasis, IngestSource, LiveStatus, SourceHealthView, StatusSource, StatusView } from '@/lib/status'
 
 /**
  * The plain-English line under the status. Keyed by (state, source) because
@@ -223,4 +223,12 @@ export function formatFreshness(
   }
 
   return parts.length > 0 ? parts.join(' · ') : 'No source has been read yet'
+}
+
+/** How a replayed day's row came to exist: the line under a replayed status, and the timeline's evidence. */
+export const BASIS_LINE: Record<DayBasis, string> = {
+  scraped: 'Recorded by this app on the day.',
+  verified: 'Reconstructed from a dated notice or an archived status table.',
+  inferred: 'Reconstruction: no notice was found for this beach that day.',
+  calendar: 'Outside the published supervision season: nothing was read that day.',
 }

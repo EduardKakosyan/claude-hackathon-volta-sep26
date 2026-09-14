@@ -4,23 +4,21 @@ import { ExternalLink } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 
 import { BeachActions } from '@/components/beach-actions'
+import { BeachTimeline } from '@/components/beach-timeline'
 import { FollowBell } from '@/components/follow-bell'
+import type { BeachHistoryState } from '@/hooks/use-beach-history'
 import type { FollowState } from '@/hooks/use-follow'
 import { authorityName, statusPresentation, UNKNOWN_CAVEAT, type PinState } from '@/lib/beach-status'
 import type { ConditionsView } from '@/lib/conditions'
-import { formatConditions, offseasonLine, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
-import { addDays, formatDay, formatDayShort, formatPosted } from '@/lib/dates'
+import { BASIS_LINE, formatConditions, offseasonLine, plainEnglish, SOURCE_SAYS } from '@/lib/copy'
+import { formatDay, formatPosted } from '@/lib/dates'
 import { formatDistance } from '@/lib/geo'
 import type { Beach } from '@/lib/seed/beaches'
-import type { DayBasis, StatusDayView, StatusView } from '@/lib/status'
+import type { StatusView } from '@/lib/status'
 
 export interface BeachDetailProps {
   beach: Beach
   status: StatusView | undefined
-  /** This beach's rows in the history window, oldest first. */
-  history: StatusDayView[]
-  historyFrom: string
-  historyTo: string
   replayDay?: string
   /**
    * Kilometres from wherever the directory is measured from (the visitor, or
@@ -34,7 +32,11 @@ export interface BeachDetailProps {
   conditions?: ConditionsView
   /** The follow bell beside the name: its state for this beach, and the toggle. Absent, no bell. */
   follow?: FollowSlot
+  /** The beach's season for the timeline below the facts, and today's date to end it on. Absent, no timeline. */
+  timeline?: TimelineSlot
 }
+
+export type TimelineSlot = BeachHistoryState & { today: string }
 
 export interface FollowSlot {
   state: FollowState
@@ -43,18 +45,10 @@ export interface FollowSlot {
   onToggle: () => void
 }
 
-/** How a replayed day's row came to exist. */
-const BASIS_LINE: Record<DayBasis, string> = {
-  scraped: 'Recorded by this app on the day.',
-  verified: 'Reconstructed from a dated notice or an archived status table.',
-  inferred: 'Reconstruction: no notice was found for this beach that day.',
-  calendar: 'Outside the published supervision season: nothing was read that day.',
-}
-
 /**
  * One field note: the heading, the single boxed status block, the plain-English
- * line, and Directions / Share above the fold; the facts, the 14-day strip and
- * the source links below it. It has no back control (the panel heading's is the
+ * line, and Directions / Share above the fold; the facts, the season timeline
+ * and the source links below it. It has no back control (the panel heading's is the
  * only one) and no scroller of its own (the sheet or panel column is the only
  * thing that scrolls), and every rule it wears is a `.beach-detail-*` class in
  * beach-shell.css.
@@ -67,13 +61,11 @@ const BASIS_LINE: Record<DayBasis, string> = {
 export function BeachDetail({
   beach,
   status,
-  history,
-  historyFrom,
-  historyTo,
   replayDay,
   distanceKm,
   conditions,
   follow,
+  timeline,
 }: BeachDetailProps) {
   const state: PinState = status?.state ?? 'unknown'
   const { label } = statusPresentation(state, beach.authority)
@@ -86,10 +78,6 @@ export function BeachDetail({
   useEffect(() => {
     nameRef.current?.focus({ preventScroll: true })
   }, [])
-
-  const byDay = new Map(history.map((row) => [row.day, row]))
-  const cells: string[] = []
-  for (let d = historyFrom; d <= historyTo; d = addDays(d, 1)) cells.push(d)
 
   // The source's exact words are quoted only when they say more than the label
   // already does: "Open" under OPEN is noise, "Risk advisory in effect" is not.
@@ -186,26 +174,8 @@ export function BeachDetail({
         ) : null}
       </dl>
 
-      <section className="beach-detail-history" aria-label="Daily status strip">
-        <h3>
-          Last 14 days
-          <span>
-            {formatDayShort(historyFrom)} – {formatDayShort(historyTo)}
-          </span>
-        </h3>
-        <ol>
-          {cells.map((day) => {
-            const row = byDay.get(day)
-            return (
-              <li
-                key={day}
-                data-state={row?.state ?? 'none'}
-                title={`${formatDayShort(day)}: ${row?.state ?? 'no record'}`}
-              />
-            )
-          })}
-        </ol>
-      </section>
+      {/* Keyed on the day: a replay navigation starts the band's pick afresh. */}
+      {timeline ? <BeachTimeline key={replayDay ?? 'today'} beach={beach} replayDay={replayDay} {...timeline} /> : null}
 
       <p className="beach-detail-sources">
         {status?.kind === 'live' ? (

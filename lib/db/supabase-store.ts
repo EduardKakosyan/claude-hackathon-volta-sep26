@@ -112,9 +112,9 @@ export class SupabaseStore implements PageStore, StatusWriter {
     return (data ?? []).map(fromDayRow)
   }
 
-  async history(fromDay: string, toDay: string): Promise<StatusDayView[]> {
-    const data = await withRetry<StatusDayRow[]>('status_day range', () =>
-      this.db.from('status_day').select('*').gte('day', fromDay).lte('day', toDay),
+  async beachHistory(beachId: string): Promise<StatusDayView[]> {
+    const data = await withRetry<StatusDayRow[]>('status_day by beach', () =>
+      this.db.from('status_day').select('*').eq('beach_id', beachId).order('day'),
     )
     return (data ?? []).map(fromDayRow)
   }

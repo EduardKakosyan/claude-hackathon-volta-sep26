@@ -41,6 +41,31 @@ export function describeDay(d: DaySummary): string {
   return parts.length ? parts.join(', ') : 'no record yet'
 }
 
+/**
+ * The chip's bar: how many beaches stood in each state that day, worst first
+ * so any red sits at the same edge on every chip. Each non-empty part keeps a
+ * 2px floor (the flex basis), so one closed beach among 35 stays visible
+ * without painting the whole day. Off-season days are one muted bar; today
+ * with no row yet has none.
+ */
+function DayBar({ day, tone }: { day: DaySummary; tone: DayTone }) {
+  if (tone === 'live') return <span className="beach-scrubber-bar" data-tone="live" aria-hidden="true" />
+  if (tone === 'offseason') {
+    return (
+      <span className="beach-scrubber-bar" aria-hidden="true">
+        <i data-state="offseason" style={{ flexGrow: 1 }} />
+      </span>
+    )
+  }
+  return (
+    <span className="beach-scrubber-bar" aria-hidden="true">
+      {day.closed > 0 ? <i data-state="closed" style={{ flexGrow: day.closed }} /> : null}
+      {day.advisory > 0 ? <i data-state="advisory" style={{ flexGrow: day.advisory }} /> : null}
+      {day.open > 0 ? <i data-state="open" style={{ flexGrow: day.open }} /> : null}
+    </span>
+  )
+}
+
 const WEEKDAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', weekday: 'narrow' })
 const MONTH = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', month: 'short' })
 const MONTH_LONG = new Intl.DateTimeFormat('en-CA', { timeZone: 'UTC', month: 'long', year: 'numeric' })
@@ -74,8 +99,8 @@ export function monthsOf(days: readonly DaySummary[], today: string): Month[] {
  * "Replay a day". One pill at the top of the map says which day the map shows
  * — "Today", or "Replaying Aug 14" on ink so a replayed map can never pass for
  * a live one, with a control back to today beside it. The pill opens a strip
- * of every recorded day, one chip each, grouped by month, with a dot in the
- * day's worst state, that scrolls sideways and snaps; the arrow keys walk it.
+ * of every recorded day, one chip each, grouped by month, with a bar of the
+ * day's states by count, that scrolls sideways and snaps; the arrow keys walk it.
  * Picking a day changes which rows the page needs, so it is a real navigation
  * and the server renders again from `status_day`. The strip stays open across
  * that navigation — the shell keeps its client state — so days can be stepped
@@ -193,7 +218,7 @@ export function DayScrubber({ days, today, replayDay, beachId, className }: DayS
                         >
                           <span className="beach-scrubber-weekday">{WEEKDAY.format(at(d.day))}</span>
                           <span className="beach-scrubber-num">{Number(d.day.slice(8))}</span>
-                          <span className="beach-scrubber-dot" />
+                          <DayBar day={d} tone={tone} />
                         </a>
                       </li>
                     )

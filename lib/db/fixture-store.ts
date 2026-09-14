@@ -40,10 +40,10 @@ export class FixtureStore implements PageStore {
     return seedDayRows(day)
   }
 
-  async history(fromDay: string, toDay: string): Promise<StatusDayView[]> {
+  async beachHistory(beachId: string): Promise<StatusDayView[]> {
     return Object.keys(SEED_DAYS)
-      .filter((d) => d >= fromDay && d <= toDay)
       .flatMap((d) => seedDayRows(d))
+      .filter((r) => r.beachId === beachId)
   }
 
   async health(): Promise<SourceHealthView[]> {
