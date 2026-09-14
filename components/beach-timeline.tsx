@@ -137,11 +137,14 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
   const [picked, setPicked] = useState<string | null>(null)
   const dragging = useRef(false)
   /**
-   * Where the mouse last was over the band. WebKit sends a mouse move again
-   * whenever layout changes under a resting pointer (the readout growing as a
-   * key picks a day is enough), and a pointer that has not moved must not take
-   * the readout back from the keyboard.
+   * Once the keyboard has picked a day, the mouse must actually move before it
+   * previews again. WebKit sends a mouse move whenever layout changes under a
+   * resting pointer (the readout growing as a key picks a day is enough), and
+   * a pointer that has not moved must not take the readout back. `lastMouse` is
+   * where the band last saw it; a move that matches, or the first one while
+   * held, is the resting pointer.
    */
+  const mouseHeld = useRef(false)
   const lastMouse = useRef<{ x: number; y: number } | null>(null)
   const selected = picked ?? (replayDay && band.days.includes(replayDay) ? replayDay : null)
 
@@ -173,7 +176,10 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
     else if (event.pointerType === 'mouse') {
       const last = lastMouse.current
       lastMouse.current = { x: event.clientX, y: event.clientY }
-      if (last && last.x === event.clientX && last.y === event.clientY) return
+      if (mouseHeld.current) {
+        if (!last || (last.x === event.clientX && last.y === event.clientY)) return
+        mouseHeld.current = false
+      }
       setHover(day)
     }
   }
@@ -204,6 +210,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
     if (next === null) return
     event.preventDefault()
     setPicked(band.days[Math.min(band.days.length - 1, Math.max(0, next))])
+    mouseHeld.current = true
     setHover(null)
   }
 
