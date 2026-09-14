@@ -92,10 +92,10 @@ export function BeachDetail({
           status.postedAt ? `posted ${formatPosted(status.postedAt)}` : `confirmed ${formatPosted(status.confirmedAt)}`
         }`
       : status?.kind === 'replay'
-        ? `Replayed status for ${formatDay(status.day)}`
+        ? `Status on ${formatDay(status.day)}`
         : replayDay
           ? `No record for ${formatDay(replayDay)}`
-          : 'No status read yet'
+          : 'No official status available yet'
 
   const basis =
     status?.kind === 'replay' ? `${BASIS_LINE[status.basis]}${status.note ? ` ${status.note}` : ''}` : null
@@ -103,8 +103,8 @@ export function BeachDetail({
   const plain = status
     ? plainEnglish(status)
     : replayDay
-      ? `This app has no status for this beach on that day. ${UNKNOWN_CAVEAT}`
-      : `No government source has been read for this beach yet, so no colour is shown. ${UNKNOWN_CAVEAT}`
+      ? `We have no record for this beach on that day. ${UNKNOWN_CAVEAT}`
+      : `We don't have an official update for this beach yet. ${UNKNOWN_CAVEAT}`
 
   const conditionsLine = conditions ? (
     <p className="beach-detail-conditions" data-lead={offseason}>
@@ -160,7 +160,7 @@ export function BeachDetail({
         </div>
         <div>
           <dt>Water</dt>
-          <dd>{beach.water === 'fresh' ? 'Fresh water (E. coli)' : 'Salt water (enterococci)'}</dd>
+          <dd>{beach.water === 'fresh' ? 'Fresh water, tested for E. coli' : 'Salt water, tested for enterococci'}</dd>
         </div>
         <div>
           <dt>Run by</dt>
@@ -180,7 +180,7 @@ export function BeachDetail({
       <p className="beach-detail-sources">
         {status?.kind === 'live' ? (
           <a href={status.sourceUrl} target="_blank" rel="noreferrer">
-            Open the source page <ExternalLink size={12} aria-hidden="true" />
+            Read the official update <ExternalLink size={12} aria-hidden="true" />
           </a>
         ) : null}
         <a href={beach.sourceUrl} target="_blank" rel="noreferrer">

@@ -5,7 +5,7 @@ import type { Beach } from '@/lib/seed/beaches'
 export const SITE_NAME = 'Is the Beach Open'
 export const SITE_SHORT_NAME = 'Beach Open'
 export const SITE_DESCRIPTION =
-  'Today’s official status for every government-monitored beach in Nova Scotia, on one map.'
+  'Check beach advisories and closures across Nova Scotia before you go. Find monitored beaches, lifeguard hours and official updates on one map.'
 export const THEME_COLOR = '#efeeea'
 
 /**
@@ -46,8 +46,8 @@ export function beachMetadata(beach: Beach, params: { day?: string } = {}): Meta
   const url = `/?${search.toString()}`
   const where = beach.waterBody === beach.community ? beach.waterBody : `${beach.waterBody}, ${beach.community}`
   const description = params.day
-    ? `${beach.name} (${where}) as it stood on ${params.day}.`
-    : `Is ${beach.name} open today? Official status for ${beach.name} (${where}), with the government's own words.`
+    ? `View the recorded status of ${beach.name} (${where}) on ${params.day}.`
+    : `Heading to ${beach.name} (${where})? Check advisories, closures and lifeguard hours before you go.`
   return {
     title: beach.name,
     description,

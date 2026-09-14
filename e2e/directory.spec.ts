@@ -78,7 +78,7 @@ test.describe('directory', () => {
   test('the fixture day shows a spread of states and says so in the footer', async ({ page }) => {
     await page.goto('/')
     const footer = page.locator('.beach-shell-footer')
-    await expect(footer).toContainText('Showing a fixture day, not live status')
+    await expect(footer).toContainText('Demo data, not current beach conditions')
     await expect(footer).toContainText('2 beaches have no status available')
 
     const status = (state: string) => page.locator(`.beach-shell-row-status[data-state="${state}"]`)
@@ -113,6 +113,6 @@ test.describe('directory', () => {
     await more.locator('summary').click()
     await expect(more).toHaveAttribute('open', '')
     await expect(footer.locator('a', { hasText: 'Open-Meteo' })).toBeVisible()
-    await expect(footer.locator('a', { hasText: 'Suggest one' })).toBeVisible()
+    await expect(footer.locator('a', { hasText: 'Let us know on GitHub' })).toBeVisible()
   })
 })

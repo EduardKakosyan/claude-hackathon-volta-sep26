@@ -60,7 +60,7 @@ export type BeachAppProps = PageData & {
 type SelectionOrigin = 'list' | 'map'
 
 /**
- * Where "Suggest one" in the footer goes: a new issue on the public repository,
+ * Where the footer feedback link goes: a new issue on the public repository,
  * pre-filled from .github/ISSUE_TEMPLATE/suggestion.md. Nothing runs inside the
  * app and nothing needs moderating; swap this one address for a hosted form if
  * needing a GitHub account turns out to be a barrier.
@@ -73,7 +73,7 @@ const ORIGIN_HEADING = { user: 'Closest to you', halifax: 'Near Halifax' } as co
 
 /** The one quiet line under the heading when the origin needs explaining. */
 const ORIGIN_NOTE = {
-  far: 'The nearest monitored beach is far.',
+  far: 'There are no monitored beaches nearby.',
   halifax: 'Showing distances from downtown Halifax.',
 } as const
 
@@ -266,7 +266,7 @@ export function BeachApp(data: BeachAppProps) {
   const footer = replayDay
     ? `Replaying ${formatDay(replayDay)} — not today’s status`
     : storeKind === 'fixture'
-      ? ['Showing a fixture day, not live status', ...offseason.map(offseasonLabel)].join(' · ')
+      ? ['Demo data, not current beach conditions', ...offseason.map(offseasonLabel)].join(' · ')
       : formatFreshness(health, offseason)
 
   return (
@@ -365,9 +365,9 @@ export function BeachApp(data: BeachAppProps) {
                   Halifax buoy. Both CC BY 4.0.
                 </p>
                 <p>
-                  Ideas or problems?{' '}
+                  Something missing or not working?{' '}
                   <a href={SUGGEST_URL} target="_blank" rel="noreferrer">
-                    Suggest one
+                    Let us know on GitHub
                   </a>
                 </p>
               </details>

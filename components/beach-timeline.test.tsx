@@ -82,7 +82,7 @@ describe('BeachTimeline', () => {
     expect(region).toHaveTextContent('2026 season')
     expect(region).toHaveTextContent('Jul 1 – Aug 31')
     expect(region).toHaveTextContent('35 days open · 27 closed')
-    expect(region).toHaveTextContent('Drag along the band, or use the arrow keys')
+    expect(region).toHaveTextContent('Drag across the timeline or use the arrow keys')
     const band = screen.getByRole('slider', { name: 'Oakfield Park Beach, day by day' })
     expect(band).toHaveAttribute('aria-valuemax', '77')
     expect(band).toHaveAttribute('aria-valuetext', '35 days open · 27 closed')
@@ -104,7 +104,7 @@ describe('BeachTimeline', () => {
     expect(band).toHaveAttribute('aria-valuetext', 'July 28, 2026: Closed')
     const readout = screen.getByText('July 28, 2026').closest('.beach-timeline-readout')!
     expect(readout).toHaveTextContent('Closed')
-    expect(readout).toHaveTextContent('Reconstructed from a dated notice or an archived status table. halifax.ca, "Oakfield Beach closed to swimming".')
+    expect(readout).toHaveTextContent('Based on a dated notice or a saved copy of the official status page. halifax.ca, "Oakfield Beach closed to swimming".')
     expect(screen.getByRole('link', { name: 'Replay Jul 28 on the map' })).toHaveAttribute('href', '/?day=2026-07-28&beach=hrm-oakfield-park')
     expect(band.querySelector('.beach-timeline-cursor')).toHaveStyle({ gridColumn: '29' })
 
@@ -140,11 +140,11 @@ describe('BeachTimeline', () => {
 
   it('says so while loading, when the load failed, and when nothing is recorded', () => {
     const { rerender } = render(<BeachTimeline beach={OAKFIELD} today={TODAY} status="loading" history={null} error={null} />)
-    expect(screen.getByRole('status')).toHaveTextContent('Loading this beach’s year…')
+    expect(screen.getByRole('status')).toHaveTextContent('Loading beach history…')
     rerender(<BeachTimeline beach={OAKFIELD} today={TODAY} status="error" history={null} error="history: answered 503" />)
-    expect(screen.getByRole('alert')).toHaveTextContent('Could not load this beach’s year just now. history: answered 503')
+    expect(screen.getByRole('alert')).toHaveTextContent('We couldn’t load the beach history. Try refreshing the page. history: answered 503')
     rerender(<BeachTimeline beach={OAKFIELD} today={TODAY} {...ready([])} />)
-    expect(screen.getByRole('region', { name: 'Season timeline' })).toHaveTextContent('No days recorded yet for this beach.')
+    expect(screen.getByRole('region', { name: 'Season timeline' })).toHaveTextContent('We don’t have any history for this beach yet.')
     expect(screen.queryByRole('slider')).not.toBeInTheDocument()
   })
 })

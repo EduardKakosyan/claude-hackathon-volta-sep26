@@ -39,7 +39,7 @@ export const BeachToolbar = memo(function BeachToolbar({
         <div className="beach-shell-brand">
           <Image src="/logo.png" alt="" width={38} height={38} className="beach-shell-brand-mark" aria-hidden="true" />
           <div>
-            <p className="beach-shell-eyebrow">Nova Scotia / Beach guide</p>
+            <p className="beach-shell-eyebrow">Nova Scotia beaches</p>
             <h1>Is the beach open?</h1>
           </div>
         </div>

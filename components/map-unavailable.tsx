@@ -19,8 +19,7 @@ export function MapUnavailable({ message, onRetry }: MapUnavailableProps) {
       <MapPinOff size={30} strokeWidth={1.3} aria-hidden="true" />
       <h2>The map could not load</h2>
       <p>
-        This is a problem with the map, not with any beach&apos;s status. Every beach is still
-        listed beside this panel with its official source link.
+        You can still use the beach list to check statuses and find official updates. The map problem doesn&apos;t affect those listings.
       </p>
       <p className="beach-shell-map-failed-detail">{message}</p>
       <button type="button" onClick={onRetry}>

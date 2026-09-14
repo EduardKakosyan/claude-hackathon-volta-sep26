@@ -25,13 +25,13 @@ describe('MapKey', () => {
     expect(screen.getByText(/Off-season/)).toBeInTheDocument()
   })
 
-  it('the off-season entry says nothing is tested and that rows show conditions instead', async () => {
+  it('the off-season entry explains that water testing and lifeguards are unavailable', async () => {
     const user = userEvent.setup()
     render(<MapKey />)
     await user.click(screen.getByText('Map key'))
 
     const entry = screen.getByText(/^Off-season/)
-    expect(entry).toHaveTextContent('Off-season: not tested or supervised; rows show conditions instead')
+    expect(entry).toHaveTextContent('Off-season: no water testing or lifeguards')
     // Its pin is the calm ring, not the dashed unknown.
     const pin = entry.closest('li')!.querySelector('[data-slot="status-pin"]')!
     expect(pin).toHaveAttribute('data-state', 'offseason')
@@ -47,7 +47,7 @@ describe('MapKey', () => {
     await user.click(summary)
 
     expect(screen.getByText(/hollow pin.*provincial beach/i)).toBeInTheDocument()
-    expect(screen.getByText(/No advisory posted is not a confirmed clean sample/i)).toBeInTheDocument()
+    expect(screen.getByText(/No advisory posted doesn't mean the water has passed a test/i)).toBeInTheDocument()
   })
 
   it('includes the unknown caveat', async () => {
@@ -57,7 +57,7 @@ describe('MapKey', () => {
     const summary = screen.getByText('Map key')
     await user.click(summary)
 
-    expect(screen.getByText(/No status available means we have not read an official status/i)).toBeInTheDocument()
+    expect(screen.getByText(/No status available means we don't have an official update yet/i)).toBeInTheDocument()
     expect(screen.getByText(/Unknown does not mean open/i)).toBeInTheDocument()
   })
 

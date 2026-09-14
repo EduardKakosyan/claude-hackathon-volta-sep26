@@ -35,7 +35,7 @@ test.describe('season timeline', () => {
     await page.keyboard.press('PageDown')
     await expect(band).toHaveAttribute('aria-valuetext', /September 6, 2026: Off-season/)
     const readout = timeline.locator('.beach-timeline-readout')
-    await expect(readout).toContainText('Outside the published supervision season')
+    await expect(readout).toContainText('Outside the published lifeguard season')
 
     // Back into August: the closure, with its inferred note.
     for (let i = 0; i < 3; i++) await page.keyboard.press('PageDown')

@@ -25,7 +25,7 @@ describe('MapUnavailable', () => {
       />
     )
 
-    expect(screen.getByText(/This is a problem with the map, not with any beach/)).toBeInTheDocument()
+    expect(screen.getByText(/The map problem doesn't affect those listings/)).toBeInTheDocument()
   })
 
   it('has a "Try the map again" button that calls onRetry', async () => {

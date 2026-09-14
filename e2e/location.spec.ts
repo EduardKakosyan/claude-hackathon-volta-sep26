@@ -80,7 +80,7 @@ test.describe('location', () => {
 
     await expect(heading(page)).toHaveText('Closest to you')
     await expect(note(page)).toHaveAttribute('data-far', 'true')
-    await expect(note(page)).toContainText('The nearest monitored beach is far.')
+    await expect(note(page)).toContainText('There are no monitored beaches nearby.')
     expect(await firstKm(page)).toBeGreaterThan(400)
     await expect(rows(page).first().locator('.beach-shell-row-distance')).toHaveText(/^\d{3,4} km$/)
 

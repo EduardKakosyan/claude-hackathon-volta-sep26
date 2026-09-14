@@ -68,7 +68,7 @@ describe('sendTransitions', () => {
     ])
     const chocolate = calls.find((c) => c.endpoint.endsWith('/one'))!.payload
     expect(chocolate).toEqual({
-      title: 'Chocolate Lake Beach is now Advisory',
+      title: 'Chocolate Lake Beach: advisory',
       body: 'halifax.ca: “Risk advisory in effect” Posted today, 8:02 a.m.',
       beachId: 'hrm-chocolate-lake',
       url: '/?beach=hrm-chocolate-lake',

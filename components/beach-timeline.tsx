@@ -200,7 +200,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
       ]
         .filter(Boolean)
         .join(' · ')
-    : 'Off-season every recorded day so far.'
+    : 'All recorded dates are outside the swimming season.'
 
   const gridStyle: CSSProperties = { gridTemplateColumns: band.template }
   const replayHref = selected && selected !== today && selected !== replayDay ? buildHref({ day: selected, beach: beach.id }) : null
@@ -215,14 +215,14 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
 
       {status === 'loading' || status === 'idle' ? (
         <p className="beach-timeline-note" role="status">
-          Loading this beach’s year…
+          Loading beach history…
         </p>
       ) : status === 'error' ? (
         <p className="beach-timeline-note" role="alert">
-          Could not load this beach’s year just now.{error ? ` ${error}` : ''}
+          We couldn’t load the beach history. Try refreshing the page.{error ? ` ${error}` : ''}
         </p>
       ) : band.days.length === 0 ? (
-        <p className="beach-timeline-note">No days recorded yet for this beach.</p>
+        <p className="beach-timeline-note">We don’t have any history for this beach yet.</p>
       ) : (
         <>
           <div
@@ -288,7 +288,7 @@ export function BeachTimeline({ beach, today, replayDay, status, history, error 
             ) : (
               <>
                 <span className="beach-timeline-summary">{summary}</span>
-                <span className="beach-timeline-hint">Drag along the band, or use the arrow keys, for any day.</span>
+                <span className="beach-timeline-hint">Drag across the timeline or use the arrow keys to check a day.</span>
               </>
             )}
           </p>

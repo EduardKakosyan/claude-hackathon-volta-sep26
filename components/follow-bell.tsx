@@ -17,12 +17,12 @@ export interface FollowBellProps {
 /** What a tap can only explain, not do. */
 export const FOLLOW_HINT: Record<Exclude<FollowState, 'off' | 'on'>, string> = {
   'needs-install':
-    'On iPhone, notifications need this app on your Home Screen. Tap Share, then Add to Home Screen, open it from there, and tap the bell again.',
+    'On iPhone, tap Share, then Add to Home Screen. Open the app from your Home Screen and tap Follow to turn on notifications.',
   blocked: 'Notifications are blocked for this site. Allow them in your browser settings, then tap the bell again.',
-  unsupported: 'This browser cannot receive notifications.',
+  unsupported: 'Notifications aren’t supported in this browser.',
 }
 
-export const FOLLOW_ERROR_HINT = 'Could not follow this beach just now. Tap the bell to try again.'
+export const FOLLOW_ERROR_HINT = 'We couldn’t update your notifications. Tap the bell to try again.'
 
 const LABEL: Record<FollowState, string> = {
   off: 'Follow',
@@ -33,8 +33,8 @@ const LABEL: Record<FollowState, string> = {
 }
 
 const TITLE: Record<FollowState, string> = {
-  off: 'Get one notification when this beach changes status',
-  on: 'Following: one notification when this beach changes status. Tap to stop.',
+  off: 'Get notified when this beach’s status changes',
+  on: 'You’ll be notified when the status changes. Tap to stop following.',
   blocked: FOLLOW_HINT.blocked,
   'needs-install': 'Add to Home Screen first',
   unsupported: FOLLOW_HINT.unsupported,
