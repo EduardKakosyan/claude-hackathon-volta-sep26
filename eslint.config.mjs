@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // MapLibre's worker chunks, copied verbatim from node_modules on postinstall.
     "public/maplibre/**",
+    // The DGX autonomy environment is a separate Python package with its own toolchain.
+    "autonomy/**",
   ]),
 ]);
 

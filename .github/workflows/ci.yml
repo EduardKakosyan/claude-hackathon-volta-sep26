@@ -47,3 +47,26 @@ jobs:
             playwright-report/
           if-no-files-found: ignore
           retention-days: 14
+
+  # The DGX autonomy environment (autonomy/) is a separate Python package. Its unit
+  # tests need no Docker, SSH or model; the `dgx` smoke tests run on hugo-dgx1 only.
+  autonomy:
+    name: autonomy · ruff · mypy · pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: autonomy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: autonomy/uv.lock
+
+      - run: uv sync --frozen
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+      - run: uv run mypy src
+      - run: uv run pytest -m "not dgx"
