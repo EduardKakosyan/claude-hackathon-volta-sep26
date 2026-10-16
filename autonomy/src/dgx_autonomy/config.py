@@ -284,7 +284,8 @@ class Settings:
 
     @property
     def reservation_record(self) -> Path:
-        """Written by the reservation helper (host) while claude-qwen is displaced."""
+        """Written by the reservation helper (host) while the DGX inference is reserved;
+        Keeper's summary model loads nothing while it exists."""
         return self.data_dir / "reservation" / "record.json"
 
     @property

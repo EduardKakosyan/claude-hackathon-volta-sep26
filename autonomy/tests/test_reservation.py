@@ -1,340 +1,314 @@
-"""The reservation helper against a fake systemd and a tmp root filesystem."""
+"""The reservation helper against a tmp root filesystem and a fake summary proxy."""
 
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+import socket
+import threading
+from collections.abc import Iterator
 from datetime import UTC, datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from dgx_autonomy import reservation as rs
-from dgx_autonomy.reservation import (
-    DROPIN_NAME,
-    HEADROOM_BYTES,
-    NOTICE_SERVICE,
-    SERVICE,
-    Host,
-    Refused,
-    Reservation,
-    Result,
-)
+from dgx_autonomy.reservation import Host, Reservation, ReservationError
 
 GIB = 1024**3
-
-# claude-qwen.service as found on hugo-dgx1 (read-only inspection, Phase 3).
-UNIT = """\
-[Unit]
-Description=Claude Qwen llama.cpp inference server
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=jim
-WorkingDirectory=/home/jim
-
-ExecStart=/home/jim/src/llama.cpp-claude/build/bin/llama-server \\
-  --model /home/jim/models/qwen3.8-27b/Qwen3.8-27B-Q8_0.gguf \\
-  --mmproj /home/jim/models/qwen3.8-27b/mmproj-Qwen3.8-27B-Q8_0.gguf \\
-  --alias qwen3.8-opus \\
-  --host 127.0.0.1 \\
-  --port 8090 \\
-  --ctx-size 262144 \\
-  --parallel 1 \\
-  --n-gpu-layers all \\
-  --jinja \\
-  --api-key-file /home/jim/.config/llama-claude/api-key \\
-  --no-ui
-
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-"""
-UNIT_PATH = "/etc/systemd/system/claude-qwen.service"
-DROPIN_DIR = "/etc/systemd/system/claude-qwen.service.d"
+RECORD = "var/lib/dgx-autonomy/reservation/record.json"
 
 
-class FakeSystemd:
-    """systemctl for one service and the notice, with conditions and memory."""
+class FakeProxy:
+    """`GET /proxy/status` of keeper_summary_proxy.py, driven by the record it obeys.
 
-    def __init__(self, root: Path, *, active: bool = True, footprint: int = 37 * GIB) -> None:
+    `stops_after` polls after the record appears, a loaded model reports `idle`
+    (the proxy waited for its in-flight request, then stopped it). None: never.
+    """
+
+    def __init__(self, root: Path, *, state: str = "idle", stops_after: int | None = 2) -> None:
         self.root = root
-        self.active = active
-        self.enabled = "enabled"
-        self.notice_active = False
-        self.footprint = footprint
-        self.mem = 40 * GIB  # MemAvailable while claude-qwen runs
-        self.calls: list[list[str]] = []
-        self.skipped_starts = 0
+        self.state = state
+        self.stops_after = stops_after
+        self.running = True
+        self.polls = 0
+        self.record_seen_first = True  # the record existed at every poll
+        self.reserved_flag: bool | None = None  # None: report what the proxy would see
 
-    def path(self, p: str) -> Path:
-        return self.root / p.lstrip("/")
+    def reserved(self) -> bool:
+        return (self.root / RECORD).exists()
 
-    def dropins(self) -> list[str]:
-        d = self.path(DROPIN_DIR)
-        return sorted(f"{DROPIN_DIR}/{f.name}" for f in d.glob("*.conf")) if d.is_dir() else []
+    def __call__(self) -> dict[str, Any] | None:
+        self.polls += 1
+        if not self.reserved():
+            self.record_seen_first = False
+        if not self.running:
+            return None
+        if self.state != "idle" and self.reserved():
+            if self.stops_after is not None and self.polls > self.stops_after:
+                self.state = "idle"
+            elif self.state in ("starting", "ready"):
+                self.state = "stopping"
+        reserved = self.reserved() if self.reserved_flag is None else self.reserved_flag
+        return {"state": self.state, "model": "qwen3.6-35b-a3b", "reserved": reserved}
 
-    def condition_blocks(self) -> bool:
-        for p in self.dropins():
-            for line in self.path(p).read_text().splitlines():
-                if (
-                    line.startswith("ConditionPathExists=!")
-                    and self.path(line.split("!", 1)[1]).exists()
-                ):
-                    return True
-        return False
 
-    def cat(self) -> str:
-        out = f"# {UNIT_PATH}\n{self.path(UNIT_PATH).read_text()}"
-        for p in self.dropins():
-            out += f"\n# {p}\n{self.path(p).read_text()}"
-        return out
+class Clock:
+    def __init__(self) -> None:
+        self.t = 0.0
 
-    def __call__(self, argv: Sequence[str]) -> Result:
-        argv = list(argv)
-        self.calls.append(argv)
-        assert argv[0] == "systemctl"
-        verb, unit = argv[1], argv[2] if len(argv) > 2 else None
-        if verb == "show":
-            state = "active" if self.active else "inactive"
-            return Result(
-                0,
-                f"FragmentPath={UNIT_PATH}\nDropInPaths={' '.join(self.dropins())}\n"
-                f"UnitFileState={self.enabled}\nActiveState={state}\nLoadState=loaded\n"
-                "ExecStart={ path=/home/jim/... }\n",
-                "",
-            )
-        if verb == "cat":
-            return Result(0, self.cat(), "")
-        if verb == "daemon-reload":
-            return Result(0, "", "")
-        if verb == "is-active":
-            return Result(0, "active\n" if self.notice_active else "inactive\n", "")
-        if unit == NOTICE_SERVICE:
-            self.notice_active = verb == "start"
-            return Result(0, "", "")
-        if verb == "stop":
-            if self.active:
-                self.active = False
-                self.mem += self.footprint
-            return Result(0, "", "")
-        if verb == "start":
-            if self.condition_blocks():
-                self.skipped_starts += 1  # systemd: "condition check resulted in … skipped"
-            elif not self.active:
-                self.active = True
-                self.mem -= self.footprint
-            return Result(0, "", "")
-        if verb in ("enable", "disable"):
-            self.enabled = f"{verb}d"
-            return Result(0, "", "")
-        raise AssertionError(f"unexpected systemctl call {argv}")
+    def monotonic(self) -> float:
+        return self.t
+
+    def sleep(self, s: float) -> None:
+        self.t += s
 
 
 @pytest.fixture
-def systemd(tmp_path: Path) -> FakeSystemd:
-    root = tmp_path / "root"
-    unit = root / UNIT_PATH.lstrip("/")
-    unit.parent.mkdir(parents=True)
-    unit.write_text(UNIT)
-    weights = root / "home/jim/models/qwen3.8-27b"
-    weights.mkdir(parents=True)
-    (weights / "Qwen3.8-27B-Q8_0.gguf").write_bytes(b"x" * 1000)
-    return FakeSystemd(root)
+def root(tmp_path: Path) -> Path:
+    return tmp_path / "root"
 
 
-def _reservation(systemd: FakeSystemd, *, health: int = 200) -> Reservation:
+def _reservation(root: Path, proxy: Any, clock: Clock | None = None) -> Reservation:
+    clock = clock or Clock()
     host = Host(
-        root=systemd.root,
-        run=systemd,
-        meminfo=lambda: {"MemAvailable": systemd.mem},
-        http_status=lambda url: health,
-        sleep=lambda s: None,
-        now=lambda: datetime(2026, 9, 23, 12, 0, tzinfo=UTC),
+        root=root,
+        proxy_status=proxy,
+        meminfo=lambda: {"MemAvailable": 100 * GIB},
+        sleep=clock.sleep,
+        monotonic=clock.monotonic,
+        now=lambda: datetime(2026, 10, 16, 12, 0, tzinfo=UTC),
     )
     return Reservation(host)
 
 
-def test_reserve_records_the_prior_service_then_displaces_it(systemd: FakeSystemd) -> None:
-    before = systemd.cat()
-    out = _reservation(systemd).reserve()
+def test_reserve_writes_the_record_before_it_asks_the_proxy(root: Path) -> None:
+    proxy = FakeProxy(root, state="idle")
+    out = _reservation(root, proxy).reserve()
 
     assert out["reservation"] == "held" and out["already"] is False
-    assert out["notice"] == "http://127.0.0.1:8090/"
-    rec = out["record"]
+    assert proxy.polls == 1 and proxy.record_seen_first
+    rec = json.loads((root / RECORD).read_text())
     assert rec["state"] == "held"
-    assert rec["prior_unit_path"] == UNIT_PATH
-    assert rec["prior_active"] is True and rec["prior_enabled"] == "enabled"
-    assert rec["prior_dropins"] == {} and rec["prior_dropin_dir_existed"] is False
-    assert (rec["notice_host"], rec["notice_port"]) == ("127.0.0.1", 8090)
-    assert rec["freed_bytes"] == 37 * GIB
-    assert rec["required_available_bytes"] == 37 * GIB + HEADROOM_BYTES
-
-    assert not systemd.active and systemd.notice_active
-    # The unit file itself is untouched; the reservation is one drop-in.
-    assert systemd.path(UNIT_PATH).read_text() == UNIT
-    assert systemd.dropins() == [f"{DROPIN_DIR}/{DROPIN_NAME}"]
-    # The prior configuration is kept verbatim for the operator.
-    record_dir = systemd.path("/var/lib/dgx-autonomy/reservation")
-    assert (record_dir / "prior" / "unit").read_text() == UNIT
-    assert (record_dir / "prior" / "systemctl-cat").read_text() == before
-    assert (record_dir / "notice.env").read_text() == "NOTICE_HOST=127.0.0.1\nNOTICE_PORT=8090\n"
+    assert rec["held_since"] == "2026-10-16T12:00:00+00:00"
+    assert rec["summary_model_loaded"] is False and rec["summary_model"] is None
+    assert rec["summary_wait_seconds"] == 0.0
+    assert rec["notes"] == []
 
 
-def test_the_service_cannot_start_while_the_reservation_is_held(systemd: FakeSystemd) -> None:
-    _reservation(systemd).reserve()
-    # By hand, by Restart=always, or at boot: the drop-in's condition skips the start.
-    systemd(["systemctl", "start", SERVICE])
-    assert not systemd.active and systemd.skipped_starts == 1
+def test_reserve_waits_for_a_loaded_summary_model_to_stop(root: Path) -> None:
+    proxy = FakeProxy(root, state="ready", stops_after=3)
+    clock = Clock()
+    rec = _reservation(root, proxy, clock).reserve()["record"]
+
+    assert proxy.state == "idle" and proxy.record_seen_first
+    assert rec["state"] == "held"
+    assert rec["summary_model_loaded"] is True
+    assert rec["summary_model"] == "qwen3.6-35b-a3b"
+    assert rec["summary_wait_seconds"] == 3 * rs.POLL_S
 
 
-def test_reserve_twice_is_a_no_op(systemd: FakeSystemd) -> None:
-    r = _reservation(systemd)
-    first = r.reserve()
-    calls = len(systemd.calls)
-    again = r.reserve()
-    assert again["already"] is True
-    assert again["record"] == first["record"]
-    assert not any(c[1] in ("stop", "start") for c in systemd.calls[calls:])
+def test_a_proxy_that_is_not_running_means_nothing_is_loaded(root: Path) -> None:
+    proxy = FakeProxy(root)
+    proxy.running = False
+    rec = _reservation(root, proxy).reserve()["record"]
+    assert rec["state"] == "held" and rec["summary_model_loaded"] is False
 
 
-def test_release_restores_the_exact_prior_configuration(systemd: FakeSystemd) -> None:
-    before = systemd.cat()
-    r = _reservation(systemd)
-    r.reserve()
-    out = r.release()
+def test_an_unreadable_proxy_is_polled_until_it_answers(root: Path) -> None:
+    answers: list[Any] = [OSError("timed out"), OSError("HTTP 500"), {"state": "idle"}]
 
-    assert out["reservation"] == "released"
-    assert out["configuration_restored"] is True and out["mismatches"] == []
-    assert out["health"] == "ready"
-    assert systemd.active and not systemd.notice_active
-    assert systemd.cat() == before
-    assert systemd.path(UNIT_PATH).read_text() == UNIT
-    # The drop-in directory did not exist before, so it does not exist after.
-    assert not systemd.path(DROPIN_DIR).exists()
-    assert r.read_record() is None
-    archived = list(systemd.path("/var/lib/dgx-autonomy/reservation/released").iterdir())
-    assert len(archived) == 1 and json.loads(archived[0].read_text())["state"] == "releasing"
-    # The notice gives the port back before claude-qwen needs it.
-    verbs = [(c[1], c[2] if len(c) > 2 else "") for c in systemd.calls]
-    assert verbs.index(("stop", NOTICE_SERVICE)) < verbs.index(("start", SERVICE))
+    def proxy() -> dict[str, Any] | None:
+        answer = answers.pop(0)
+        if isinstance(answer, Exception):
+            raise answer
+        return answer  # type: ignore[no-any-return]
+
+    rec = _reservation(root, proxy).reserve()["record"]
+    assert rec["state"] == "held" and rec["summary_model_loaded"] is False
+    assert rec["summary_wait_seconds"] == 2 * rs.POLL_S
 
 
-def test_release_keeps_the_operators_own_dropins(systemd: FakeSystemd) -> None:
-    own = systemd.path(f"{DROPIN_DIR}/10-limits.conf")
-    own.parent.mkdir(parents=True)
-    own.write_text("[Service]\nMemoryHigh=60G\n")
-    before = systemd.cat()
-    r = _reservation(systemd)
-    rec = r.reserve()["record"]
-    assert list(rec["prior_dropins"]) == [f"{DROPIN_DIR}/10-limits.conf"]
-    assert rec["prior_dropin_dir_existed"] is True
+def test_a_model_that_does_not_stop_fails_the_reserve_and_keeps_the_record(root: Path) -> None:
+    proxy = FakeProxy(root, state="ready", stops_after=None)
+    clock = Clock()
+    r = _reservation(root, proxy, clock)
 
-    out = r.release()
-    assert out["configuration_restored"] is True
-    assert systemd.cat() == before
-    assert own.read_text() == "[Service]\nMemoryHigh=60G\n"
-
-
-def test_release_is_refused_while_the_memory_is_not_there(systemd: FakeSystemd) -> None:
-    r = _reservation(systemd)
-    r.reserve()
-    systemd.mem -= 40 * GIB  # a retained demo and the owned llama-server hold memory
-    calls = len(systemd.calls)
-
-    with pytest.raises(Refused, match="still held"):
-        r.release()
-
-    # Nothing changed: still displaced, still announced, still recorded.
-    assert not any(c[1] in ("stop", "start", "daemon-reload") for c in systemd.calls[calls:])
-    assert not systemd.active and systemd.notice_active
-    assert systemd.dropins() == [f"{DROPIN_DIR}/{DROPIN_NAME}"]
-    record = r.read_record()
-    assert record is not None and record.state == "held"
-
-    systemd.mem += 40 * GIB  # the operator stopped the demo
-    assert r.release()["reservation"] == "released"
-    assert systemd.active
-
-
-def test_release_without_a_reservation_does_nothing(systemd: FakeSystemd) -> None:
-    assert _reservation(systemd).release() == {"reservation": "none", "already": True}
-    assert systemd.calls == []
-
-
-def test_a_stopped_service_stays_stopped_after_release(systemd: FakeSystemd) -> None:
-    systemd.active = False
-    r = _reservation(systemd)
-    rec = r.reserve()["record"]
-    assert rec["prior_active"] is False
-    # Nothing was freed, so the weights on disk stand in for its footprint.
-    assert rec["freed_bytes"] == 1000
-    out = r.release()
-    assert not systemd.active and out["health"] is None
-
-
-def test_a_unit_edited_during_the_reservation_is_reported_not_overwritten(
-    systemd: FakeSystemd,
-) -> None:
-    r = _reservation(systemd)
-    r.reserve()
-    edited = UNIT.replace("--ctx-size 262144", "--ctx-size 131072")
-    systemd.path(UNIT_PATH).write_text(edited)
-
-    out = r.release()
-    assert out["configuration_restored"] is False
-    assert any("changed during the reservation" in m for m in out["mismatches"])
-    assert systemd.path(UNIT_PATH).read_text() == edited
-
-
-def test_a_half_done_reserve_resumes_with_the_first_snapshot(
-    systemd: FakeSystemd, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    r = _reservation(systemd)
-
-    def crash(*_args: object, **_kwargs: object) -> None:
-        raise rs.ReservationError("controller of the universe crashed")
-
-    monkeypatch.setattr(r, "_wait_inactive", crash)
-    with pytest.raises(rs.ReservationError):
+    with pytest.raises(ReservationError, match="did not stop within 240s"):
         r.reserve()
+    assert rs.YIELD_TIMEOUT_S < clock.t <= rs.YIELD_TIMEOUT_S + rs.POLL_S
     record = r.read_record()
     assert record is not None and record.state == "reserving"
-    assert not systemd.active  # stopped before the crash
-    monkeypatch.undo()
+    assert "had not stopped" in record.notes[0]
 
+    # The proxy has obeyed the record all along; a second reserve finishes the wait.
+    proxy.stops_after = 0
     rec = r.reserve()["record"]
-    # What the service was before the first attempt, not the half-reserved state.
-    assert rec["state"] == "held" and rec["prior_active"] is True
-    assert rec["freed_bytes"] == 37 * GIB
-    r.release()
-    assert systemd.active
+    assert rec["state"] == "held" and rec["held_since"] == "2026-10-16T12:00:00+00:00"
 
 
-def test_client_address_reads_host_and_port_across_continuations() -> None:
-    assert rs.client_address(UNIT) == ("127.0.0.1", 8090)
-    assert rs.client_address("[Service]\nExecStart=/bin/llama-server --port=9000\n") == (
-        "127.0.0.1",
-        9000,
-    )
+def test_the_helper_exits_1_on_a_timeout(
+    root: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    proxy = FakeProxy(root, state="ready", stops_after=None)
+    clock = Clock()
+    monkeypatch.setattr(rs, "Reservation", lambda: _reservation(root, proxy, clock))
+    assert rs.main(["reserve"]) == rs.EXIT_FAILED
+    assert "did not stop" in json.loads(capsys.readouterr().out)["error"]
+    assert (root / RECORD).exists()
 
 
-def test_a_unit_without_a_port_is_not_reserved(systemd: FakeSystemd) -> None:
-    systemd.path(UNIT_PATH).write_text(UNIT.replace("--port 8090", ""))
-    with pytest.raises(Refused, match="--port"):
-        _reservation(systemd).reserve()
-    assert not systemd.path("/var/lib/dgx-autonomy/reservation/record.json").exists()
-    assert systemd.active
+def test_reserve_twice_is_a_no_op(root: Path) -> None:
+    proxy = FakeProxy(root, state="ready")
+    r = _reservation(root, proxy)
+    first = r.reserve()
+    polls = proxy.polls
+    again = r.reserve()
+    assert again["already"] is True and again["record"] == first["record"]
+    assert proxy.polls == polls
+
+
+def test_a_proxy_that_does_not_see_the_record_is_noted(root: Path) -> None:
+    proxy = FakeProxy(root, state="idle")
+    proxy.reserved_flag = False
+    rec = _reservation(root, proxy).reserve()["record"]
+    assert rec["state"] == "held"
+    assert any("reservation_paths" in n for n in rec["notes"])
+
+
+def test_release_archives_and_removes_the_record_unconditionally(root: Path) -> None:
+    proxy = FakeProxy(root, state="ready")
+    r = _reservation(root, proxy)
+    r.reserve()
+    held = (root / RECORD).read_text()
+    polls = proxy.polls
+
+    out = r.release()
+    assert out == {
+        "reservation": "released",
+        "already": False,
+        "held_since": "2026-10-16T12:00:00+00:00",
+        "archived": "/var/lib/dgx-autonomy/reservation/released/20261016T120000Z.json",
+    }
+    assert not (root / RECORD).exists()
+    archived = root / "var/lib/dgx-autonomy/reservation/released/20261016T120000Z.json"
+    assert archived.read_text() == held
+    assert proxy.polls == polls  # release asks nobody; summaries resume on their own
+
+
+def test_release_lets_go_of_a_reserve_that_timed_out(root: Path) -> None:
+    r = _reservation(root, FakeProxy(root, state="ready", stops_after=None))
+    with pytest.raises(ReservationError):
+        r.reserve()
+    assert r.release()["reservation"] == "released"
+    assert r.read_record() is None
+
+
+def test_release_without_a_reservation_does_nothing(root: Path) -> None:
+    assert _reservation(root, FakeProxy(root)).release() == {
+        "reservation": "none",
+        "already": True,
+    }
+
+
+def test_release_removes_an_unreadable_record_too(root: Path) -> None:
+    (root / RECORD).parent.mkdir(parents=True)
+    (root / RECORD).write_text("{not json")
+    out = _reservation(root, FakeProxy(root)).release()
+    assert out["reservation"] == "released" and out["held_since"] is None
+    assert not (root / RECORD).exists()
+
+
+def test_a_record_from_the_claude_qwen_helper_is_still_read_and_released(root: Path) -> None:
+    old = {
+        "state": "held",
+        "held_since": "2026-10-13T11:25:00+00:00",
+        "service": "claude-qwen.service",
+        "prior_unit_path": "/etc/systemd/system/claude-qwen.service",
+        "prior_unit_sha": "ab",
+        "prior_dropins": {},
+        "prior_dropin_dir_existed": False,
+        "prior_effective_sha": "cd",
+        "prior_enabled": "enabled",
+        "prior_active": True,
+        "notice_host": "127.0.0.1",
+        "notice_port": 8090,
+        "freed_bytes": 37 * GIB,
+        "required_available_bytes": 45 * GIB,
+        "notes": [],
+    }
+    (root / RECORD).parent.mkdir(parents=True)
+    (root / RECORD).write_text(json.dumps(old))
+    r = _reservation(root, FakeProxy(root))
+
+    record = r.read_record()
+    assert record is not None and record.state == "held"
+    assert record.held_since == "2026-10-13T11:25:00+00:00"
+    assert r.status()["reservation"] == "held"
+    assert r.reserve()["already"] is True
+    assert r.release()["held_since"] == "2026-10-13T11:25:00+00:00"
+
+
+def test_status_includes_the_summary_proxy(root: Path) -> None:
+    proxy = FakeProxy(root, state="idle")
+    r = _reservation(root, proxy)
+    out = r.status()
+    assert out["reservation"] == "none" and out["record"] is None
+    assert out["summary_proxy"]["state"] == "idle"
+    assert out["mem_available_gib"] == 100.0
+
+    r.reserve()
+    out = r.status()
+    assert out["reservation"] == "held" and out["summary_proxy"]["reserved"] is True
+
+    proxy.running = False
+    assert r.status()["summary_proxy"] == "not running"
+
+
+class _Status(BaseHTTPRequestHandler):
+    body = b'{"state": "ready", "model": "m"}'
+
+    def do_GET(self) -> None:
+        self.send_response(200 if self.path == "/proxy/status" else 404)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(self.body)
+
+    def log_message(self, format: str, *args: Any) -> None:
+        pass
+
+
+@pytest.fixture
+def status_server() -> Iterator[str]:
+    server = ThreadingHTTPServer(("127.0.0.1", 0), _Status)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield f"http://127.0.0.1:{server.server_address[1]}"
+    server.shutdown()
+    server.server_close()
+
+
+def test_fetch_proxy_status_reads_the_json(status_server: str) -> None:
+    assert rs.fetch_proxy_status(f"{status_server}/proxy/status") == {
+        "state": "ready",
+        "model": "m",
+    }
+    with pytest.raises(OSError, match="HTTP 404"):
+        rs.fetch_proxy_status(f"{status_server}/elsewhere")
+
+
+def test_a_refused_connection_means_no_proxy() -> None:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    # Bound but not listening: the connection is refused.
+    assert rs.fetch_proxy_status(f"http://127.0.0.1:{port}/proxy/status") is None
 
 
 def test_the_helper_takes_exactly_one_known_action(capsys: pytest.CaptureFixture[str]) -> None:
-    assert rs.main([]) == rs.EXIT_REFUSED
-    assert rs.main(["reserve", "--force"]) == rs.EXIT_REFUSED
-    assert rs.main(["rm"]) == rs.EXIT_REFUSED
+    assert rs.main([]) == rs.EXIT_USAGE
+    assert rs.main(["reserve", "--force"]) == rs.EXIT_USAGE
+    assert rs.main(["rm"]) == rs.EXIT_USAGE
     assert "usage" in capsys.readouterr().err
 
 
@@ -349,3 +323,4 @@ def test_the_helper_imports_only_the_standard_library() -> None:
     ]
     assert imports and all(not m.startswith((".", "dgx_autonomy")) for m in imports)
     assert "yaml" not in imports and "httpx" not in imports
+    assert "subprocess" not in imports  # it starts and stops nothing

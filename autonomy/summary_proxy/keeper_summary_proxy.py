@@ -17,7 +17,7 @@ is loaded until a request arrives:
   that appears while a model is loaded stops it: requests in flight may finish, for at
   most ``reservation_grace_seconds``, then the process group is terminated.
 - A model is never started while ``MemAvailable`` is below the model's ``need_gib`` plus
-  ``headroom_gib``: something else (an autonomy run without the reservation, claude-qwen)
+  ``headroom_gib``: something else (retained demos, a model loaded without the reservation)
   holds the memory, and Keeper's queue waits on the ``503`` instead.
 
 Keeper's summary queue retries any failure with a doubling backoff (5 s up to 30 min, 40

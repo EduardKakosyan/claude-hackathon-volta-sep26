@@ -7,15 +7,16 @@
 # settings; `measured` is what it recorded (the controller does not read it). The
 # records are in /var/lib/dgx-autonomy/qualification/<model>/.
 #
-# The default is the preferred model, qualified 2026-09-23. It needs the
-# reservation (`dgx-autonomy reserve`): the controller refuses to load it while
-# claude-qwen holds its memory. Choose the fallback with `--model qwen3.6-35b-a3b`
-# to run next to claude-qwen.
+# The default is the preferred model, qualified 2026-09-23. Every run and plan holds
+# the inference reservation (the CLI takes it), so Keeper's on-demand summary model
+# (summary_proxy/) is stopped and loads nothing while it runs. The controller still
+# refuses to load a model the host lacks the memory for. The smaller fallback is
+# `--model qwen3.6-35b-a3b`.
 default: qwen3.8-flash-next
 
 models:
   qwen3.6-35b-a3b:
-    # Apache-2.0 fallback. About 17 GB of weights, so it fits next to claude-qwen.
+    # Apache-2.0 fallback. About 17 GB of weights, so it fits next to retained demos.
     repo: unsloth/Qwen3.6-35B-A3B-GGUF
     revision: a483e9e6cbd595906af30beda3187c2663a1118c
     files:
@@ -48,8 +49,8 @@ models:
   qwen3.8-flash-next:
     # The preferred model (Qwen Community License 1.0): 125B total / 6B active MoE.
     # Unsloth's UD-Q3_K_XL pack is three shards, 89,986,353,824 bytes (83.8 GiB);
-    # llama.cpp loads a split GGUF from its first shard. It does not fit next to
-    # claude-qwen: hold the reservation (`dgx-autonomy reserve`) to use it.
+    # llama.cpp loads a split GGUF from its first shard. Its memory comes from the
+    # reservation every run and plan holds (no summary model is loaded meanwhile).
     repo: unsloth/Qwen3.8-Flash-Next-GGUF
     revision: 38bb39ee97821de2c9009abb7e93950eec396e66
     files:

@@ -13,7 +13,7 @@ import os
 import subprocess
 import sys
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -63,6 +63,29 @@ def reservation_helper(action: str, runner: HelperRunner = _run) -> dict[str, An
     return out
 
 
+def take_reservation(args: argparse.Namespace) -> dict[str, Any]:
+    """Hold the DGX inference before anything loads a model (runs, plans, `reserve`,
+    `qualify --reserve`). Stops Keeper's summary model if it is loaded; idempotent."""
+    out = reservation_helper("reserve")
+    if not getattr(args, "json", False):
+        print(reservation_line(out), flush=True)
+    return out
+
+
+def reservation_line(out: Mapping[str, Any]) -> str:
+    record = out.get("record") or {}
+    if out.get("already"):
+        return f"the reservation is held (since {record.get('held_since')})"
+    if record.get("summary_model_loaded"):
+        stopped = (
+            f"the summary model {record.get('summary_model')} stopped after"
+            f" {record.get('summary_wait_seconds')}s"
+        )
+    else:
+        stopped = "no summary model was loaded"
+    return f"reserved: {stopped}; summaries wait until `dgx-autonomy release`"
+
+
 def _socket(args: argparse.Namespace) -> Path:
     return Path(args.socket or os.environ.get("DGX_AUTONOMY_SOCKET") or default_socket_path())
 
@@ -109,6 +132,7 @@ def cmd_launch(args: argparse.Namespace) -> int:
     except frozen.FrozenError as exc:
         print(f"dgx-autonomy: {exc}", file=sys.stderr)
         return 1
+    take_reservation(args)
     result = call(
         _socket(args),
         "launch",
@@ -133,6 +157,7 @@ def cmd_launch(args: argparse.Namespace) -> int:
     print(f"run_id         {result['run_id']}")
     print(f"deadline_at    {result['deadline_at']}")
     print(f"frozen_digest  {result['frozen_digest']}")
+    print(f"release        dgx-autonomy release --after {result['run_id']} --detach")
     if not criteria:
         print("criteria       none: completion will be the builder's claim only")
     for c in criteria:
@@ -155,6 +180,7 @@ def _launch_plan(args: argparse.Namespace) -> int:
             return "force" if args.skip_dry_run else ""
         return "y"
 
+    take_reservation(args)
     session = PlanSession(
         lambda op, a=None, **kw: call(sock, op, a, **kw), args.plan, out=sys.stdout, read=answer
     )
@@ -170,6 +196,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
         result = call(sock, "plan.close", {"plan_id": args.close})
         _print(result, args.json)
         return 0
+    take_reservation(args)
     if args.attach is not None:
         plan_id = args.attach or call(sock, "plan.status", {})["plan_id"]
     else:
@@ -544,6 +571,8 @@ def _print_qualification(q: dict[str, Any]) -> None:
 def cmd_qualify(args: argparse.Namespace) -> int:
     """Qualify a model with the whole workload running; follow it to the verdict."""
     sock = _socket(args)
+    if getattr(args, "reserve", False):
+        take_reservation(args)
     job = call(sock, "qualify.start", {"model_key": args.model})
     if args.json and not args.follow:
         _print(job, True)
@@ -663,20 +692,11 @@ def cmd_inference(args: argparse.Namespace) -> int:
 
 
 def cmd_reserve(args: argparse.Namespace) -> int:
-    """Displace claude-qwen, then start the environment's own llama-server."""
-    out = reservation_helper("reserve")
-    record = out.get("record") or {}
+    """Hold the DGX inference (Keeper's summary model stops and waits), then start the
+    environment's own llama-server."""
+    out = take_reservation(args)
     if args.json:
         _print(out, True)
-    elif out.get("already"):
-        print(f"the reservation is already held (since {record.get('held_since')})")
-    else:
-        print(
-            f"reserved: {record.get('service')} stopped; its clients now get a busy notice"
-            f" at {out.get('notice')}"
-        )
-        gib = (record.get("required_available_bytes") or 0) / 1024**3
-        print(f"release will need {gib:.1f} GiB available to start it again")
     if args.no_inference:
         return 0
     result = call(_socket(args), "inference.ensure", {"model_key": args.model}, timeout=300)
@@ -688,7 +708,7 @@ def cmd_reserve(args: argparse.Namespace) -> int:
 RELEASE_UNIT = "dgx-autonomy-release-after@.service"
 RELEASE_UNIT_TEXT = """\
 [Unit]
-Description=dgx-autonomy: give the DGX back to claude-qwen when run %i ends
+Description=dgx-autonomy: release the inference reservation when run %i ends
 
 [Service]
 Type=exec
@@ -721,14 +741,14 @@ def _release_detached(run_id: str, runner: HelperRunner = _run) -> int:
             detail = (proc.stderr or proc.stdout).strip()
             print(f"dgx-autonomy: {' '.join(argv)}: {detail}", file=sys.stderr)
             return 1
-    print(f"{instance}: claude-qwen comes back when run {run_id} ends")
+    print(f"{instance}: the reservation is released when run {run_id} ends")
     print(f"  follow it with: journalctl --user -u {instance} -f")
     return 0
 
 
 def _release_after(args: argparse.Namespace, sleep: Callable[[float], None] = time.sleep) -> int:
-    """Wait until the run has ended, then release; retry while a release is refused
-    (a retained demo holding memory, another run starting)."""
+    """Wait until the run has ended, then release; retry while the release fails
+    (another run still uses the model, the controller is restarting)."""
     run_id = args.after
     announced = False
     while True:
@@ -756,7 +776,8 @@ def _release_after(args: argparse.Namespace, sleep: Callable[[float], None] = ti
 
 
 def cmd_release(args: argparse.Namespace) -> int:
-    """Stop the environment's llama-server and give the DGX back to claude-qwen."""
+    """Stop the environment's llama-server and release the reservation: Keeper's queued
+    summaries resume on their next retry."""
     if args.after and args.detach:
         return _release_detached(args.after)
     if args.after:
@@ -768,22 +789,17 @@ def _release_now(args: argparse.Namespace) -> int:
     stopped = call(_socket(args), "inference.stop", timeout=300)
     if not args.json:
         print(f"owned llama-server {'removed' if stopped['removed'] else 'was not running'}")
-    try:
-        out = reservation_helper("release")
-    except HelperError as exc:
-        if exc.code != HELPER_REFUSED:
-            raise
-        print(f"dgx-autonomy: release refused: {exc}", file=sys.stderr)
-        return HELPER_REFUSED
+    out = reservation_helper("release")
     if args.json:
         _print(out, True)
     elif out.get("already"):
         print("no reservation was held")
     else:
-        print(f"released: claude-qwen is {out.get('service_active')} ({out.get('health')})")
-        for m in out.get("mismatches") or []:
-            print(f"  warning: {m}")
-    return 0 if out.get("already") or out.get("configuration_restored") else 1
+        print(
+            f"released (held since {out.get('held_since')}): summaries resume on Keeper's"
+            " next retry"
+        )
+    return 0
 
 
 def cmd_notify(args: argparse.Namespace) -> int:
@@ -957,6 +973,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("qualify", help="qualify a model with the whole workload running")
     s.add_argument("model", help="model key from models.yaml")
+    s.add_argument(
+        "--reserve",
+        action="store_true",
+        help="hold the inference reservation first (stops Keeper's summary model);"
+        " `dgx-autonomy release` afterwards",
+    )
     s.add_argument("--no-follow", dest="follow", action="store_false", help="start and return")
     s.add_argument("--interval", type=float, default=15.0, help=argparse.SUPPRESS)
     s.set_defaults(func=cmd_qualify)
@@ -970,7 +992,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument(
         "--with-reservation",
         action="store_true",
-        help="also test reserve/release (stops claude-qwen for a few seconds)",
+        help="also test reserve/release (stops Keeper's summary model for a few minutes)",
     )
     s.add_argument("--out", help="report directory (default: readiness/<time>/ in the checkout)")
     s.set_defaults(func=cmd_readiness)
@@ -999,14 +1021,18 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--model", default=None)
     s.set_defaults(func=cmd_inference)
 
-    s = sub.add_parser("reserve", help="displace claude-qwen and start the owned llama-server")
+    s = sub.add_parser(
+        "reserve", help="hold the DGX inference (stops the summary model), start llama-server"
+    )
     s.add_argument("--model", default=None, help="model key for the owned llama-server")
     s.add_argument(
-        "--no-inference", action="store_true", help="only displace claude-qwen; start nothing"
+        "--no-inference", action="store_true", help="only hold the reservation; start nothing"
     )
     s.set_defaults(func=cmd_reserve)
 
-    s = sub.add_parser("release", help="stop the owned llama-server and restore claude-qwen")
+    s = sub.add_parser(
+        "release", help="stop the owned llama-server and release the reservation (summaries resume)"
+    )
     s.add_argument(
         "--after", metavar="RUN_ID", default=None, help="wait until the run ends, then release"
     )
@@ -1025,7 +1051,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--run", default=None, metavar="ID", help="only this run or plan")
     s.set_defaults(func=cmd_notify)
 
-    s = sub.add_parser("reservation", help="is the DGX inference reserved, and for how long")
+    s = sub.add_parser(
+        "reservation", help="is the DGX inference reserved, since when; the summary model's state"
+    )
     s.set_defaults(func=cmd_reservation)
 
     s = sub.add_parser("egress", help="check the agent's network boundary, or probe through it")

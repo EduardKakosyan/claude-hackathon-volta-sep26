@@ -10,10 +10,8 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
-import threading
-import urllib.error
-import urllib.request
-from http.server import ThreadingHTTPServer
+import sys
+import urllib.parse
 from pathlib import Path
 from types import ModuleType
 
@@ -25,12 +23,14 @@ from dgx_autonomy.config import Settings
 
 ROOT = Path(__file__).resolve().parents[1]
 HOST = ROOT / "host"
+SUMMARY = ROOT / "summary_proxy"
 
 
 def _load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module  # dataclasses look their module up while it loads
     spec.loader.exec_module(module)
     return module
 
@@ -90,54 +90,29 @@ def test_sudoers_grants_exactly_the_three_helper_actions() -> None:
     ]
 
 
-def test_units_and_helper_point_at_the_same_record() -> None:
-    record = str(reservation.RECORD_DIR / reservation.RECORD_NAME)
-    notice = (HOST / "dgx-autonomy-busy-notice.service").read_text()
-    assert f"ConditionPathExists={record}" in notice
-    assert f"EnvironmentFile={reservation.RECORD_DIR / reservation.NOTICE_ENV_NAME}" in notice
-    assert f"ConditionPathExists=!{record}" in reservation.dropin_text("claude-qwen.service")
-    assert Settings.from_env({}).reservation_record == Path(record)
+def test_the_helper_the_proxy_and_the_controller_agree_on_the_reservation() -> None:
+    record = reservation.RECORD_DIR / reservation.RECORD_NAME
+    assert Settings.from_env({}).reservation_record == record
+    proxy = _load("keeper_summary_proxy", SUMMARY / "keeper_summary_proxy.py")
+    assert Path(proxy.DEFAULT_RESERVATION) == record
+    example = json.loads((SUMMARY / "config.example.json").read_text())
+    assert example["reservation_paths"] == [str(record)]
+    # reserve polls the proxy where it listens, and waits longer than the proxy's grace.
+    status = urllib.parse.urlsplit(reservation.PROXY_STATUS_URL)
+    assert f"{status.hostname}:{status.port}" == example["listen"]
+    assert status.path == "/proxy/status"
+    assert example["reservation_grace_seconds"] < reservation.YIELD_TIMEOUT_S
     egress = (HOST / "dgx-autonomy-egress").read_text()
     assert 'MARKER="$MARKER_DIR/egress.json"' in egress
     assert Settings.from_env({}).egress_marker == Path("/var/lib/dgx-autonomy/policy/egress.json")
 
 
-@pytest.fixture
-def notice_url() -> str:
-    mod = _load("busy_notice", HOST / "busy_notice.py")
-    server = ThreadingHTTPServer(("127.0.0.1", 0), mod.Handler)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{server.server_address[1]}"  # type: ignore[misc]
-    server.shutdown()
-
-
-def _fetch(url: str, body: dict[str, object] | None = None) -> tuple[int, dict[str, object]]:
-    data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
-    try:
-        urllib.request.urlopen(req, timeout=5)
-    except urllib.error.HTTPError as exc:
-        return exc.code, json.loads(exc.read())
-    raise AssertionError("expected an error status")
-
-
-def test_the_busy_notice_answers_openai_clients(notice_url: str) -> None:
-    status, body = _fetch(f"{notice_url}/v1/chat/completions", {"model": "qwen3.8-opus"})
-    assert status == 503
-    error = body["error"]
-    assert isinstance(error, dict)
-    assert "in use by the autonomous coding environment" in str(error["message"])
-
-
-def test_the_busy_notice_answers_anthropic_clients(notice_url: str) -> None:
-    status, body = _fetch(f"{notice_url}/v1/messages", {"model": "qwen3.8-opus"})
-    assert status == 503
-    assert body["type"] == "error"
-    error = body["error"]
-    assert isinstance(error, dict) and error["type"] == "overloaded_error"
-    assert "dgx-autonomy release" in str(error["message"])
-
-
-def test_the_busy_notice_fails_health_checks(notice_url: str) -> None:
-    status, _ = _fetch(f"{notice_url}/health")
-    assert status == 503
+def test_the_busy_notice_is_gone_and_install_removes_it() -> None:
+    assert not (HOST / "busy_notice.py").exists()
+    assert not (HOST / "dgx-autonomy-busy-notice.service").exists()
+    install = (HOST / "install.sh").read_text()
+    commands = [line for line in install.splitlines() if not line.lstrip().startswith("#")]
+    assert not any("install " in c and "busy" in c for c in commands)
+    assert 'systemctl disable --now "$notice"' in install
+    assert 'rm -f "/etc/systemd/system/$notice"' in install
+    assert re.search(r"^systemctl enable dgx-autonomy-egress\.service$", install, re.M)

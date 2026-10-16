@@ -4,8 +4,8 @@ Download size says little about fit. `dgx-autonomy qualify MODEL` measures inste
 in the controller, one step after the other:
 
     preflight   no run or plan is active (the model is swapped); enough memory is
-                available for the weights plus headroom (hold the reservation first
-                for a model that does not fit next to claude-qwen)
+                available for the weights plus headroom (`qualify MODEL --reserve`
+                holds the reservation first, so Keeper's summary model is not loaded)
     load        the owned llama-server serves MODEL (another model is removed first);
                 load time and memory after load
     tool calls  a suite of OpenAI-style tool calls through llama.cpp's parser: single
@@ -488,7 +488,7 @@ class Qualifier:
             result["error"] = (
                 f"{result['available_gib']} GiB available (+{result['freed_by_swap_gib']} after"
                 f" removing {serving}), {result['needed_gib']} GiB needed; hold the reservation"
-                " first (dgx-autonomy reserve --no-inference)"
+                f" first (dgx-autonomy qualify {model.key} --reserve)"
             )
         return result
 

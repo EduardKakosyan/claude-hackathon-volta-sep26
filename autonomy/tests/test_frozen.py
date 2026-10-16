@@ -186,11 +186,20 @@ def test_the_cli_sends_the_checks_and_the_digest_of_what_it_read(
         sent.update(op=op, **args)
         return {"run_id": "r1", "deadline_at": "d", "frozen_digest": args["bundle_digest"]}
 
+    reserved: list[str] = []
+
+    def fake_helper(action: str, runner: Any = None) -> dict[str, Any]:
+        assert "op" not in sent, "the reservation is taken before the launch"
+        reserved.append(action)
+        return {"reservation": "held", "already": True, "record": {"held_since": "t0"}}
+
     monkeypatch.setattr(cli, "call", fake_call)
+    monkeypatch.setattr(cli, "reservation_helper", fake_helper)
     ns = argparse.Namespace(
         brief=str(_brief_dir(tmp_path)), model=None, budget_hours=2.0, json=False, socket=None
     )
     assert cli.cmd_launch(ns) == 0
+    assert reserved == ["reserve"]
     assert sent["op"] == "launch" and sent["checks"] == CHECKS
     assert sent["bundle_digest"] == frozen.bundle_digest(BRIEF.encode(), _bytes(CHECKS))
     out = capsys.readouterr().out
