@@ -1,0 +1,18 @@
+# Keeper's on-demand summary model (systemd user unit; jim lingers, so it starts at boot).
+# Starting this unit loads no model: the first request does. Stopping it stops the model.
+[Unit]
+Description=Keeper summary model, on demand (127.0.0.1:8091)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 -I %h/keeper-summary/keeper_summary_proxy.py serve --config %h/keeper-summary/config.json
+Restart=on-failure
+RestartSec=5
+# The model server is a child in its own process group; take the whole cgroup down.
+KillMode=control-group
+TimeoutStopSec=60
+UMask=0077
+
+[Install]
+WantedBy=default.target
