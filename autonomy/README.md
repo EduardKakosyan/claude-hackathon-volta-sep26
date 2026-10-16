@@ -53,14 +53,14 @@ tokens a response. It qualified again at those settings on 2026-09-24: a 206K-to
 prompt ran at 387 tokens/s prefill and 8.4 tokens/s decode (decode slows as the
 context fills), the full-context prompt recalled a word from its start, and at least
 16.3 GiB stayed available. Only 12 of its 48 layers keep a KV cache, so 256K costs
-about 3.2 GiB. It does not fit next to
-`claude-qwen`, so it needs the reservation (`dgx-autonomy reserve`, see [the
-reservation](#the-inference-reservation)). The controller refuses to load a model that
-the host lacks the memory for. The qualified fallback is `qwen3.6-35b-a3b` (Q3, about
-17 GB, 52.5 tokens/s decode at 51K). It runs next to `claude-qwen`: pass
-`--model qwen3.6-35b-a3b` to `plan` or `launch`. The reservation and the agent's
-egress policy are the only host changes the environment makes. Both are installed by
-the operator from `host/`.
+about 3.2 GiB. Every run and plan holds the
+inference reservation, which keeps Keeper's on-demand summary model unloaded while
+it lasts (see [the reservation](#the-inference-reservation)). The controller still
+refuses to load a model that the host lacks the memory for. The qualified fallback is
+`qwen3.6-35b-a3b` (Q3, about 17 GB, 52.5 tokens/s decode at 51K): pass
+`--model qwen3.6-35b-a3b` to `plan` or `launch`. The reservation helper and the
+agent's egress policy are the only host changes the environment makes. Both are
+installed by the operator from `host/`.
 
 `qwen3.8-flash-next-sglang` is the same model served by SGLang
 (`lmsysorg/sglang:dev-qwen38-next-local`) from the NVFP4 checkpoint
@@ -101,8 +101,8 @@ need an operator with sudo. Everything after this runs as `jim` without Docker a
    world-readable (`chmod -R o+rX ~/models/qwen3.6-35b-a3b`).
 
    The preferred model, Qwen3.8-Flash-Next, is three shards, 83.8 GiB in total. It
-   took about 29 minutes to download on hugo-dgx1. It needs the reservation to run
-   (see [Models: qualification](#models-qualification)):
+   took about 29 minutes to download on hugo-dgx1. Its memory comes from the
+   reservation every run and plan holds (see [Models: qualification](#models-qualification)):
 
    ```bash
    ~/.local/bin/uvx --from huggingface_hub hf download unsloth/Qwen3.8-Flash-Next-GGUF \
@@ -139,8 +139,8 @@ need an operator with sudo. Everything after this runs as `jim` without Docker a
    `docker.sock`, and one port binding:
    `3000/tcp` on `127.0.0.1:<host port>` (43000 and up, one per run).
 
-5. **Install the host pieces** (egress policy, reservation helper, busy notice,
-   sudoers entry). Review every file in `host/` first. Then:
+5. **Install the host pieces** (egress policy, reservation helper, sudoers entry).
+   Review every file in `host/` first. Then:
 
    ```bash
    sudo ~jim/dgx-autonomy/host/install.sh
@@ -148,8 +148,12 @@ need an operator with sudo. Everything after this runs as `jim` without Docker a
 
    It checks the sudoers entry with `visudo -c` and the rules with `nft -c`,
    installs root-owned copies, enables `dgx-autonomy-egress.service` (loaded before
-   Docker on every boot) and `dgx-autonomy-busy-notice.service` (runs only while a
-   reservation is held), and loads the rules now. It does not touch `claude-qwen`.
+   Docker on every boot), and loads the rules now. It removes
+   `dgx-autonomy-busy-notice.service` and `busy_notice.py`, which earlier versions
+   installed to answer `claude-qwen`'s clients; `claude-qwen` is retired (#12). Keeper's
+   summary model is a jim user unit, installed without sudo by `summary_proxy/install.sh`
+   (see `summary_proxy/README.md`). Updating from the `claude-qwen` version:
+   `host/INSTALL-RESERVATION-UPDATE.md`.
 
 6. **Recreate the networks with their fixed bridge names** (`dgx-egress`,
    `dgx-internal`) if they were created before Phase 3. The rules match those
@@ -192,12 +196,12 @@ dgx-autonomy tunnel [RUN_ID]          # prints: ssh -N -L <p>:127.0.0.1:<p> hugo
 dgx-autonomy ps [RUN_ID]              # the sandbox's processes, by role
 dgx-autonomy runs
 dgx-autonomy inference [status|up|stop] [--model M]   # stop, then up, switches models
-dgx-autonomy reserve [--model M]      # displace claude-qwen, start the owned llama-server
-dgx-autonomy release                  # remove the owned llama-server, restore claude-qwen
+dgx-autonomy reserve [--model M]      # hold the inference (summary model stops), start llama-server
+dgx-autonomy release                  # remove the owned llama-server, release; summaries resume
 dgx-autonomy release --after RUN_ID --detach   # the same, once the run has ended
-dgx-autonomy reservation              # held or not, since when, memory available
+dgx-autonomy reservation              # held or not, since when, the summary model's state
 dgx-autonomy egress [HOST:PORT ...]   # is the egress policy in place / probe through it
-dgx-autonomy qualify MODEL            # qualify a model with the whole workload running
+dgx-autonomy qualify MODEL [--reserve]   # qualify a model with the whole workload running
 dgx-autonomy qualification [MODEL]    # the latest qualification result
 dgx-autonomy readiness [--only X] [--with-reservation]   # every smoke test, one report
 dgx-autonomy notify [--follow] [--since N] [--run ID]    # the operator's feed of milestones
@@ -615,44 +619,49 @@ internet was, and host-to-demo still worked.
 
 ### The inference reservation
 
-`claude-qwen` (`/etc/systemd/system/claude-qwen.service`, as jim, `Restart=always`,
-enabled) serves Qwen3.8-27B Q8 on `127.0.0.1:8090` and uses about 37 GB. Larger
-models for the environment only fit after it is displaced. That is
-operator-authorized, and only for this service.
+The DGX's GPU memory is shared with one other workload: Keeper's summary model, served
+on demand by `summary_proxy/keeper_summary_proxy.py` (a jim user unit,
+`keeper-summary.service`, on `127.0.0.1:8091`; see `summary_proxy/README.md`). It loads
+a model only when Keeper asks for a summary and stops it after 10 idle minutes. It
+replaced `claude-qwen`, which held 37 GB around the clock and had to be displaced and
+restored for every run (#12).
 
-`dgx-autonomy reserve` runs `sudo -n /usr/local/sbin/dgx-autonomy-reservation
-reserve`, which:
+The reservation is one file, `/var/lib/dgx-autonomy/reservation/record.json`. While it
+exists the summary endpoint answers every request `503` (`error.type: reserved`) and
+starts nothing; Keeper's queue retries a `503` with a doubling backoff. Every run and
+plan takes the reservation: `dgx-autonomy launch`, `plan` and `reserve` run
+`sudo -n /usr/local/sbin/dgx-autonomy-reservation reserve` before the controller loads
+a model (the controller, in its container, cannot run the helper itself), and
+`qualify MODEL --reserve` does the same. `reserve`:
 
-1. records the unit, its drop-ins, `systemctl cat`, whether it is enabled and active,
-   and its client address in `/var/lib/dgx-autonomy/reservation/`;
-2. adds one drop-in, `claude-qwen.service.d/50-dgx-autonomy-reservation.conf`, with
-   `ConditionPathExists=!/var/lib/dgx-autonomy/reservation/record.json`. The unit file
-   is not edited. While the record exists, `systemctl start`, `Restart=always` and a
-   reboot all skip the service. Masking is not used: a unit in `/etc/systemd/system`
-   cannot be masked in place;
-3. stops it, and measures the memory that frees (at least the size of its weights);
-4. starts `dgx-autonomy-busy-notice.service` on the same address. It answers every
-   request with 503 and "DGX inference is in use by the autonomous coding
-   environment", as an Anthropic error for `/v1/messages` and an OpenAI error for
-   everything else.
+1. writes the record (state `reserving`) before anything else, so the proxy stops
+   loading at once;
+2. polls `GET http://127.0.0.1:8091/proxy/status` until it reports `idle`. A summary
+   model that was loaded finishes its in-flight request (at most 180 s, the proxy's
+   `reservation_grace_seconds`), then its process group is stopped. A refused
+   connection means the proxy is not running, so nothing is loaded;
+3. marks the record `held`, with whether a summary model was loaded, which, and how
+   long it took to go.
 
-Then the CLI starts the owned llama-server. Finishing, failing or expiring a run
-does not release anything by itself. `dgx-autonomy release --after RUN_ID --detach`
-arranges it: a systemd user unit (`dgx-autonomy-release-after@RUN_ID`, jim lingers)
-waits until the run has ended, then releases, and tries again every 5 minutes while
-the release is refused. It needs neither the SSH session nor the laptop, and a DGX
+If the model has not gone after 240 s, `reserve` exits 1 and keeps the record: nothing
+new loads, and `reserve` again waits again (or `release` gives up). Holding it twice is
+a no-op.
+
+Finishing, failing or expiring a run does not release anything by itself. `dgx-autonomy
+release --after RUN_ID --detach` arranges it (`launch` prints the command): a systemd
+user unit (`dgx-autonomy-release-after@RUN_ID`, jim lingers) waits until the run has
+ended, then releases, and tries again every 5 minutes while the release fails (another
+run still uses the model). It needs neither the SSH session nor the laptop, and a DGX
 restart starts the wait again. Without `--detach` the same wait runs in the terminal.
-On hugo-dgx1, `claude-qwen` stayed displaced for 12 hours after the runs it was
-displaced for had ended.
+On hugo-dgx1 the DGX once stayed reserved for 12 hours after the runs it was reserved
+for had ended.
 
-`dgx-autonomy release` removes the owned llama-server. The controller refuses while
-a run is active. The CLI then runs the helper's `release`, which **refuses, and
-changes nothing, unless the memory `claude-qwen` used plus 8 GiB headroom is
-available**. Retained demos hold memory. Otherwise it stops the notice, removes the
-drop-in, compares the unit, its drop-ins and `systemctl cat` with the record,
-restores the prior enabled state, starts the service if it was running, and waits
-for `/health`. Differences are reported, not overwritten: someone else made them. The
-record is archived under `reservation/released/`.
+`dgx-autonomy release` removes the owned llama-server (the controller refuses while a
+run is active), then runs the helper's `release`, which archives the record under
+`reservation/released/` and removes it. It is never refused: there is nothing to
+restore. Keeper's queued summaries resume on their next retry, which starts the
+summary model again. `dgx-autonomy reservation` shows the record and the proxy's
+`/proxy/status`.
 
 The sudoers entry (`host/sudoers-autonomy`) lets jim run exactly `reserve`,
 `release` and `status`. The helper is a root-owned, standard-library-only copy of
@@ -668,8 +677,9 @@ Qualification runs in the controller and takes about as long as a small run. Not
 may be running or planning, because the owned llama-server is switched to MODEL:
 
 1. **preflight**: enough memory for the weights plus 8 GiB (counting what removing the
-   current model frees). A model that does not fit next to `claude-qwen` needs the
-   reservation first: `dgx-autonomy reserve --no-inference`.
+   current model frees). `dgx-autonomy qualify MODEL --reserve` holds the reservation
+   first, so Keeper's summary model is not loaded meanwhile; `dgx-autonomy release`
+   afterwards.
 2. **load**: load time, and the memory the model took.
 3. **tool calls**: five OpenAI-style tool calls through llama.cpp's parser: a single
    argument, a choice between two tools, a nested array of objects (the shape of
@@ -692,7 +702,8 @@ again.
 pytest process. It writes `readiness/<time>/report.md` (and `.json`, the JUnit files
 and each suite's output) in the checkout, naming the model that served. The reboot
 checks are manual (`tests/dgx/test_reboot.md`). The reservation test runs only with
-`--with-reservation`, because it stops `claude-qwen` for a few seconds.
+`--with-reservation`, because it loads and stops Keeper's summary model and holds the
+reservation for a few minutes.
 
 ## Layout on the DGX
 
@@ -704,8 +715,9 @@ checks are manual (`tests/dgx/test_reboot.md`). The reservation test runs only w
                                   (never mounted into agent, inference or evaluator)
   state/controller.lock           the controller's writer lock (flock)
   policy/egress.json              written by dgx-autonomy-egress: boot id, rules sha256
-  reservation/record.json         present while claude-qwen is displaced (host helper)
-  reservation/prior/              the unit text and `systemctl cat` before reserve
+  reservation/record.json         present while the inference is reserved (host helper);
+                                  Keeper's summary model loads nothing meanwhile
+  reservation/released/           records of earlier reservations
   qualification/<model>/<t>.json  model qualification: steps, measurements, memory samples
   runs/<id>/frozen/               the agreement, frozen at launch; read-only at /brief in the agent
     brief.md, checks/, manifest.json   (checks/ is also read-only at /checks in evaluators)
@@ -733,8 +745,8 @@ checks are manual (`tests/dgx/test_reboot.md`). The reservation test runs only w
 cd autonomy
 uv sync
 uv run ruff check && uv run ruff format --check
-uv run mypy src
-uv run pytest -m "not dgx"          # no Docker, SSH or model needed
+uv run mypy
+uv run pytest -m "not dgx"          # no Docker, SSH or model needed; includes summary_proxy/tests
 ```
 
 Target-host smoke tests (on the DGX, controller running, model downloaded). `uv` is
@@ -748,7 +760,7 @@ ssh hugo-dgx1 'cd ~/dgx-autonomy && ~/.local/bin/uv run pytest -m dgx tests/dgx/
 ssh hugo-dgx1 'cd ~/dgx-autonomy && ~/.local/bin/uv run pytest -m dgx tests/dgx/test_protected_eval.py -s'
 ssh hugo-dgx1 'cd ~/dgx-autonomy && ~/.local/bin/uv run pytest -m dgx tests/dgx/test_plan_to_launch.py -s'
 ssh hugo-dgx1 'cd ~/dgx-autonomy && ~/.local/bin/uv run pytest -m dgx tests/dgx/test_forced_reset.py -s'
-# stops claude-qwen for a few minutes; opt in explicitly:
+# loads and stops Keeper's summary model, holds the reservation for a few minutes; opt in:
 ssh hugo-dgx1 'cd ~/dgx-autonomy && DGX_AUTONOMY_RESERVATION_TEST=1 ~/.local/bin/uv run pytest -m dgx tests/dgx/test_reserve_release.py -s'
 ```
 

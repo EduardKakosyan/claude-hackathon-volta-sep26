@@ -8,8 +8,9 @@ result, duration and failure text, and the model that served them.
 
 The DGX restart checks (resume after a reboot, expiry while offline) cannot be driven
 from here: tests/dgx/test_reboot.md is their checklist, and the report lists them as
-manual. `test_reserve_release.py` stops claude-qwen for a few seconds, so it runs only
-with --with-reservation.
+manual. `test_reserve_release.py` loads and stops Keeper's summary model and holds the
+reservation for a few minutes (summaries wait meanwhile), so it runs only with
+--with-reservation.
 """
 
 from __future__ import annotations

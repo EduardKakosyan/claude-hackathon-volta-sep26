@@ -1,8 +1,8 @@
 # DGX restart checklist (manual)
 
-A real reboot of hugo-dgx1 cannot be automated from the operator account, so this is a script to follow. It checks two things. A run resumes after the DGX restarts, with nobody connected. A deadline that passes while the DGX is off ends the run as `expired`, and the demo is kept.
+A real reboot of hugo-dgx1 cannot be automated from the operator account, so this is a script to follow. It checks three things. A run resumes after the DGX restarts, with nobody connected. A deadline that passes while the DGX is off ends the run as `expired`, and the demo is kept. Keeper's summary endpoint comes back after a reboot without loading a model, and a reservation held before the reboot still keeps it from loading one.
 
-Coordinate the reboot first: it also restarts `claude-qwen` and everything else on the DGX. If the inference reservation is held (`dgx-autonomy reservation`), `claude-qwen` stays down after the reboot, as intended.
+Coordinate the reboot first: it restarts everything on the DGX, Keeper's summary endpoint (`keeper-summary`, a jim user unit) included. Keeper's queued summaries back off while the endpoint is down and resume on their next retry. A run holds the inference reservation (`dgx-autonomy reservation`); its record is a file under `/var/lib/dgx-autonomy/reservation/`, so it survives the reboot and the summary model stays unloaded until `dgx-autonomy release`, as intended.
 
 ## Part 1: the run resumes
 
@@ -42,5 +42,22 @@ Coordinate the reboot first: it also restarts `claude-qwen` and everything else 
    - [ ] stop evidence `verified`, `container_running: false`, demo `relaunched: true`
    - [ ] `dgx-autonomy ps RUN` shows only the supervisor and the demo, with no Agent Server
    - [ ] the demo answers on `127.0.0.1:<host_port>`
+
+## Part 3: the summary endpoint after a reboot
+
+Run this after Part 1 (the reservation is held by the run's launch) and again after `dgx-autonomy release`.
+
+1. With the reservation held, after the DGX is back:
+   - [ ] `dgx-autonomy reservation` shows `held`, the same `held_since` as before the reboot
+   - [ ] `systemctl --user is-active keeper-summary` is `active`
+   - [ ] `curl -s 127.0.0.1:8091/proxy/status` shows `"state": "idle"`, `"reserved": true`, `"pid": null`, `"loads": 0`
+   - [ ] `ss -ltnp | grep 18091` shows nothing (no model server is listening)
+   - [ ] a summary request answers `503` with `error.type` `reserved`, and `loads` stays `0`:
+     `curl -s -H "Authorization: Bearer $(cat ~/.config/keeper-summary/api-key)" -H 'Content-Type: application/json' -d '{"messages":[{"role":"user","content":"Reply with: ok"}],"max_tokens":8}' 127.0.0.1:8091/v1/chat/completions`
+2. `dgx-autonomy release` (once the run has ended), then:
+   - [ ] `/proxy/status` shows `"reserved": false`, still `"state": "idle"` and `"loads": 0`: releasing loads nothing by itself
+   - [ ] the same request answers `503` `loading` once, then a completion within the model's load time; `loads` is `1`
+   - [ ] 10 minutes (`idle_seconds`) after the last request, `/proxy/status` is `idle` again with `last_stop_reason` `idle`, and port 18091 is free
+3. Without a reservation held, reboot once more: `/proxy/status` shows `idle` and `loads` `0` until the first request.
 
 Record the results (times, the recovery's cause and steps, anything unexpected) in the Phase 4 section of the structure outline.

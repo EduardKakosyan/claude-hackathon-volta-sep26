@@ -209,8 +209,10 @@ class InferenceManager:
     def ensure(self, model: ModelConfig) -> ContainerState:
         """Start (or keep) the owned llama-server for `model`. Never swaps models silently.
 
-        A new server is created only when the host has memory for its weights plus
-        headroom; a model that does not fit next to claude-qwen needs the reservation.
+        Every run and plan takes the reservation before this is called (the CLI does,
+        before `launch` and `plan`), so Keeper's summary model is stopped and loads
+        nothing meanwhile. A new server is still created only when the host has memory
+        for its weights plus headroom: retained demos hold memory too.
         """
         current = self._runtime.inspect_container(self._settings.inference_name)
         if current is not None:
@@ -226,7 +228,8 @@ class InferenceManager:
                 raise InferenceError(
                     f"not enough memory to load {model.key}: {available / 1024**3:.1f} GiB"
                     f" available, {needed / 1024**3:.1f} GiB needed. Hold the reservation"
-                    " first (`dgx-autonomy reserve`), or use a smaller model."
+                    " first (`dgx-autonomy reserve`), retire demos you can spare, or use a"
+                    " smaller model."
                 )
         if model.backend == "sglang":
             for d in sglang_dirs(self._settings):
